@@ -15,7 +15,7 @@
     "admin:create": "tsx scripts/create-admin.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "next build && playwright test",
     "db:up": "docker compose up -d"
   },
   "dependencies": {

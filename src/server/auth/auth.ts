@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { eq } from "drizzle-orm";
-import { env } from "@/lib/env";
+import { env, isProductionRuntime } from "@/lib/env";
 import { db, schema } from "../db";
 import { logAuditStandalone } from "../services/audit";
 import { sendEmail } from "../services/email";
@@ -86,7 +86,7 @@ function createAuth() {
       updateAge: 60 * 60 * 24,
     },
     rateLimit: {
-      enabled: e.NODE_ENV === "production",
+      enabled: isProductionRuntime(),
       storage: "database",
       window: 60,
       max: 100,

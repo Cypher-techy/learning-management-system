@@ -22,6 +22,8 @@ export const e2eEnv = {
   SMTP_HOST: "",
   CGS_WEBSITE_URL: "",
   SEED_PASSWORD: "e2e-password-123",
+  // Honoured only because the address above is localhost. See isProductionRuntime().
+  E2E_TEST_MODE: "true",
 };
 
 export default defineConfig({
@@ -31,9 +33,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  // Generous limits: the development server compiles routes on first use.
-  timeout: 300_000,
-  expect: { timeout: 45_000 },
+  timeout: 120_000,
+  expect: { timeout: 20_000 },
   reporter: [["list"]],
   use: {
     baseURL: E2E_BASE_URL,
@@ -44,7 +45,9 @@ export default defineConfig({
   // instead of the one downloaded by `npx playwright install chromium`.
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], channel: process.env.PW_CHANNEL || undefined } }],
   webServer: {
-    command: `npx next dev -p ${E2E_PORT}`,
+    // A production build: fast and closest to what is deployed. Build first
+    // with `npm run build` (`npm run test:e2e` does this for you).
+    command: `node node_modules/next/dist/bin/next start -p ${E2E_PORT}`,
     url: `${E2E_BASE_URL}/api/health`,
     timeout: 180_000,
     reuseExistingServer: false,

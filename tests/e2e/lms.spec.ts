@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectFooter, PASSWORD, query, signIn, signOut, USERS } from "./helpers";
+import { alert, expectFooter, PASSWORD, query, signIn, signOut, USERS } from "./helpers";
 
 const FREE = "demo-getting-started";
 const PAID = "demo-spreadsheet-essentials";
@@ -37,7 +37,7 @@ test.describe("authentication", () => {
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill("definitely-wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page.getByRole("alert")).toHaveText(/email address or password is not correct/);
+    await expect(alert(page)).toHaveText(/email address or password is not correct/);
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
@@ -63,7 +63,7 @@ test.describe("authentication", () => {
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(first);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(alert(page)).toBeVisible();
     await signIn(page, email, second);
     await expect(page).toHaveURL(/\/learn$/);
 
@@ -73,7 +73,7 @@ test.describe("authentication", () => {
     await page.getByLabel("New password", { exact: true }).fill("third-password-789");
     await page.getByLabel("Confirm new password").fill("third-password-789");
     await page.getByRole("button", { name: "Set new password" }).click();
-    await expect(page.getByRole("alert")).toHaveText(/invalid or has expired/);
+    await expect(alert(page)).toHaveText(/invalid or has expired/);
   });
 });
 
@@ -357,6 +357,7 @@ test.describe("instructor and administrator workflows", () => {
     // Not public until approved.
     const [row] = await query<{ slug: string }>("select slug from courses where id = $1", [courseId]);
     expect((await page.goto(`/courses/${row!.slug}`))?.status()).toBe(404);
+    await page.goto("/instructor");
     await signOut(page);
 
     await signIn(page, USERS.admin);
@@ -381,7 +382,7 @@ test.describe("instructor and administrator workflows", () => {
     // The sensitive action is refused without the administrator's own password.
     await page.getByLabel("Your password").fill("not-my-password-000");
     await page.getByRole("button", { name: "Suspend account" }).last().click();
-    await expect(page.getByRole("alert")).toHaveText(/password is not correct/);
+    await expect(alert(page)).toHaveText(/password is not correct/);
     await page.getByLabel("Your password").fill(PASSWORD);
     await page.getByRole("button", { name: "Suspend account" }).last().click();
     await expect(page.getByText("Suspended", { exact: true })).toBeVisible();
@@ -392,7 +393,7 @@ test.describe("instructor and administrator workflows", () => {
     await learnerPage.getByLabel("Email address").fill(USERS.learner2);
     await learnerPage.getByLabel("Password", { exact: true }).fill(PASSWORD);
     await learnerPage.getByRole("button", { name: "Sign in" }).click();
-    await expect(learnerPage.getByRole("alert")).toBeVisible();
+    await expect(alert(learnerPage)).toBeVisible();
     await expect(learnerPage).toHaveURL(/\/sign-in/);
     await learnerContext.close();
 

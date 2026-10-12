@@ -34,6 +34,11 @@ export async function query<T extends Record<string, unknown>>(text: string, par
   }
 }
 
+/** The page's own error message, ignoring the framework's hidden route announcer. */
+export function alert(page: Page) {
+  return page.locator('[role="alert"]:not(#__next-route-announcer__)');
+}
+
 export async function expectFooter(page: Page) {
   const footer = page.getByTestId("cgs-footer");
   await expect(footer).toBeVisible();

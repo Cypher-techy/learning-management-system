@@ -58,7 +58,7 @@ Stated plainly so that nobody relies on something that is not there.
 10. **Expired attempts are closed lazily**, when the learner or instructor next looks, rather than by a scheduled job. The result is the same; only the moment of closing differs.
 11. **Rate limits are per key in fixed windows.** They slow abuse; they are not a substitute for network-level protection against a determined flood.
 12. **The audit log is append-only at the application level.** A database administrator can still alter it. Restrict direct database access accordingly.
-13. **Dependency audit.** `npm audit` reports advisories in development tooling pulled in by the framework scaffold. Review with `npm audit` and update regularly.
+13. **Dependency audit.** On 12 October 2026 `npm audit` reported 13 advisories (9 high, 4 moderate), all in build and development tooling rather than in code that handles requests: the file-globbing library `braces`/`micromatch` reached through `eslint-config-next` and the `shadcn` CLI, and the `esbuild` development server reached through `drizzle-kit`. None has a non-breaking fix available yet. `shadcn` is listed under `dependencies` only because the stylesheet imports its CSS at build time. Re-run `npm audit` before each release and update when fixes land.
 
 ## Data retention and deletion
 

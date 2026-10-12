@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { env } from "@/lib/env";
+import { env, isProductionRuntime } from "@/lib/env";
 import { AppError, invalid } from "../errors";
 
 export type PaymentOutcome = {
@@ -246,7 +246,7 @@ export function getPaymentStatus(): PaymentStatus {
     return { enabled: false, reason: "Online payments are not enabled on this platform yet." };
   }
   if (e.PAYMENT_PROVIDER === "sandbox") {
-    if (e.NODE_ENV === "production") {
+    if (isProductionRuntime()) {
       return { enabled: false, reason: "The sandbox payment provider cannot be used in production." };
     }
     return { enabled: true, provider: new SandboxProvider(e.BETTER_AUTH_SECRET) };

@@ -7,7 +7,8 @@ import { E2E_BASE_URL, E2E_DATABASE_URL, e2eEnv } from "../../playwright.config"
 /** Runs a project script with tsx in a single child process. */
 function run(script: string) {
   const tsx = path.resolve("node_modules/tsx/dist/cli.mjs");
-  const env = { ...process.env, ...e2eEnv, NODE_ENV: "development" };
+  // The scripts run in development mode: the seed refuses to run in production.
+  const env = { ...process.env, ...e2eEnv, NODE_ENV: "development" } as NodeJS.ProcessEnv;
   execFileSync(process.execPath, [tsx, script], { env, stdio: ["ignore", "inherit", "inherit"] });
 }
 

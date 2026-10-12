@@ -48,6 +48,7 @@ const schema = z.object({
   MPESA_CALLBACK_SECRET: optional(),
 
   HEALTHCHECK_TOKEN: optional(),
+  E2E_TEST_MODE: bool(false),
 });
 
 export type Env = z.infer<typeof schema>;
@@ -69,6 +70,22 @@ export function env(): Env {
   }
   cached = parsed.data;
   return cached;
+}
+
+/**
+ * True for a real production deployment.
+ *
+ * Automated browser tests run a production build locally and need the
+ * development-only conveniences (sandbox payments, no sign-in throttling).
+ * E2E_TEST_MODE grants that, but ONLY when the site address is localhost, so
+ * setting it on a public deployment has no effect.
+ */
+export function isProductionRuntime(): boolean {
+  const e = env();
+  if (e.NODE_ENV !== "production") return false;
+  if (!e.E2E_TEST_MODE) return true;
+  const host = new URL(e.NEXT_PUBLIC_APP_URL).hostname;
+  return !(host === "localhost" || host === "127.0.0.1");
 }
 
 /** Test hook. */
