@@ -1,0 +1,22 @@
+# Local development database only. Production should use managed PostgreSQL.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: lms-postgres
+    environment:
+      POSTGRES_USER: lms
+      POSTGRES_PASSWORD: lms_local_dev
+      POSTGRES_DB: lms_dev
+    ports:
+      - "127.0.0.1:5544:5432"
+    volumes:
+      - lms_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lms -d lms_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  lms_pgdata:
+    name: lms_pgdata
