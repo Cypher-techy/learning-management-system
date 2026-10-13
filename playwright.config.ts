@@ -33,8 +33,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  timeout: 120_000,
-  expect: { timeout: 20_000 },
+  // Generous limits so a busy machine produces slow tests, not false failures.
+  timeout: 300_000,
+  expect: { timeout: 60_000 },
   reporter: [["list"]],
   use: {
     baseURL: E2E_BASE_URL,

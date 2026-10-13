@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema, type DbOrTx } from "../db";
+import { AppError } from "../errors";
 import { assertCan, type Actor } from "../permissions";
 import { logAudit } from "./audit";
 
@@ -65,13 +67,32 @@ export async function getSettings(conn: DbOrTx = db): Promise<PlatformSettings> 
 
 export async function updateSettings(actor: Actor, patch: Partial<PlatformSettings>) {
   assertCan(actor, "settings.manage");
-  const validated = settingsSchema.partial().parse(patch);
-  const keys = Object.keys(validated) as (keyof PlatformSettings)[];
+  // Validate and write ONLY the keys that were submitted. Parsing the whole
+  // object would fill in defaults for everything else and overwrite settings
+  // the administrator never touched.
+  const keys = (Object.keys(patch) as (keyof PlatformSettings)[]).filter(
+    (key) => key in settingsSchema.shape && patch[key] !== undefined,
+  );
   if (keys.length === 0) return;
+  const validated: Partial<Record<keyof PlatformSettings, unknown>> = {};
+  const fieldErrors: Record<string, string[]> = {};
+  for (const key of keys) {
+    const result = settingsSchema.shape[key].safeParse(patch[key]);
+    if (result.success) validated[key] = result.data;
+    else fieldErrors[key] = result.error.issues.map((issue) => issue.message);
+  }
+  const invalidKeys = Object.keys(fieldErrors);
+  if (invalidKeys.length > 0) {
+    throw new AppError("VALIDATION", `${invalidKeys[0]}: ${fieldErrors[invalidKeys[0]!]![0]}`, fieldErrors);
+  }
   await db.transaction(async (tx) => {
     for (const key of keys) {
       const value = validated[key];
-      if (value === undefined) continue;
+      if (value === null) {
+        // "No value" is stored as the absence of the row, which reads back as the default.
+        await tx.delete(schema.platformSettings).where(eq(schema.platformSettings.key, key));
+        continue;
+      }
       await tx
         .insert(schema.platformSettings)
         .values({ key, value, updatedBy: actor.id })

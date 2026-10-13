@@ -263,13 +263,13 @@ Implement the `PaymentProvider` interface in `src/server/payments/providers.ts` 
 ## Tests
 
 ```bash
-npm test             # 79 unit and integration tests
+npm test             # 84 unit and integration tests
 npm run test:e2e     # browser tests
 ```
 
 **Unit and integration** tests run each file against a fresh in-process PostgreSQL (PGlite) with the real migrations applied. They need no Docker and cannot reach any real database: `DATABASE_URL` is cleared before the code loads.
 
-**Browser** tests start the app on port 3100 against a disposable database (`lms_e2e` by default, override with `E2E_DATABASE_URL`). That database is **wiped and re-seeded on every run**; the setup refuses any database whose name does not end in `_e2e`. Create it once:
+**Browser** tests build the app, then start that production build on port 3100 (with `E2E_TEST_MODE`, which is honoured only on `localhost` and allows the sandbox payment provider there) against a disposable database (`lms_e2e` by default, override with `E2E_DATABASE_URL`). That database is **wiped and re-seeded on every run**; the setup refuses any database whose name does not end in `_e2e`. Create it once:
 
 ```bash
 docker exec lms-postgres psql -U lms -d lms_dev -c "CREATE DATABASE lms_e2e"
