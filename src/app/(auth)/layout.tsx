@@ -14,7 +14,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           </span>
           {platform.platformName}
         </Link>
-        <div className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-xs">{children}</div>
+        <div className="depth-card w-full max-w-sm rounded-xl border bg-card p-6">{children}</div>
       </main>
       <CgsFooter cgsWebsiteUrl={platform.cgsWebsiteUrl} />
     </>

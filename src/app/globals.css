@@ -218,3 +218,123 @@
 .prose-lms hr {
   @apply border-border;
 }
+
+/*
+ * 3D effects. Decorative only, driven by transforms so they stay cheap to
+ * render, and removed for anyone who prefers reduced motion.
+ */
+.tilt {
+  perspective: 900px;
+}
+.tilt-inner {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out;
+  border-radius: var(--radius-xl);
+  will-change: transform;
+}
+.tilt:hover .tilt-inner {
+  box-shadow:
+    0 22px 34px -22px oklch(0 0 0 / 0.45),
+    0 8px 12px -8px oklch(0 0 0 / 0.25);
+}
+
+/* A panel that sits slightly above the page and lifts on hover. */
+.depth-card {
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 2px 0 var(--border),
+    0 14px 22px -18px oklch(0 0 0 / 0.4);
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+a:hover > .depth-card,
+.depth-card.depth-hover:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 3px 0 var(--border),
+    0 24px 30px -20px oklch(0 0 0 / 0.45);
+}
+
+/* Homepage illustration: three panels stacked in perspective. */
+.scene-3d {
+  perspective: 1100px;
+  height: 21rem;
+}
+.scene-stack {
+  position: relative;
+  height: 100%;
+  transform: rotateX(16deg) rotateY(-24deg) rotateZ(3deg);
+  transform-style: preserve-3d;
+  animation: scene-sway 9s ease-in-out infinite alternate;
+}
+.scene-layer {
+  position: absolute;
+  width: 68%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  padding: 0.9rem;
+  box-shadow:
+    0 30px 40px -26px oklch(0 0 0 / 0.5),
+    0 2px 0 var(--border);
+}
+.scene-layer-back {
+  top: 4%;
+  right: 0;
+  transform: translateZ(-70px);
+  animation: scene-float 7s ease-in-out infinite alternate;
+}
+.scene-layer-mid {
+  top: 30%;
+  right: 12%;
+  transform: translateZ(10px);
+  animation: scene-float 6s ease-in-out -2s infinite alternate;
+}
+.scene-layer-front {
+  top: 22%;
+  left: 0;
+  transform: translateZ(90px);
+  animation: scene-float 8s ease-in-out -4s infinite alternate;
+}
+.scene-progress {
+  width: 62%;
+}
+@keyframes scene-sway {
+  from {
+    transform: rotateX(16deg) rotateY(-24deg) rotateZ(3deg);
+  }
+  to {
+    transform: rotateX(12deg) rotateY(-16deg) rotateZ(2deg);
+  }
+}
+@keyframes scene-float {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 -10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-inner,
+  .depth-card {
+    transition: none;
+  }
+  .tilt-inner {
+    transform: none;
+  }
+  a:hover > .depth-card,
+  .depth-card.depth-hover:hover {
+    transform: none;
+  }
+  .scene-stack,
+  .scene-layer {
+    animation: none;
+  }
+}

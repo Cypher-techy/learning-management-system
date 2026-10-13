@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Award, BookOpen, ClipboardCheck, LineChart, Search, Smartphone, UserPlus } from "lucide-react";
 import { EmptyState, LinkButton } from "@/components/kit/primitives";
 import { CourseCard, CourseGrid } from "@/components/site/course-card";
+import { Hero3D } from "@/components/site/hero-3d";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getActor } from "@/server/auth/session";
@@ -73,13 +74,16 @@ export default async function HomePage() {
               )}
             </div>
           </div>
+          <div className="space-y-6">
+            <Hero3D />
           {stats.courses > 0 && (
-            <dl className="grid grid-cols-3 gap-3 rounded-xl border bg-card p-5 text-center">
+            <dl className="depth-card grid grid-cols-3 gap-3 rounded-xl border bg-card p-5 text-center">
               <Stat label="Published courses" value={stats.courses} />
               <Stat label="Learners enrolled" value={stats.learners} />
               <Stat label="Certificates issued" value={stats.certificates} />
             </dl>
           )}
+          </div>
         </div>
       </section>
 
@@ -140,7 +144,7 @@ export default async function HomePage() {
           <SectionHeading id="how-heading" title="How it works" />
           <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, index) => (
-              <li key={step.title} className="rounded-xl border bg-card p-4">
+              <li key={step.title} className="depth-card depth-hover rounded-xl border bg-card p-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <step.icon className="size-4 text-primary" aria-hidden />
                   Step {index + 1}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen, Clock, Users } from "lucide-react";
 import { ProgressBar } from "@/components/kit/primitives";
+import { Tilt } from "@/components/kit/tilt";
 import { Badge } from "@/components/ui/badge";
 import { formatDuration, formatMoney, titleCase } from "@/lib/format";
 import type { CourseCardData } from "@/server/queries/catalog";
@@ -32,7 +33,8 @@ export function CourseThumb({ fileId, title, className }: { fileId: string | nul
 
 export function CourseCard({ course, href, progress }: { course: CourseCardData; href?: string; progress?: number }) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-sm">
+    <Tilt className="h-full">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card">
       <CourseThumb fileId={course.thumbnailFileId} title={course.title} />
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
@@ -69,9 +71,10 @@ export function CourseCard({ course, href, progress }: { course: CourseCardData;
         )}
       </div>
     </article>
+    </Tilt>
   );
 }
 
 export function CourseGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>article]:relative">{children}</div>;
+  return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>;
 }

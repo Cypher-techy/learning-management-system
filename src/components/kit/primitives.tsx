@@ -103,7 +103,7 @@ export function StatCard({
   href?: string;
 }) {
   const body = (
-    <div className={cn("rounded-xl border bg-card p-4", href && "transition-colors hover:bg-accent/40")}>
+    <div className="depth-card rounded-xl border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">{label}</p>
         {Icon && <Icon className="size-4 text-muted-foreground" aria-hidden />}
