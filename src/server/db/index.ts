@@ -27,6 +27,9 @@ function connect(): Db {
   const sql = postgres(url, {
     max: Number(process.env.DATABASE_POOL_MAX ?? 10),
     idle_timeout: 20,
+    // Fail quickly with a clear error when the database is unreachable,
+    // rather than leaving a page hanging for the driver's 30-second default.
+    connect_timeout: 10,
     // Required by transaction-mode poolers (e.g. PgBouncer, Supavisor).
     prepare: process.env.DATABASE_DISABLE_PREPARE === "true" ? false : true,
     onnotice: () => {},

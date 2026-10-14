@@ -306,6 +306,7 @@ Rehearse a restore into a staging environment at least once before you depend on
 | `Invalid environment configuration` | A required variable is missing or malformed. The message names it. |
 | `DATABASE_URL is not set` | Copy `.env.example` to `.env.local`, or export the variable for scripts. |
 | `ECONNREFUSED 127.0.0.1:5544` | PostgreSQL is not running: `npm run db:up`. |
+| `CONNECT_TIMEOUT 127.0.0.1:5544`, or "Waiting for the database" when starting | Docker Desktop is not running, is still starting, or the machine is out of memory. Open Docker Desktop, wait until it is running, then `npm run db:up` and `npm run dev`. `npm run dev` waits up to 60 seconds for the database before giving up with instructions. |
 | `relation "users" does not exist` | Migrations have not been applied: `npm run db:migrate`. |
 | Signed in, then immediately signed out | `NEXT_PUBLIC_APP_URL` does not match the address in the browser, or it is `https://` while you are browsing over `http://`. |
 | No emails arrive | SMTP is not configured (see **Admin > System health**). In development they are printed to the terminal. |
