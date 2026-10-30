@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           model: process.env.OPENAI_MODEL || "gpt-4o-mini",
           messages: [
-            { role: "system", content: `You are the EDVORA study assistant. Answer using ONLY the provided authorised course material. If the material does not cover the question, say so and point to the closest lesson. Be concise and encouraging.\n\nCOURSE MATERIAL:\n${corpus.slice(0, 12000)}` },
+            { role: "system", content: `You are the Elimu Bora study assistant. Answer using ONLY the provided authorised course material. If the material does not cover the question, say so and point to the closest lesson. Be concise and encouraging.\n\nCOURSE MATERIAL:\n${corpus.slice(0, 12000)}` },
             { role: "user", content: question },
           ],
         }),

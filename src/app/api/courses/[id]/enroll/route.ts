@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { save } = await req.json().catch(() => ({}));
     let enr = db.enrollments.find(e => e.courseId === id && e.studentId === user.id);
     if (save !== undefined && enr) { enr.saved = !!save; await persist(); return Response.json({ ok: true, enrollment: enr }); }
-    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "This is a Premium course. Subscribe to EDVORA Premium to enrol.");
+    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "This is a Premium course. Subscribe to Elimu Bora Premium to enrol.");
     if (!enr) {
       enr = { id: uid("e_"), studentId: user.id, courseId: id, enrolledAt: now(), completedLessons: [], saved: false, activeMin: 0 };
       db.enrollments.push(enr);

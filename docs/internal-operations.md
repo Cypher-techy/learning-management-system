@@ -1,4 +1,4 @@
-# EDVORA — Internal Operations (confidential)
+# Elimu Bora — Internal Operations (confidential)
 
 This document is for platform operators only. Do not link it from public pages.
 

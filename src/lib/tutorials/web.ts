@@ -188,7 +188,7 @@ export const htmlCourse: Course = tutorialCourse({
         ex(`<!DOCTYPE html>
 <html>
 <body>
-  <header><h1>EDVORA Canteen</h1></header>
+  <header><h1>Elimu Bora Canteen</h1></header>
   <nav><a href="#">Menu</a> | <a href="#">Prices</a></nav>
   <main>
     <section>
@@ -286,7 +286,7 @@ export const htmlCourse: Course = tutorialCourse({
 <html>
 <body>
   <h2 id="msg">Habari! Click the button.</h2>
-  <button onclick="document.getElementById('msg').innerHTML = 'Karibu EDVORA — you just ran JavaScript!'">
+  <button onclick="document.getElementById('msg').innerHTML = 'Karibu Elimu Bora — you just ran JavaScript!'">
     Click me
   </button>
 </body>

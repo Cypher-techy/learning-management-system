@@ -117,7 +117,7 @@ const DATABASE_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_U
 const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
 const PROJECT_DATA_DIR = path.join(process.cwd(), "data");
 const FALLBACK_DATA_DIR = path.join(os.tmpdir(), "edvora-data");
-let activeDataDir = process.env.EDVORA_DATA_DIR || (IS_SERVERLESS ? FALLBACK_DATA_DIR : PROJECT_DATA_DIR);
+let activeDataDir = process.env.ELIMU_BORA_DATA_DIR || process.env.EDVORA_DATA_DIR || (IS_SERVERLESS ? FALLBACK_DATA_DIR : PROJECT_DATA_DIR);
 const fileFor = (dir: string) => path.join(dir, "edvora.json");
 let cache: DB | null = null;
 let loading: Promise<DB> | null = null;
@@ -141,7 +141,7 @@ function loadFromFile(): DB | null {
         return parsed;
       }
     } catch (e) {
-      console.error(`EDVORA: could not read data file ${file}; trying next location.`, e);
+      console.error(`Elimu Bora: could not read data file ${file}; trying next location.`, e);
     }
   }
   return null;
@@ -160,7 +160,7 @@ function saveToFile(db: DB): boolean {
     }
   }
   storageMode = "memory";
-  console.error("EDVORA: no writable data directory available; continuing in memory only.", lastError);
+  console.error("Elimu Bora: no writable data directory available; continuing in memory only.", lastError);
   return false;
 }
 function getPool(): Pool {
@@ -172,7 +172,7 @@ function getPool(): Pool {
       max: 1,
       idleTimeoutMillis: 10000,
     });
-    pgPool.on("error", (e) => console.error("EDVORA: idle Postgres client error.", e));
+    pgPool.on("error", (e) => console.error("Elimu Bora: idle Postgres client error.", e));
   }
   return pgPool;
 }
@@ -244,7 +244,7 @@ export async function getDB(): Promise<DB> {
         // Never take the whole app down because the database URL is
         // wrong or unreachable: log loudly and fall back to file/temp
         // storage so the deployment keeps working while it is fixed.
-        console.error("EDVORA: Postgres storage failed (check SUPABASE_DATABASE_URL — it should be the Supabase transaction pooler, port 6543). Falling back to file storage.", e);
+        console.error("Elimu Bora: Postgres storage failed (check SUPABASE_DATABASE_URL — it should be the Supabase transaction pooler, port 6543). Falling back to file storage.", e);
         storageMode = "file";
         if (cache) return cache;
       }
@@ -272,17 +272,52 @@ export async function getDB(): Promise<DB> {
  *  deployments without disturbing users, enrolments or finances.
  *  Returns true when the state changed and should be persisted. */
 function applyContentMigrations(db: DB): boolean {
-  if ((db.meta.contentVersion ?? 1) >= 3) return false;
+  const version = db.meta.contentVersion ?? 1;
+  if (version >= 4) return false;
   const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
     for (const item of items) {
       const i = list.findIndex((x) => x.id === item.id);
       if (i >= 0) list[i] = item; else list.push(item);
     }
   };
-  upsert(db.courses, TUTORIAL_COURSES);
-  upsert(db.quizzes, TUTORIAL_QUIZZES);
-  upsert(db.assignments, TUTORIAL_ASSIGNMENTS);
-  db.meta.contentVersion = 3;
+  if (version < 3) {
+    upsert(db.courses, TUTORIAL_COURSES);
+    upsert(db.quizzes, TUTORIAL_QUIZZES);
+    upsert(db.assignments, TUTORIAL_ASSIGNMENTS);
+  }
+  if (version < 4) {
+    // Elimu Bora rebrand for existing deployments. Refresh the built-in
+    // tutorial examples and platform-owned labels, and move only the
+    // known seeded preview accounts to the new email domain. Learner
+    // accounts, real registrations and the actual support mailbox are
+    // intentionally left untouched.
+    upsert(db.courses, TUTORIAL_COURSES);
+    const seededEmailUpdates: Record<string, [string, string]> = {
+      u_admin1: ["admin@edvora.ac.ke", "admin@elimubora.ac.ke"],
+      u_tutor1: ["amina@edvora.ac.ke", "amina@elimubora.ac.ke"],
+      u_tutor2: ["peter@edvora.ac.ke", "peter@elimubora.ac.ke"],
+      u_tutor3: ["mary@edvora.ac.ke", "mary@elimubora.ac.ke"],
+    };
+    const takenEmails = new Set(db.users.map((u) => u.email.toLowerCase()));
+    for (const user of db.users) {
+      const update = seededEmailUpdates[user.id];
+      if (!update || user.email.toLowerCase() !== update[0] || takenEmails.has(update[1])) continue;
+      takenEmails.delete(update[0]);
+      takenEmails.add(update[1]);
+      user.email = update[1];
+    }
+    if (db.settings.platformName === "EDVORA") db.settings.platformName = "Elimu Bora";
+    for (const plan of db.plans) plan.name = plan.name.replaceAll("EDVORA", "Elimu Bora");
+    for (const notification of db.notifications) {
+      notification.title = notification.title.replaceAll("EDVORA", "Elimu Bora");
+      notification.body = notification.body.replaceAll("EDVORA", "Elimu Bora");
+    }
+    const demoCertificate = db.certificates.find((c) => c.id === "c1" && c.code === "EDV-2026-WF8K2D");
+    if (demoCertificate && !db.certificates.some((c) => c.code === "EB-2026-WF8K2D")) {
+      demoCertificate.code = "EB-2026-WF8K2D";
+    }
+  }
+  db.meta.contentVersion = 4;
   return true;
 }
 /** Persist the current state. Never throws: a storage failure is logged
@@ -296,7 +331,7 @@ export async function persist(): Promise<void> {
       cacheLoadedAt = Date.now();
       return;
     } catch (e) {
-      console.error("EDVORA: Postgres persist failed; falling back to file storage.", e);
+      console.error("Elimu Bora: Postgres persist failed; falling back to file storage.", e);
       storageMode = "file";
     }
   }
@@ -360,11 +395,11 @@ function seed(): DB {
   const pw = (s: string) => hashPassword(s);
   const base = { contactVerified: true, notificationPrefs: { email: true, inApp: true }, createdAt: "2026-06-01T08:00:00.000Z" };
   const users: User[] = [
-    { ...base, id: "u_admin1", fullName: "Grace Wanjiru", email: "admin@edvora.ac.ke", phone: "+254700000010", passwordHash: pw("Admin@2026"), role: "administrator", status: "verified", avatarColor: "#4f46e5", plan: "free", title: "Platform Operations Lead" },
+    { ...base, id: "u_admin1", fullName: "Grace Wanjiru", email: "admin@elimubora.ac.ke", phone: "+254700000010", passwordHash: pw("Admin@2026"), role: "administrator", status: "verified", avatarColor: "#4f46e5", plan: "free", title: "Platform Operations Lead" },
     { ...base, id: "u_admin_pending", fullName: "Brian Kiprop", email: "brian.kiprop@example.co.ke", phone: "+254700000011", passwordHash: pw("Brian@2026"), role: "administrator", status: "pending", avatarColor: "#0ea5e9", plan: "free", title: "Operations Assistant (invited)" },
-    { ...base, id: "u_tutor1", fullName: "Dr. Amina Odhiambo", email: "amina@edvora.ac.ke", phone: "+254700000020", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#2563eb", plan: "free", title: "Senior Tutor, Computer Science", expertise: "Software Engineering & Web Development", qualifications: "PhD Computer Science, University of Nairobi", experience: "12 years university teaching", bio: "Dr Amina Odhiambo leads software engineering programmes and has mentored hundreds of engineers across East Africa.", payoutMethod: "mpesa", payoutAccount: "+254700000020" },
-    { ...base, id: "u_tutor2", fullName: "Peter Mwangi", email: "peter@edvora.ac.ke", phone: "+254700000021", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#7c3aed", plan: "free", title: "Data Science Consultant", expertise: "Data Analytics & Machine Learning", qualifications: "MSc Data Science", experience: "8 years industry + training", bio: "Peter Mwangi helps Kenyan businesses turn messy data into decisions, and teaches the exact workflows he uses with clients.", payoutMethod: "bank", payoutAccount: "KCB •••• 4412" },
-    { ...base, id: "u_tutor3", fullName: "Mary Njeri", email: "mary@edvora.ac.ke", phone: "+254700000022", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#0891b2", plan: "free", title: "Chartered Accountant (CPA-K)", expertise: "Business, Finance & Accounting", qualifications: "CPA-K, BCom Finance", experience: "10 years practice and tutoring", bio: "Mary Njeri makes finance practical — from bookkeeping for SMEs to investment fundamentals for beginners.", payoutMethod: "mpesa", payoutAccount: "+254700000022" },
+    { ...base, id: "u_tutor1", fullName: "Dr. Amina Odhiambo", email: "amina@elimubora.ac.ke", phone: "+254700000020", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#2563eb", plan: "free", title: "Senior Tutor, Computer Science", expertise: "Software Engineering & Web Development", qualifications: "PhD Computer Science, University of Nairobi", experience: "12 years university teaching", bio: "Dr Amina Odhiambo leads software engineering programmes and has mentored hundreds of engineers across East Africa.", payoutMethod: "mpesa", payoutAccount: "+254700000020" },
+    { ...base, id: "u_tutor2", fullName: "Peter Mwangi", email: "peter@elimubora.ac.ke", phone: "+254700000021", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#7c3aed", plan: "free", title: "Data Science Consultant", expertise: "Data Analytics & Machine Learning", qualifications: "MSc Data Science", experience: "8 years industry + training", bio: "Peter Mwangi helps Kenyan businesses turn messy data into decisions, and teaches the exact workflows he uses with clients.", payoutMethod: "bank", payoutAccount: "KCB •••• 4412" },
+    { ...base, id: "u_tutor3", fullName: "Mary Njeri", email: "mary@elimubora.ac.ke", phone: "+254700000022", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#0891b2", plan: "free", title: "Chartered Accountant (CPA-K)", expertise: "Business, Finance & Accounting", qualifications: "CPA-K, BCom Finance", experience: "10 years practice and tutoring", bio: "Mary Njeri makes finance practical — from bookkeeping for SMEs to investment fundamentals for beginners.", payoutMethod: "mpesa", payoutAccount: "+254700000022" },
     { ...base, id: "u_tutor_pending", fullName: "Kevin Omondi", email: "kevin.omondi@example.co.ke", phone: "+254700000023", passwordHash: pw("Kevin@2026"), role: "tutor", status: "pending", avatarColor: "#db2777", plan: "free", title: "Digital Marketing Specialist", expertise: "Digital Marketing", qualifications: "BBA Marketing, Google Digital Marketing Certificate", experience: "6 years agency work in Nairobi", bio: "I help local brands grow online with small budgets and measurable campaigns.", proposedCourses: "Social Media Marketing for Kenyan SMEs; Content Strategy Basics" },
     { ...base, id: "u_student_free", fullName: "Faith Chebet", email: "faith@example.co.ke", phone: "+254700000030", passwordHash: pw("Learn@2026"), role: "student", status: "verified", avatarColor: "#059669", plan: "free" },
     { ...base, id: "u_student_pro", fullName: "David Otieno", email: "david@example.co.ke", phone: "+254700000031", passwordHash: pw("Learn@2026"), role: "student", status: "verified", avatarColor: "#d97706", plan: "premium", subscriptionId: "sub_demo1" },
@@ -550,7 +585,7 @@ function seed(): DB {
     { id: "r3", courseId: "web-foundations", studentId: "u_student_free", rating: 4, comment: "Great so far — would love more downloadable notes.", createdAt: "2026-09-20T10:00:00.000Z" },
   ];
   const certificates: Certificate[] = [
-    { id: "c1", code: "EDV-2026-WF8K2D", studentId: "u_student_pro", courseId: "web-foundations", issuedAt: "2026-10-01T10:05:00.000Z" },
+    { id: "c1", code: "EB-2026-WF8K2D", studentId: "u_student_pro", courseId: "web-foundations", issuedAt: "2026-10-01T10:05:00.000Z" },
   ];
   const subscriptions: Subscription[] = [
     { id: "sub_demo1", studentId: "u_student_pro", plan: "premium", status: "active", startedAt: "2026-10-05T10:00:00.000Z", expiresAt: "2026-11-25T10:00:00.000Z", paymentId: "pay_demo1" },
@@ -592,7 +627,7 @@ function seed(): DB {
     { id: "n1", userId: "u_student_pro", title: "Assignment graded", body: "Build Your Landing Page — 88/100. Tap to read feedback.", createdAt: "2026-10-02T10:00:00.000Z", read: false, href: "/dashboard/student/assignments" },
     { id: "n2", userId: "u_tutor2", title: "New submission to grade", body: "David Otieno submitted 'Clean a Messy Dataset'.", createdAt: "2026-10-18T10:00:00.000Z", read: false, href: "/dashboard/tutor/students" },
     { id: "n3", userId: "u_admin1", title: "Tutor application awaiting review", body: "Kevin Omondi applied to teach Digital Marketing.", createdAt: "2026-10-20T10:00:00.000Z", read: false, href: "/dashboard/admin/tutors" },
-    { id: "n4", userId: "u_student_free", title: "Welcome to EDVORA", body: "Your account is verified. Start with any free course.", createdAt: "2026-09-02T10:00:00.000Z", read: true },
+    { id: "n4", userId: "u_student_free", title: "Welcome to Elimu Bora", body: "Your account is verified. Start with any free course.", createdAt: "2026-09-02T10:00:00.000Z", read: true },
   ];
   const reports: Report[] = [
     { id: "rep1", reporterId: "u_student4", targetType: "discussion", targetId: "d2", reason: "Off-topic spam link was posted and removed by author — flagging for awareness.", status: "open", createdAt: "2026-10-22T10:00:00.000Z" },
@@ -620,15 +655,15 @@ function seed(): DB {
     quizzes: [...quizzes, ...TUTORIAL_QUIZZES],
     assignments: [...assignments, ...TUTORIAL_ASSIGNMENTS],
     enrollments, quizAttempts, submissions, reviews,
-    certificates, subscriptions, plans: [{ id: "plan_premium", name: "EDVORA Premium — Monthly All-Access", priceKES: 499, intervalDays: 30 }],
+    certificates, subscriptions, plans: [{ id: "plan_premium", name: "Elimu Bora Premium — Monthly All-Access", priceKES: 499, intervalDays: 30 }],
     payments, revenuePeriods, walletTxs, withdrawals, notifications, discussions, replies,
     messages, reports, verifications, auditLogs, announcements, goals,
     settings: {
-      platformName: "EDVORA", tagline: "LEARN BEYOND LIMITS.", premiumPriceKES: 499,
+      platformName: "Elimu Bora", tagline: "LEARN BEYOND LIMITS.", premiumPriceKES: 499,
       tutorPercent: 80, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
       supportEmail: "edvoraplatform@gmail.com", supportPhone: "+254 110 966 455",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },
-    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 3 },
+    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 4 },
   };
 }

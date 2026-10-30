@@ -21,7 +21,7 @@ export default function Certificates() {
               <div className="relative bg-navy-950 p-7 text-center text-white">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-brand-600/30 to-transparent" />
                 <div className="relative flex justify-center"><Emblem size={52} /></div>
-                <p className="relative mt-2 text-lg font-extrabold tracking-[0.3em]">EDVORΛ</p>
+                <p className="relative mt-2 text-lg font-extrabold tracking-[0.22em]">ELIMU Bora</p>
                 <p className="relative text-[10px] tracking-[0.3em] text-slate-400">LEARN BEYOND LIMITS.</p>
                 <p className="relative mt-4 text-xs uppercase tracking-widest text-brand-300">Certificate of Completion</p>
               </div>

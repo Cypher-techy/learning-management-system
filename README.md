@@ -1,4 +1,4 @@
-# EDVORA — Learn Beyond Limits
+# Elimu Bora — Learn Beyond Limits
 
 A complete, modern Learning Management System for Kenya and beyond: free & premium learning, verified tutors, M-Pesa subscriptions, usage-based tutor revenue sharing, and verifiable certificates.
 
@@ -27,10 +27,10 @@ Choose the matching account type on the sign-in screen (quick-fill buttons inclu
 |---|---|---|---|
 | Student (Free) | faith@example.co.ke | Learn@2026 | Free plan |
 | Student (Premium) | david@example.co.ke | Learn@2026 | Active subscription, 1 certificate |
-| Tutor | amina@edvora.ac.ke | Teach@2026 | Verified, with earnings |
-| Tutor | peter@edvora.ac.ke | Teach@2026 | Verified, pending withdrawal |
+| Tutor | amina@elimubora.ac.ke | Teach@2026 | Verified, with earnings |
+| Tutor | peter@elimubora.ac.ke | Teach@2026 | Verified, pending withdrawal |
 | Tutor applicant | kevin.omondi@example.co.ke | Kevin@2026 | Pending verification |
-| Administrator | admin@edvora.ac.ke | Admin@2026 | Verified |
+| Administrator | admin@elimubora.ac.ke | Admin@2026 | Verified |
 
 ## What works end-to-end
 
@@ -80,5 +80,5 @@ src/components     shared UI (splash, nav, dashboard shell, cards…)
 src/lib            db + seed, auth/session, Daraja, revenue/overview services
 supabase/          production Postgres schema & RLS
 scripts/verify.mjs acceptance tests
-public/brand       EDVORA logo assets
+public/brand       Elimu Bora logo assets
 ```

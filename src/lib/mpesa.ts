@@ -40,7 +40,7 @@ export async function stkPush(phone: string, amount: number, accountRef: string)
       TransactionType: process.env.MPESA_TRANSACTION_TYPE || "CustomerPayBillOnline",
       Amount: amount, PartyA: normalisePhone(phone), PartyB: shortcode,
       PhoneNumber: normalisePhone(phone), CallBackURL: process.env.MPESA_CALLBACK_URL,
-      AccountReference: accountRef.slice(0, 12), TransactionDesc: "EDVORA Premium subscription",
+      AccountReference: accountRef.slice(0, 12), TransactionDesc: "Elimu Bora Premium subscription",
     }),
   });
   const data = await res.json();

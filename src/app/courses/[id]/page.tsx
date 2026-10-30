@@ -71,7 +71,7 @@ export default function CoursePage() {
                 ) : (
                   <>
                     <p className="flex items-center gap-2 font-bold"><Lock size={17} className="text-brand-600" /> Premium Course</p>
-                    <p className="mt-2 text-sm text-slate-500">This course is included in EDVORA Premium — one subscription unlocks every premium course.</p>
+                    <p className="mt-2 text-sm text-slate-500">This course is included in Elimu Bora Premium — one subscription unlocks every premium course.</p>
                     <Link href={me ? "/dashboard/student/subscription" : "/plans"} className="btn-primary mt-5 w-full"><Crown size={16} /> Subscribe to Unlock</Link>
                     <p className="mt-3 text-center text-xs text-slate-400">Preview lessons below are free to watch.</p>
                   </>

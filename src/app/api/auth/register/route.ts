@@ -16,19 +16,19 @@ async function sendVerificationEmail(email: string, code: string): Promise<boole
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM || "EDVORA <edvoraplatform@gmail.com>",
+        from: process.env.EMAIL_FROM || "Elimu Bora <edvoraplatform@gmail.com>",
         to: [email],
-        subject: "Your EDVORA verification code",
-        text: `Your EDVORA verification code is ${code}. It expires in 15 minutes. If you did not create an EDVORA account, you can ignore this email.`,
-        html: `<p>Your EDVORA verification code is <strong>${code}</strong>.</p><p>It expires in 15 minutes. If you did not create an EDVORA account, you can ignore this email.</p>`,
+        subject: "Your Elimu Bora verification code",
+        text: `Your Elimu Bora verification code is ${code}. It expires in 15 minutes. If you did not create an Elimu Bora account, you can ignore this email.`,
+        html: `<p>Your Elimu Bora verification code is <strong>${code}</strong>.</p><p>It expires in 15 minutes. If you did not create an Elimu Bora account, you can ignore this email.</p>`,
       }),
     });
   } catch (e) {
-    console.error("EDVORA: verification email request failed.", e);
+    console.error("Elimu Bora: verification email request failed.", e);
     throw new ApiError(502, "We could not send your verification email. Please try again shortly.");
   }
   if (!res.ok) {
-    console.error("EDVORA: verification email provider rejected the send.", res.status, await res.text().catch(() => ""));
+    console.error("Elimu Bora: verification email provider rejected the send.", res.status, await res.text().catch(() => ""));
     throw new ApiError(502, "We could not send your verification email. Please try again shortly.");
   }
   return true;
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       db.users.push(user);
       if (user.role === "student") {
         db.verifications.push({ id: uid("v_"), userId: user.id, role: "student", from: "pending", to: "verified", decidedBy: "system", reason: "Automatic verification after contact confirmation.", createdAt: now() });
-        db.notifications.unshift({ id: uid("n_"), userId: user.id, title: "Welcome to EDVORA", body: "Your account is verified. Start with any free course.", createdAt: now(), read: false });
+        db.notifications.unshift({ id: uid("n_"), userId: user.id, title: "Welcome to Elimu Bora", body: "Your account is verified. Start with any free course.", createdAt: now(), read: false });
       }
       if (user.role === "tutor") db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
         db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "New tutor application", body: `${user.fullName} applied to teach.`, createdAt: now(), read: false, href: "/dashboard/admin/tutors" }));
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     if (!emailSent && !showCode) {
       delete meta.pending[b.email.toLowerCase()];
       await persist();
-      throw new ApiError(503, "Registration email is not configured yet. Please contact EDVORA support at edvoraplatform@gmail.com or +254 110 966 455.");
+      throw new ApiError(503, "Registration email is not configured yet. Please contact Elimu Bora support at edvoraplatform@gmail.com or +254 110 966 455.");
     }
     return Response.json({
       needsVerification: true,

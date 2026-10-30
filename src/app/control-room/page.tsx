@@ -95,7 +95,7 @@ function OwnerConsole({ me }: { me: any }) {
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#070a1c]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 lg:px-8">
           <Emblem size={34} />
-          <div><p className="text-sm font-extrabold tracking-widest text-white">EDVORA CONTROL</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Highest platform authority · {me.fullName}</p></div>
+          <div><p className="text-sm font-extrabold tracking-widest text-white">ELIMU Bora CONTROL</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Highest platform authority · {me.fullName}</p></div>
           <button className="ml-auto flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold hover:bg-white/10" onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); window.location.href = "/"; }}><LogOut size={14} /> Sign Out</button>
         </div>
         <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 pb-3 lg:px-8" aria-label="Control">
