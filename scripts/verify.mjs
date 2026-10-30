@@ -84,7 +84,10 @@ const stu = new Jar();
   const r = await stu.req("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ phone: "0712345678" }) });
   const configured = r.res.status === 200;
   ok("STK Push: configured→initiated pending, else explicit 503", configured || r.res.status === 503);
-  if (!configured) {
+  if (configured) {
+    const st = await stu.req(`/api/payments/status?id=${r.data.paymentId}`);
+    ok("Configured STK records Daraja routing for reconciliation", !!st.data.payment.businessShortCode && !!st.data.payment.partyB && !!st.data.payment.checkoutRequestId);
+  } else {
     const st = await stu.req(`/api/payments/status?id=${r.data.paymentId}`);
     ok("Failed STK never activates premium", st.data.payment.status === "failed");
   }
@@ -95,6 +98,8 @@ const stu = new Jar();
   const res = await fetch(BASE + "/api/payments/mpesa/callback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fake) });
   const data = await res.json();
   ok("Unknown Daraja callback ignored without granting access", data.ResultDesc?.includes("Unknown") || data.ResultCode === 0);
+  const missing = await stu.req("/api/payments/status?id=pay_missing");
+  ok("Unknown payment status returns 404 instead of hanging", missing.res.status === 404);
 }
 
 // 9. Free W3Schools-style tutorial track

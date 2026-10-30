@@ -1,6 +1,7 @@
 import { getDB, publicUser } from "@/lib/db";
 import { jsonError, requireRole } from "@/lib/auth";
 import { adminData, wallet, nameOf } from "@/lib/overview";
+import { mpesaConfigured } from "@/lib/mpesa";
 export async function GET() {
   try {
     const u = await requireRole("owner");
@@ -12,7 +13,7 @@ export async function GET() {
       tutorWallets: db.users.filter(x => x.role === "tutor").map(t => ({ tutorId: t.id, tutorName: t.fullName, status: t.status, ...wallet(db, t.id) })),
       allAudit: db.auditLogs.slice(0, 100).map(a => ({ ...a, actorName: nameOf(db, a.actorId) })),
       integrations: {
-        mpesaConfigured: !!(process.env.MPESA_CONSUMER_KEY && process.env.MPESA_SHORTCODE),
+        mpesaConfigured: mpesaConfigured(),
         supabaseConfigured: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
         mailConfigured: !!process.env.RESEND_API_KEY,
         aiConfigured: !!process.env.OPENAI_API_KEY,
