@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif; }
+html { scroll-behavior: auto; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+body { @apply bg-[#f7f8fc] text-slate-900 antialiased; font-family: var(--font-sans); }
+::selection { background: #4f46e5; color: #fff; }
+
+.grad-text { background: linear-gradient(92deg, #38bdf8 0%, #2563eb 38%, #7c3aed 75%, #c084fc 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.grad-bg { background: linear-gradient(92deg, #0ea5e9, #2563eb 45%, #7c3aed); }
+.grad-ring { background: linear-gradient(#0a0e2a, #0a0e2a) padding-box, linear-gradient(120deg, rgba(56,189,248,.6), rgba(124,58,237,.6)) border-box; border: 1px solid transparent; }
+.glass { background: rgba(255,255,255,.06); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.1); }
+.noise::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:.5; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); }
+
+.btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:hover:translate-y-0; background: linear-gradient(92deg,#0ea5e9,#2563eb 45%,#7c3aed); }
+.btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold border transition-all duration-300; }
+.btn-dark { @apply inline-flex items-center justify-center gap-2 rounded-full bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:opacity-50; }
+.btn-light { @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 border border-slate-200 transition hover:border-slate-300 hover:shadow-soft disabled:opacity-50; }
+.input { @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20; }
+.label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500; }
+.card { @apply rounded-2xl border border-slate-200/80 bg-white shadow-soft; }
+.chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold; }
+.navlink { @apply flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white; }
+.navlink-active { @apply bg-white/10 text-white; }
+.table-wrap { @apply overflow-x-auto; }
+table.edv { @apply w-full min-w-[560px] text-left text-sm; }
+table.edv th { @apply border-b border-slate-100 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400; }
+table.edv td { @apply border-b border-slate-50 px-4 py-3 align-middle; }
+
+@keyframes floaty { 0%,100%{ transform: translateY(0)} 50%{ transform: translateY(-14px)} }
+.floaty { animation: floaty 7s ease-in-out infinite; }
+@keyframes shimmer { from{ background-position: 200% 0 } to{ background-position: -200% 0 } }
+@keyframes splashbar { from{ width: 4% } to{ width: 92% } }
+.splash-bar { animation: splashbar 1.5s cubic-bezier(.22,.8,.3,1) forwards; }
+@keyframes pulse-glow { 0%,100%{ opacity:.55 } 50%{ opacity:1 } }
+.pulse-glow { animation: pulse-glow 2.4s ease-in-out infinite; }
+@keyframes marquee { from{ transform: translateX(0)} to{ transform: translateX(-50%)} }
+.marquee { animation: marquee 36s linear infinite; }
+
+.reveal-init { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .floaty, .marquee, .pulse-glow { animation: none !important; }
+  .reveal-init { opacity: 1 !important; transform: none !important; }
+}
