@@ -38,7 +38,7 @@ export default function CoursePage() {
         <div className="pointer-events-none absolute right-0 top-0 h-80 w-80 rounded-full bg-brand-600/25 blur-[110px]" />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-12 lg:px-8">
           <div className="lg:col-span-8">
-            <div className="flex flex-wrap gap-2"><span className="chip bg-white/10 text-brand-300">{c.category.toUpperCase()}</span><span className="chip bg-white/10">{c.level}</span>{c.access === "premium" ? <span className="chip grad-bg text-white"><Crown size={12} /> PREMIUM</span> : <span className="chip bg-emerald-500 text-white">FREE COURSE</span>}</div>
+            <div className="flex flex-wrap gap-2"><span className="chip bg-white/10 text-brand-300">{c.category.toUpperCase()}</span><span className="chip bg-white/10">{c.level}</span>{c.access === "premium" ? <span className="chip grad-bg text-white"><Crown size={12} /> PREMIUM</span> : <span className="chip bg-emerald-500 text-white">FREE COURSE</span>}{c.tutorial && <span className="chip grad-bg text-white">TUTORIAL NOTES + EXAMPLES</span>}</div>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight lg:text-5xl">{c.title}</h1>
             <p className="mt-4 max-w-2xl text-lg text-slate-300">{c.subtitle}</p>
             <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-slate-300">
@@ -78,6 +78,7 @@ export default function CoursePage() {
                 )}
                 <ul className="mt-6 space-y-2.5 border-t border-slate-100 pt-5 text-sm text-slate-600">
                   <li className="flex gap-2"><PlayCircle size={17} className="text-brand-500" />{c.lessonCount} lessons · {fmtDur(c.durationMin)} total</li>
+                  {c.tutorial && <li className="flex gap-2"><BookOpen size={17} className="text-brand-500" />Step-by-step notes, examples & exercises (tutorial format)</li>}
                   <li className="flex gap-2"><ClipboardList size={17} className="text-brand-500" />{data.assignments.length} assignments · {data.quizzes.length} quizzes</li>
                   <li className="flex gap-2"><BookOpen size={17} className="text-brand-500" />Discussions & tutor messages</li>
                   <li className="flex gap-2"><CheckCircle2 size={17} className="text-brand-500" />Verifiable certificate on completion</li>

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { TUTORIAL_COURSES, TUTORIAL_QUIZZES, TUTORIAL_ASSIGNMENTS } from "./tutorials";
 
 /* ---------------- Types ---------------- */
 export type Role = "student" | "tutor" | "administrator" | "owner";
@@ -16,10 +17,23 @@ export interface User {
   notificationPrefs: { email: boolean; inApp: boolean };
   totpEnabled?: boolean;
 }
+/** Structured tutorial content (W3Schools-style notes) rendered by the classroom. */
+export interface LessonBlock {
+  type: "heading" | "text" | "code" | "example" | "tip" | "note" | "warning" | "list" | "steps" | "table" | "exercise";
+  content?: string;
+  code?: string;
+  language?: string;
+  tryit?: boolean;
+  items?: string[];
+  headers?: string[];
+  rows?: string[][];
+  answer?: string;
+}
 export interface Lesson {
   id: string; title: string; kind: "video" | "reading" | "audio" | "document";
   durationMin: number; isPreview: boolean; videoUrl?: string; body: string;
   resourceUrl?: string; resourceName?: string;
+  blocks?: LessonBlock[];
 }
 export interface Section { id: string; title: string; lessons: Lesson[] }
 export interface QuizQuestion { id: string; type: "mcq" | "tf" | "short"; prompt: string; options?: string[]; answer: string; explanation: string }
@@ -74,7 +88,7 @@ export interface DB {
   discussions: Discussion[]; replies: Reply[]; messages: Message[]; reports: Report[];
   verifications: VerificationRecord[]; auditLogs: AuditLog[]; announcements: Announcement[];
   goals: Goal[]; settings: Settings;
-  meta: { ownerInitialised: boolean; setupSecretUsed: boolean; sessionSeed: string; seededAt: string };
+  meta: { ownerInitialised: boolean; setupSecretUsed: boolean; sessionSeed: string; seededAt: string; contentVersion?: number };
 }
 
 /* ---------------- Storage ---------------- */
@@ -102,10 +116,26 @@ function save(db: DB) {
 }
 export function getDB(): DB {
   if (cache) return cache;
-  if (fs.existsSync(FILE)) { cache = JSON.parse(fs.readFileSync(FILE, "utf8")) as DB; return cache; }
+  if (fs.existsSync(FILE)) { cache = JSON.parse(fs.readFileSync(FILE, "utf8")) as DB; applyContentMigrations(cache); return cache; }
   cache = seed();
   save(cache);
   return cache;
+}
+/** Idempotent content packs: merges new catalogue content into existing
+ *  deployments without disturbing users, enrolments or finances. */
+function applyContentMigrations(db: DB) {
+  if ((db.meta.contentVersion ?? 1) >= 2) return;
+  const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
+    for (const item of items) {
+      const i = list.findIndex((x) => x.id === item.id);
+      if (i >= 0) list[i] = item; else list.push(item);
+    }
+  };
+  upsert(db.courses, TUTORIAL_COURSES);
+  upsert(db.quizzes, TUTORIAL_QUIZZES);
+  upsert(db.assignments, TUTORIAL_ASSIGNMENTS);
+  db.meta.contentVersion = 2;
+  save(db);
 }
 export function persist() { if (cache) save(cache); }
 export function sessionSecret() {
@@ -428,6 +458,6 @@ function seed(): DB {
       supportEmail: "support@edvora.ac.ke", supportPhone: "+254 700 000 000",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },
-    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now() },
+    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 2 },
   };
 }

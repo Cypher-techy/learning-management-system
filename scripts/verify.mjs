@@ -96,5 +96,26 @@ const stu = new Jar();
   const data = await res.json();
   ok("Unknown Daraja callback ignored without granting access", data.ResultDesc?.includes("Unknown") || data.ResultCode === 0);
 }
+
+// 9. Free W3Schools-style tutorial track
+{
+  const anon = new Jar();
+  const { data } = await anon.req("/api/courses?access=free");
+  const ids = data.courses.map(c => c.id);
+  ok("Free tutorials: Windows, Word, Excel, PowerPoint, HTML all published",
+    ["windows-basics", "ms-word", "ms-excel", "ms-powerpoint", "html-web-foundations"].every(id => ids.includes(id)));
+  const html = await anon.req("/api/courses/html-web-foundations");
+  const firstLesson = html.data.course.sections[0].lessons[0];
+  ok("Tutorial lessons carry structured note blocks (free to read)",
+    Array.isArray(firstLesson.blocks) && firstLesson.blocks.length > 3);
+  const allBlocks = html.data.course.sections.flatMap(s2 => s2.lessons).flatMap(l => l.blocks || []);
+  ok("HTML tutorial has runnable Try-It examples + exercises",
+    allBlocks.some(b => b.type === "example" && b.tryit) && allBlocks.some(b => b.type === "exercise"));
+  ok("Catalogue flags tutorial-format courses", data.courses.find(c => c.id === "ms-excel")?.tutorial === true);
+  const win = await anon.req("/api/courses/windows-basics");
+  const winBlocks = win.data.course.sections.flatMap(s2 => s2.lessons).flatMap(l => l.blocks || []);
+  ok("Office/Windows tutorials include steps + shortcut tables",
+    winBlocks.some(b => b.type === "steps") && winBlocks.some(b => b.type === "table"));
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

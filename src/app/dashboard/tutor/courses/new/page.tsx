@@ -35,7 +35,7 @@ export default function NewCourse() {
         </div>
         <div><label className="label">Description</label><textarea rows={4} className="input" value={form.description} onChange={set("description")} placeholder="What is this course about, who is it for, and what will they be able to do?" /></div>
         <div className="grid gap-5 sm:grid-cols-3">
-          <div><label className="label">Category</label><select className="input" value={form.category} onChange={set("category")}>{["Technology", "Data Science", "Business", "Design", "Academic", "Languages", "Health", "Creative Arts"].map(c => <option key={c}>{c}</option>)}</select></div>
+          <div><label className="label">Category</label><select className="input" value={form.category} onChange={set("category")}>{["Technology", "Computer Skills", "Data Science", "Business", "Design", "Academic", "Languages", "Health", "Creative Arts"].map(c => <option key={c}>{c}</option>)}</select></div>
           <div><label className="label">Difficulty</label><select className="input" value={form.level} onChange={set("level")}>{["Beginner", "Intermediate", "Advanced", "All levels"].map(l => <option key={l}>{l}</option>)}</select></div>
           <div><label className="label">Access (monetisation)</label><select className="input" value={form.access} onChange={set("access")}><option value="free">Free course</option><option value="premium">Premium (subscription)</option></select></div>
         </div>

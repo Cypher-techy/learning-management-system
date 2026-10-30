@@ -2,10 +2,11 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, Circle, ClipboardList, Crown, FileText, HelpCircle, Lock, MessageSquare, PlayCircle, Send, Sparkles, Trophy, Flag } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, ChevronLeft, ChevronRight, Circle, ClipboardList, Crown, FileText, HelpCircle, Lock, MessageSquare, PlayCircle, Send, Sparkles, Trophy, Flag, NotebookPen } from "lucide-react";
 import { api, fmtDate } from "@/lib/client";
 import { Loading, ProgressBar } from "@/components/ui";
 import { Logo } from "@/components/Logo";
+import TutorialArticle from "@/components/TutorialArticle";
 
 type Tab = "learn" | "quizzes" | "assignments" | "community" | "assistant";
 
@@ -55,6 +56,12 @@ function LearnInner() {
   const lesson = allLessons.find((l: any) => l.id === lessonId) || allLessons[0];
   const progress = enr && c.lessonCount ? Math.round((enr.completedLessons.length / c.lessonCount) * 100) : 0;
   const lessonLocked = !c.unlocked && !lesson?.isPreview;
+  const lessonIdx = Math.max(0, allLessons.findIndex((l: any) => l.id === lesson?.id));
+  const goLesson = (idx: number) => {
+    const target = allLessons[idx];
+    if (target) { setLessonId(target.id); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  };
+  const hasBlocks = !!lesson?.blocks?.length;
 
   if (!me) return (
     <div className="flex min-h-screen items-center justify-center bg-navy-950 p-6"><div className="card max-w-md p-10 text-center">
@@ -140,7 +147,33 @@ function LearnInner() {
           <div className="mt-5 grid gap-6 lg:grid-cols-12">
             <div className="lg:col-span-8">
               <div className="card overflow-hidden">
-                {lessonLocked ? (
+                {hasBlocks && !lessonLocked ? (
+                  <>
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 px-5 py-3">
+                      <button disabled={lessonIdx === 0} onClick={() => goLesson(lessonIdx - 1)} className="btn-light !px-3.5 !py-2 !text-xs disabled:opacity-40"><ChevronLeft size={15} /> Previous</button>
+                      <span className="text-xs font-semibold text-slate-500">Lesson {lessonIdx + 1} of {allLessons.length}</span>
+                      <button disabled={lessonIdx >= allLessons.length - 1} onClick={() => goLesson(lessonIdx + 1)} className="btn-dark !px-3.5 !py-2 !text-xs disabled:opacity-40">Next <ChevronRight size={15} /></button>
+                    </div>
+                    <div className="p-6 lg:p-9">
+                      <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                        <span>{lesson?.section}</span>
+                        <span className="chip grad-bg text-white"><NotebookPen size={11} /> TUTORIAL NOTES</span>
+                        <span className="chip bg-slate-100 text-slate-500">{lesson?.durationMin} MIN READ</span>
+                      </p>
+                      <h2 className="mb-7 mt-3 text-3xl font-extrabold tracking-tight">{lesson?.title}</h2>
+                      <TutorialArticle blocks={lesson.blocks} />
+                      <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-6">
+                        {!enr?.completedLessons.includes(lesson?.id)
+                          ? <button onClick={completeLesson} className="btn-primary"><CheckCircle2 size={17} /> Mark Complete & Continue</button>
+                          : <span className="chip bg-emerald-100 !px-4 !py-2 text-emerald-700"><CheckCircle2 size={15} /> COMPLETED</span>}
+                        <span className="ml-auto flex gap-2">
+                          <button disabled={lessonIdx === 0} onClick={() => goLesson(lessonIdx - 1)} className="btn-light !py-2.5 !text-xs disabled:opacity-40"><ChevronLeft size={15} /> Previous</button>
+                          <button disabled={lessonIdx >= allLessons.length - 1} onClick={() => goLesson(lessonIdx + 1)} className="btn-dark !py-2.5 !text-xs disabled:opacity-40">Next <ChevronRight size={15} /></button>
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : lessonLocked ? (
                   <div className="flex aspect-video flex-col items-center justify-center bg-navy-950 p-8 text-center text-white">
                     <Lock size={40} className="text-brand-300" /><h3 className="mt-4 text-xl font-extrabold">Premium lesson</h3>
                     <p className="mt-2 max-w-sm text-sm text-slate-300">Subscribe to EDVORA Premium to unlock this and every other premium lesson.</p>

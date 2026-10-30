@@ -12,6 +12,7 @@ export function serializeCourse(db: any, c: Course, user: any) {
     enrolledCount: db.enrollments.filter((e: any) => e.courseId === c.id).length,
     rating: reviews.length ? reviews.reduce((a: number, r: any) => a + r.rating, 0) / reviews.length : null,
     reviewCount: reviews.length, unlocked,
-    sections: c.sections.map(s => ({ ...s, lessons: s.lessons.map(l => unlocked || l.isPreview ? l : { ...l, videoUrl: undefined, resourceUrl: undefined, body: "" }) })),
+    tutorial: courseLessons(c).some(l => !!l.blocks?.length),
+    sections: c.sections.map(s => ({ ...s, lessons: s.lessons.map(l => unlocked || l.isPreview ? l : { ...l, videoUrl: undefined, resourceUrl: undefined, body: "", blocks: undefined }) })),
   };
 }

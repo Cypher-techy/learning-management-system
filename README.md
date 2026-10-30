@@ -36,6 +36,7 @@ Choose the matching account type on the sign-in screen (quick-fill buttons inclu
 
 - Role selection → role-specific auth with contact-verification codes; **database role is always authoritative** (portal selection can never escalate access)
 - Student auto-verification; tutor application → admin approval; controlled administrator appointment
+- **Free tutorial track** in W3Schools-style format — Windows Basics, Microsoft Word, Excel & PowerPoint, and HTML/Web Foundations — with structured notes, step-by-step instructions, shortcut tables, exercises with model answers, and editable *Try It* code runners
 - Marketplace with search/filters; course pages with locked premium previews (protected media is never sent to unauthorised clients)
 - Classroom: video/reading lessons, resume-where-you-left-off, progress, quizzes (MCQ/true-false/short-answer, attempt limits, auto-grading), assignments + grading + feedback, discussions, reporting, study assistant constrained to authorised material
 - Certificates gated on 100% completion + quiz passes; public verification page (`/verify`)
