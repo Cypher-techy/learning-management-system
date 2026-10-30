@@ -42,9 +42,9 @@ export default function Subscription() {
           <div className="relative overflow-hidden rounded-3xl bg-navy-900 p-7 text-white">
             <div className="pointer-events-none absolute -right-10 -top-12 h-48 w-48 rounded-full bg-violet-600/40 blur-[80px]" />
             <p className="relative flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-300"><Crown size={15} /> Current Plan</p>
-            <p className="relative mt-2 text-3xl font-extrabold">{u.premiumActive ? "EDVORA Premium" : "Free Plan"}</p>
+            <p className="relative mt-2 text-3xl font-extrabold">{u.premiumActive ? "Elimu Bora Premium" : "Free Plan"}</p>
             {u.premiumActive && sub ? <p className="relative mt-2 text-sm text-slate-300">Active since {fmtDate(sub.startedAt)} · Expires {fmtDate(sub.expiresAt)}. Renew before expiry to keep uninterrupted access — renewal extends from your current expiry date.</p>
-              : <p className="relative mt-2 text-sm text-slate-300">You have full access to free courses. Upgrade once to unlock every premium course on EDVORA.</p>}
+              : <p className="relative mt-2 text-sm text-slate-300">You have full access to free courses. Upgrade once to unlock every premium course on Elimu Bora.</p>}
             <ul className="relative mt-5 grid gap-2 text-sm text-slate-200 sm:grid-cols-2">
               {["All premium courses included", "Premium downloads", "Advanced analytics", "AI study assistant"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={16} className="text-brand-300" />{x}</li>)}
             </ul>

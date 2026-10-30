@@ -22,8 +22,8 @@ export default function Roles() {
       <main className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-8 lg:grid-cols-12 lg:px-8 lg:pt-14">
         <div className="lg:col-span-5">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <div className="w-fit overflow-hidden rounded-[1.6rem] shadow-glow"><Image src="/brand/edvora-logo.png" alt="EDVORA" width={340} height={340} className="h-44 w-44 object-cover lg:h-56 lg:w-56" /></div>
-            <h1 className="mt-8 text-4xl font-extrabold leading-tight lg:text-5xl">Welcome to <span className="grad-text">EDVORA</span></h1>
+            <div className="w-fit overflow-hidden rounded-[1.6rem] shadow-glow"><Image src="/brand/elimu-bora-logo.png" alt="Elimu Bora" width={340} height={340} className="h-44 w-44 object-cover lg:h-56 lg:w-56" /></div>
+            <h1 className="mt-8 text-4xl font-extrabold leading-tight lg:text-5xl">Welcome to <span className="grad-text">Elimu Bora</span></h1>
             <p className="mt-4 max-w-md text-slate-300">Choose your account type to register or sign in. Each account has its own secure workspace.</p>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-brand-300">Learn Beyond Limits.</p>
           </motion.div>

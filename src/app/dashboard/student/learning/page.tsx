@@ -41,7 +41,7 @@ export default function MyLearning() {
       {cats.length > 0 && (
         <div className="card mt-10 p-6">
           <h3 className="flex items-center gap-2 font-extrabold"><Route className="text-brand-500" /> Your learning paths</h3>
-          <p className="mt-1 text-sm text-slate-500">EDVORA groups your courses into skill paths by subject. Complete every course in a path to master the track.</p>
+          <p className="mt-1 text-sm text-slate-500">Elimu Bora groups your courses into skill paths by subject. Complete every course in a path to master the track.</p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {cats.map((cat: string) => {
               const inCat = data.myCourses.filter((c: any) => c.category === cat);

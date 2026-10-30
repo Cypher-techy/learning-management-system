@@ -23,7 +23,7 @@ export default function Plans() {
         <div className="mx-auto max-w-3xl px-5">
           <span className="glass chip !px-4 !py-2 text-brand-300"><Crown size={13} /> SUBSCRIPTION PLANS</span>
           <h1 className="mt-6 text-4xl font-extrabold lg:text-5xl">Simple pricing.<br /><span className="grad-text">All-access learning.</span></h1>
-          <p className="mt-4 text-slate-300">Start free forever. Upgrade once to unlock every premium course on EDVORA — no per-course payments, ever.</p>
+          <p className="mt-4 text-slate-300">Start free forever. Upgrade once to unlock every premium course on Elimu Bora — no per-course payments, ever.</p>
         </div>
       </section>
       <section className="mx-auto -mt-10 grid max-w-5xl gap-6 px-5 pb-20 md:grid-cols-2">

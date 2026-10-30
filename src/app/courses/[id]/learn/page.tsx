@@ -176,7 +176,7 @@ function LearnInner() {
                 ) : lessonLocked ? (
                   <div className="flex aspect-video flex-col items-center justify-center bg-navy-950 p-8 text-center text-white">
                     <Lock size={40} className="text-brand-300" /><h3 className="mt-4 text-xl font-extrabold">Premium lesson</h3>
-                    <p className="mt-2 max-w-sm text-sm text-slate-300">Subscribe to EDVORA Premium to unlock this and every other premium lesson.</p>
+                    <p className="mt-2 max-w-sm text-sm text-slate-300">Subscribe to Elimu Bora Premium to unlock this and every other premium lesson.</p>
                     <Link href="/dashboard/student/subscription" className="btn-primary mt-6"><Crown size={16} /> Subscribe to Unlock</Link>
                   </div>
                 ) : lesson?.videoUrl ? (
@@ -296,7 +296,7 @@ function LearnInner() {
 
         {tab === "assistant" && (
           <div className="card mx-auto mt-5 max-w-3xl p-6 lg:p-8">
-            <h3 className="flex items-center gap-2 font-extrabold"><Sparkles className="text-brand-500" /> EDVORA Study Assistant</h3>
+            <h3 className="flex items-center gap-2 font-extrabold"><Sparkles className="text-brand-500" /> Elimu Bora Study Assistant</h3>
             <p className="mt-2 text-sm text-slate-500">Ask about this course. The assistant only uses lesson material you are entitled to access{c.access === "premium" && !c.unlocked ? " (free previews only on your current plan)" : ""}.</p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <input className="input" placeholder="e.g. Explain how Flexbox centring works" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} />

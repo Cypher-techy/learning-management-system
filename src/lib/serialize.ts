@@ -6,7 +6,7 @@ export function serializeCourse(db: any, c: Course, user: any) {
   const unlocked = canAccessCourse(db, user, c);
   return {
     ...c,
-    tutorName: tutor?.fullName || "EDVORA Tutor",
+    tutorName: tutor?.fullName || "Elimu Bora Tutor",
     tutorTitle: tutor?.title || "", tutorColor: tutor?.avatarColor || "#2563eb",
     lessonCount: courseLessons(c).length, durationMin: courseDurationMin(c),
     enrolledCount: db.enrollments.filter((e: any) => e.courseId === c.id).length,

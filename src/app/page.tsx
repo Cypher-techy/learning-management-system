@@ -50,7 +50,7 @@ export default function Home() {
   const featured = courses.filter(c => c.featured).concat(courses.filter(c => !c.featured)).slice(0, 6);
   const tutors = [...new Map(courses.map(c => [c.tutorId, c])).values()];
   const faqs = [
-    { q: "Is EDVORA really free to start?", a: "Yes. Create a student account, verify your contact details, and you are verified instantly — no waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
+    { q: "Is Elimu Bora really free to start?", a: "Yes. Create a student account, verify your contact details, and you are verified instantly — no waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
     { q: "How does Premium work?", a: "One monthly subscription unlocks every eligible premium course on the platform — you never pay per course. Pay securely with M-Pesa and your access activates automatically once Safaricom confirms payment." },
     { q: "Are certificates verifiable?", a: "Yes. Every certificate carries a unique reference code and a public verification page. Certificates are earned — you must complete the lessons and pass the assessments." },
     { q: "How do tutors earn?", a: "Verified tutors share in subscription revenue. The tutor pool (80% of net subscription revenue by default) is allocated monthly by genuine premium student engagement in their courses, and paid out via M-Pesa or bank after review." },
@@ -86,7 +86,7 @@ export default function Home() {
           <div className="relative lg:col-span-5" data-hero>
             <div className="grad-ring relative mx-auto max-w-md overflow-hidden rounded-[2rem] shadow-glow">
               <div data-heroimg>
-                <Image src="/brand/edvora-launch.png" alt="EDVORA — Learn Beyond Limits" width={900} height={620} priority className="w-full object-cover" />
+                <Image src="/brand/elimu-bora-logo.png" alt="Elimu Bora — Learn Beyond Limits" width={1024} height={1024} priority className="w-full bg-white object-cover" />
               </div>
             </div>
             <div className="floaty glass absolute -left-6 bottom-16 hidden rounded-2xl px-4 py-3 sm:block" style={{ animationDelay: "0.6s" }}>
@@ -112,7 +112,7 @@ export default function Home() {
 
       {/* ---------------- HOW IT WORKS ---------------- */}
       <section className="mx-auto max-w-7xl px-5 py-24 lg:px-8">
-        <Reveal><p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-brand-600">How EDVORA Works</p>
+        <Reveal><p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-brand-600">How Elimu Bora Works</p>
           <h2 className="mt-3 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">From sign-up to certificate,<br className="hidden sm:block" /> in four honest steps</h2></Reveal>
         <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
@@ -204,7 +204,7 @@ export default function Home() {
               <div className="pointer-events-none absolute -left-10 bottom-0 h-56 w-56 rounded-full bg-brand-500/30 blur-[90px]" />
               <div className="relative grid items-center gap-8 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <h3 className="text-2xl font-extrabold lg:text-3xl">Tutor on EDVORA. Earn from every engaged learner.</h3>
+                  <h3 className="text-2xl font-extrabold lg:text-3xl">Tutor on Elimu Bora. Earn from every engaged learner.</h3>
                   <p className="mt-3 max-w-xl text-slate-300">Apply once, get verified, publish courses — then share in subscription revenue with transparent monthly statements and M-Pesa payouts.</p>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -239,7 +239,7 @@ export default function Home() {
         <div className="relative mx-auto max-w-3xl px-5">
           <Reveal><div className="flex justify-center"><Emblem size={72} /></div>
             <h2 className="mt-7 text-4xl font-black tracking-tight lg:text-5xl">Your future is one<br />lesson away.</h2>
-            <p className="mt-5 text-slate-300">Join EDVORA today — free forever to start, premium when you want it all.</p>
+            <p className="mt-5 text-slate-300">Join Elimu Bora today — free forever to start, premium when you want it all.</p>
             <Link href="/roles" className="btn-primary mt-9 !px-9 !py-4 !text-base">Create Your Free Account <ArrowRight size={18} /></Link></Reveal>
         </div>
       </section>

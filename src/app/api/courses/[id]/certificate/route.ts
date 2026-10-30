@@ -20,7 +20,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     }
     let cert = db.certificates.find(c => c.courseId === id && c.studentId === user.id && !c.revoked);
     if (!cert) {
-      cert = { id: uid("c_"), code: `EDV-${new Date().getFullYear()}-${uid("").slice(0, 6).toUpperCase()}`, studentId: user.id, courseId: id, issuedAt: now() };
+      cert = { id: uid("c_"), code: `EB-${new Date().getFullYear()}-${uid("").slice(0, 6).toUpperCase()}`, studentId: user.id, courseId: id, issuedAt: now() };
       db.certificates.push(cert);
       notify(user.id, "Certificate issued", `Your certificate for "${course.title}" is ready.`, "/dashboard/student/certificates");
     }

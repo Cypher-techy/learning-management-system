@@ -1,4 +1,4 @@
-/** EDVORA acceptance checks — run with the dev server up:  npm run verify
+/** Elimu Bora acceptance checks — run with the dev server up:  npm run verify
  *  Covers the critical workflows from §28 of the master prompt. */
 const BASE = process.env.BASE || "http://localhost:3000";
 let pass = 0, fail = 0;
@@ -62,14 +62,14 @@ const stu = new Jar();
   const r = await pend.req("/api/courses", { method: "POST", body: JSON.stringify({ title: "Sneaky Course", category: "Business", sections: [] }) });
   ok("Unverified tutor cannot create/publish courses", r.res.status === 403);
   const t = new Jar();
-  await login(t, "amina@edvora.ac.ke", "Teach@2026", "tutor");
+  await login(t, "amina@elimubora.ac.ke", "Teach@2026", "tutor");
   const ov = await t.req("/api/overview/tutor");
   ok("Tutor wallet reflects seeded allocation", ov.data.wallet.earned === 31280, `(${ov.data.wallet.earned})`);
 }
 // 6. Admin hierarchy: cannot touch administrators; can verify tutors
 {
   const a = new Jar();
-  await login(a, "admin@edvora.ac.ke", "Admin@2026", "administrator");
+  await login(a, "admin@elimubora.ac.ke", "Admin@2026", "administrator");
   const me = await a.req("/api/overview/admin");
   const pendingAdmin = me.data.users.find(u => u.role === "administrator" && u.status === "pending");
   const r = await a.req(`/api/admin/users/${pendingAdmin.id}/status`, { method: "POST", body: JSON.stringify({ status: "verified", reason: "test" }) });

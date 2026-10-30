@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       const sub = { id: uid("sub_"), studentId: student.id, plan: "premium" as const, status: "active" as const, startedAt: now(), expiresAt: expires.toISOString(), paymentId: payment.id };
       db.subscriptions.unshift(sub);
       student.plan = "premium"; student.subscriptionId = sub.id;
-      notify(student.id, "Premium activated", `Payment ${receipt} confirmed. EDVORA Premium is active until ${expires.toLocaleDateString("en-KE")}.`, "/dashboard/student/subscription");
+      notify(student.id, "Premium activated", `Payment ${receipt} confirmed. Elimu Bora Premium is active until ${expires.toLocaleDateString("en-KE")}.`, "/dashboard/student/subscription");
     }
   } else {
     payment.status = "failed";

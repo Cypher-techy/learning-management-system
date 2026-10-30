@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       }, { status: 503 });
     }
     try {
-      const { checkoutRequestId, merchantRequestId } = await stkPush(msisdn, amount, "EDVORA");
+      const { checkoutRequestId, merchantRequestId } = await stkPush(msisdn, amount, "Elimu Bora");
       payment.checkoutRequestId = checkoutRequestId; payment.merchantRequestId = merchantRequestId; await persist();
       return Response.json({ ok: true, paymentId: payment.id, message: "Check your phone and enter your M-Pesa PIN to complete payment. Premium activates automatically once Safaricom confirms." });
     } catch (err) {

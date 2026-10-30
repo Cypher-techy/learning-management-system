@@ -13,10 +13,10 @@ const META: Record<string, { title: string; subtitle: string; demo: { email: str
     { email: "faith@example.co.ke", password: "Learn@2026", label: "Free student (Faith)" },
     { email: "david@example.co.ke", password: "Learn@2026", label: "Premium student (David)" }] },
   tutor: { title: "Tutor", subtitle: "Share knowledge, teach students and earn.", demo: [
-    { email: "amina@edvora.ac.ke", password: "Teach@2026", label: "Verified tutor (Dr Amina)" },
+    { email: "amina@elimubora.ac.ke", password: "Teach@2026", label: "Verified tutor (Dr Amina)" },
     { email: "kevin.omondi@example.co.ke", password: "Kevin@2026", label: "Pending applicant (Kevin)" }] },
   administrator: { title: "Administrator", subtitle: "Authorized platform management services.", demo: [
-    { email: "admin@edvora.ac.ke", password: "Admin@2026", label: "Verified admin (Grace)" }] },
+    { email: "admin@elimubora.ac.ke", password: "Admin@2026", label: "Verified admin (Grace)" }] },
 };
 
 export default function AuthPage() {
@@ -65,7 +65,7 @@ export default function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="noise relative hidden overflow-hidden bg-navy-950 lg:block">
-        <Image src="/brand/edvora-launch.png" alt="EDVORA" fill className="object-cover opacity-90" priority />
+        <Image src="/brand/elimu-bora-logo.png" alt="Elimu Bora" fill className="object-contain" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent" />
         <div className="absolute bottom-12 left-12 right-12 text-white">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-300">Learn Beyond Limits.</p>
@@ -131,7 +131,7 @@ export default function AuthPage() {
                 <div><label className="label">Confirm password</label><input required type="password" className="input" value={form.confirmPassword} onChange={set("confirmPassword")} placeholder="Repeat password" /></div>
               </div>
               <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Please wait…" : role === "tutor" ? "Submit Application" : "Register & Verify Contact"}</button>
-              <p className="text-center text-xs text-slate-400">By registering you agree to EDVORA's <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
+              <p className="text-center text-xs text-slate-400">By registering you agree to Elimu Bora's <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
             </form>
           )}
         </motion.div>

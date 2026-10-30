@@ -2,10 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-const BOOT_KEY = "edvora_booted_v2";
+const BOOT_KEY = "elimu_bora_booted_v1";
 
 /** Branded startup experience — initial load only (once per browser session).
- *  The EDVORA logo starts in black & white and fills with colour
+ *  The Elimu Bora logo starts in black & white and fills with colour
  *  left-to-right, in sync with the loading progress. Progress eases to 90%
  *  while the app loads and only reaches 100% when it is actually ready. */
 export default function Splash() {
@@ -89,7 +89,7 @@ export default function Splash() {
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#02030a] transition-all duration-700 ${leaving ? "pointer-events-none -translate-y-6 opacity-0" : "opacity-100"}`}
       role="status"
-      aria-label="Loading EDVORA"
+      aria-label="Loading Elimu Bora"
     >
       {/* Ambient background: starts muted, gains saturation as the logo colours */}
       <div
@@ -115,7 +115,7 @@ export default function Splash() {
         >
           {/* Black & white layer */}
           <Image
-            src="/brand/edvora-logo.png"
+            src="/brand/elimu-bora-logo.png"
             alt=""
             fill
             priority
@@ -128,7 +128,7 @@ export default function Splash() {
             style={{ clipPath: `inset(0 ${100 - progress}% 0 0)` }}
             aria-hidden="true"
           >
-            <Image src="/brand/edvora-logo.png" alt="EDVORA" fill priority className="object-cover" />
+            <Image src="/brand/elimu-bora-logo.png" alt="Elimu Bora" fill priority className="object-cover" />
           </div>
           {/* Soft sheen at the colour frontier while loading */}
           {progress < 100 && (
@@ -152,7 +152,7 @@ export default function Splash() {
           <div className="h-full rounded-full grad-bg" style={{ width: `${progress}%` }} />
         </div>
         <p className="mt-4 text-sm text-slate-400">
-          {progress < 100 ? "Loading your learning experience…" : "Karibu — welcome to EDVORA"}
+          {progress < 100 ? "Loading your learning experience…" : "Karibu — welcome to Elimu Bora"}
           <span className="ml-2 font-bold tabular-nums text-slate-200">{progress}%</span>
         </p>
       </div>

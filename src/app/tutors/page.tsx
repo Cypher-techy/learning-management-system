@@ -21,7 +21,7 @@ export default function Tutors() {
       <Navbar />
       <section className="bg-navy-950 pb-14 pt-32 text-white"><div className="mx-auto max-w-7xl px-5 lg:px-8">
         <h1 className="text-4xl font-extrabold lg:text-5xl">Our <span className="grad-text">Tutors</span></h1>
-        <p className="mt-3 max-w-xl text-slate-300">Every EDVORA tutor is identity- and credential-verified before they can publish a single lesson.</p></div></section>
+        <p className="mt-3 max-w-xl text-slate-300">Every Elimu Bora tutor is identity- and credential-verified before they can publish a single lesson.</p></div></section>
       <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
         {courses.length === 0 ? <Loading /> : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
