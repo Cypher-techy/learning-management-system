@@ -95,7 +95,7 @@ export default function AuthPage() {
                 <div className="relative"><input id="password" type={showPw ? "text" : "password"} required className="input pr-11" value={form.password} onChange={set("password")} placeholder="••••••••" autoComplete="current-password" />
                   <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" aria-label="Toggle password visibility">{showPw ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></div>
               <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Signing in…" : `Sign In as ${meta.title}`}</button>
-              <p className="text-center text-xs text-slate-400">Forgot your password? Contact support@edvora.ac.ke for a secure reset.</p>
+              <p className="text-center text-xs text-slate-400">Forgot your password? Contact edvoraplatform@gmail.com for a secure reset.</p>
               <div className="rounded-2xl border border-dashed border-brand-500/40 bg-brand-500/5 p-4">
                 <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-600"><KeyRound size={13} /> Preview accounts</p>
                 <div className="mt-3 flex flex-wrap gap-2">{meta.demo.map(d => <button key={d.email} type="button" disabled={busy} onClick={() => login(null, d)} className="btn-light !px-3.5 !py-2 !text-xs">{d.label}</button>)}</div>

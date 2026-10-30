@@ -124,7 +124,7 @@ export function getDB(): DB {
 /** Idempotent content packs: merges new catalogue content into existing
  *  deployments without disturbing users, enrolments or finances. */
 function applyContentMigrations(db: DB) {
-  if ((db.meta.contentVersion ?? 1) >= 2) return;
+  if ((db.meta.contentVersion ?? 1) >= 3) return;
   const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
     for (const item of items) {
       const i = list.findIndex((x) => x.id === item.id);
@@ -134,7 +134,7 @@ function applyContentMigrations(db: DB) {
   upsert(db.courses, TUTORIAL_COURSES);
   upsert(db.quizzes, TUTORIAL_QUIZZES);
   upsert(db.assignments, TUTORIAL_ASSIGNMENTS);
-  db.meta.contentVersion = 2;
+  db.meta.contentVersion = 3;
   save(db);
 }
 export function persist() { if (cache) save(cache); }
@@ -448,16 +448,20 @@ function seed(): DB {
   ];
 
   return {
-    users, courses, quizzes, assignments, enrollments, quizAttempts, submissions, reviews,
+    users,
+    courses: [...courses, ...TUTORIAL_COURSES],
+    quizzes: [...quizzes, ...TUTORIAL_QUIZZES],
+    assignments: [...assignments, ...TUTORIAL_ASSIGNMENTS],
+    enrollments, quizAttempts, submissions, reviews,
     certificates, subscriptions, plans: [{ id: "plan_premium", name: "EDVORA Premium — Monthly All-Access", priceKES: 499, intervalDays: 30 }],
     payments, revenuePeriods, walletTxs, withdrawals, notifications, discussions, replies,
     messages, reports, verifications, auditLogs, announcements, goals,
     settings: {
       platformName: "EDVORA", tagline: "LEARN BEYOND LIMITS.", premiumPriceKES: 499,
       tutorPercent: 80, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
-      supportEmail: "support@edvora.ac.ke", supportPhone: "+254 700 000 000",
+      supportEmail: "edvoraplatform@gmail.com", supportPhone: "+254 110 966 455",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },
-    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 2 },
+    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 3 },
   };
 }

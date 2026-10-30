@@ -11,8 +11,8 @@ export default function Footer() {
           <Logo />
           <p className="mt-5 max-w-sm text-sm leading-relaxed">Kenya's premium learning platform. Learn from verified tutors, track real progress, and earn certificates that mean something.</p>
           <div className="mt-6 space-y-2 text-sm">
-            <p className="flex items-center gap-2"><Mail size={15} /> support@edvora.ac.ke</p>
-            <p className="flex items-center gap-2"><Phone size={15} /> +254 700 000 000</p>
+            <p><a href="mailto:edvoraplatform@gmail.com" className="flex items-center gap-2 transition hover:text-white"><Mail size={15} /> edvoraplatform@gmail.com</a></p>
+            <p><a href="tel:+254110966455" className="flex items-center gap-2 transition hover:text-white"><Phone size={15} /> +254 110 966 455</a></p>
             <p className="flex items-center gap-2"><MapPin size={15} /> Nairobi, Kenya</p>
           </div>
         </div>
