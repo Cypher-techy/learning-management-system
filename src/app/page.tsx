@@ -50,7 +50,7 @@ export default function Home() {
   const featured = courses.filter(c => c.featured).concat(courses.filter(c => !c.featured)).slice(0, 6);
   const tutors = [...new Map(courses.map(c => [c.tutorId, c])).values()];
   const faqs = [
-    { q: "Is Elimu Bora really free to start?", a: "Yes. Create a student account, verify your contact details, and you are verified instantly — no waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
+    { q: "Is Elimu Bora really free to start?", a: "Yes. Create a student account and it is verified automatically — no email code or waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
     { q: "How does Premium work?", a: "One monthly subscription unlocks every eligible premium course on the platform — you never pay per course. Pay securely with M-Pesa and your access activates automatically once Safaricom confirms payment." },
     { q: "Are certificates verifiable?", a: "Yes. Every certificate carries a unique reference code and a public verification page. Certificates are earned — you must complete the lessons and pass the assessments." },
     { q: "How do tutors earn?", a: "Verified tutors share in subscription revenue. The tutor pool (80% of net subscription revenue by default) is allocated monthly by genuine premium student engagement in their courses, and paid out via M-Pesa or bank after review." },
@@ -116,7 +116,7 @@ export default function Home() {
           <h2 className="mt-3 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">From sign-up to certificate,<br className="hidden sm:block" /> in four honest steps</h2></Reveal>
         <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student, Tutor or Administrator — pick your path. Students are verified instantly after contact confirmation." },
+            { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student, Tutor or Administrator — pick your path. Students are verified automatically at registration." },
             { icon: <BookOpenCheck size={26} />, t: "Learn with structure", d: "Sections, video lessons, notes, assignments and quizzes. Pick up exactly where you left off, on any device." },
             { icon: <Crown size={26} />, t: "Unlock everything", d: "One M-Pesa subscription opens all premium courses. No per-course payments, no surprises." },
             { icon: <Trophy size={26} />, t: "Earn proof", d: "Complete lessons and pass assessments to earn a certificate anyone can verify online." },

@@ -1,8 +1,44 @@
-import { getDB, persist, uid, now, hashPassword, audit, type Role } from "@/lib/db";
+import { getDB, persist, uid, now, hashPassword, audit, type DB, type Role } from "@/lib/db";
 import { jsonError, ApiError, setSession } from "@/lib/auth";
 import crypto from "crypto";
 
 const PUBLIC_ROLES: Role[] = ["student", "tutor", "administrator"];
+
+type RegistrationPayload = {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: Role;
+  avatarColor: string;
+  title?: string;
+  expertise?: string;
+  qualifications?: string;
+  experience?: string;
+  bio?: string;
+  proposedCourses?: string;
+};
+
+async function createAccount(db: DB, payload: RegistrationPayload, studentVerificationReason: string) {
+  const user = {
+    id: uid("u_"), ...payload, passwordHash: hashPassword(payload.password),
+    contactVerified: true, createdAt: now(),
+    status: payload.role === "student" ? "verified" as const : "pending" as const,
+    plan: "free" as const, notificationPrefs: { email: true, inApp: true },
+  };
+  delete (user as any).password;
+  db.users.push(user);
+  if (user.role === "student") {
+    db.verifications.push({ id: uid("v_"), userId: user.id, role: "student", from: "pending", to: "verified", decidedBy: "system", reason: studentVerificationReason, createdAt: now() });
+    db.notifications.unshift({ id: uid("n_"), userId: user.id, title: "Welcome to Elimu Bora", body: "Your account is verified. Start with any free course.", createdAt: now(), read: false });
+  }
+  if (user.role === "tutor") db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
+    db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "New tutor application", body: `${user.fullName} applied to teach.`, createdAt: now(), read: false, href: "/dashboard/admin/tutors" }));
+  audit(user.id, "account.registered", user.id, user.role);
+  await persist();
+  await setSession(user as any);
+  return Response.json({ ok: true, role: user.role, status: user.status, autoVerified: user.role === "student" });
+}
 
 /** Deliver the verification code through Resend when configured.
  *  Returns false when no mail provider is set; throws a clear,
@@ -48,29 +84,13 @@ export async function POST(req: Request) {
       const hash = crypto.createHash("sha256").update(String(b.verificationCode)).digest("hex");
       if (hash !== p.codeHash) throw new ApiError(400, "Incorrect verification code.");
       if (Date.now() > p.expires) throw new ApiError(400, "Verification code expired. Please register again.");
-      const payload = p.payload;
+      const payload = p.payload as RegistrationPayload;
       delete meta.pending[b.email.toLowerCase()];
-      const user = {
-        id: uid("u_"), ...payload, passwordHash: hashPassword(payload.password),
-        contactVerified: true, createdAt: now(),
-        status: payload.role === "student" ? "verified" : "pending",
-        plan: "free" as const, notificationPrefs: { email: true, inApp: true },
-      };
-      delete (user as any).password;
-      db.users.push(user);
-      if (user.role === "student") {
-        db.verifications.push({ id: uid("v_"), userId: user.id, role: "student", from: "pending", to: "verified", decidedBy: "system", reason: "Automatic verification after contact confirmation.", createdAt: now() });
-        db.notifications.unshift({ id: uid("n_"), userId: user.id, title: "Welcome to Elimu Bora", body: "Your account is verified. Start with any free course.", createdAt: now(), read: false });
-      }
-      if (user.role === "tutor") db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
-        db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "New tutor application", body: `${user.fullName} applied to teach.`, createdAt: now(), read: false, href: "/dashboard/admin/tutors" }));
-      audit(user.id, "account.registered", user.id, user.role);
-      await persist();
-      await setSession(user as any);
-      return Response.json({ ok: true, role: user.role, status: user.status });
+      return createAccount(db, payload, "Automatic verification after contact confirmation.");
     }
 
-    // Step 1 — validate + issue contact verification code.
+    // Step 1 — validate registration details. Students finish here;
+    // tutor/administrator applicants continue to contact verification.
     if (!PUBLIC_ROLES.includes(b.role)) throw new ApiError(400, "Invalid account type.");
     if (!b.fullName?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email || "")) throw new ApiError(400, "Please provide your full name and a valid email address.");
     if (!b.phone?.trim()) throw new ApiError(400, "Please provide a phone number.");
@@ -79,28 +99,38 @@ export async function POST(req: Request) {
     if (db.users.some(u => u.email.toLowerCase() === b.email.toLowerCase())) throw new ApiError(409, "An account with this email already exists. Please sign in.");
     if (b.role === "tutor" && (!b.title || !b.expertise || !b.qualifications)) throw new ApiError(400, "Tutor applications require a professional title, area of expertise and qualifications.");
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
     const colors = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706", "#db2777"];
-    meta.pending[b.email.toLowerCase()] = {
+    const payload: RegistrationPayload = {
+      fullName: b.fullName.trim(), email: b.email.toLowerCase(), phone: b.phone, password: b.password,
+      role: b.role, avatarColor: colors[Math.floor(Math.random() * colors.length)],
+      title: b.title || undefined, expertise: b.expertise || undefined,
+      qualifications: b.qualifications || undefined, experience: b.experience || undefined,
+      bio: b.bio || undefined, proposedCourses: b.proposedCourses || undefined,
+    };
+
+    // Students are auto-verified in one step: no email code, email-provider
+    // dependency or approval wait. Tutor and administrator registrations
+    // continue through contact verification and their review workflows.
+    if (payload.role === "student") {
+      delete meta.pending[payload.email];
+      return createAccount(db, payload, "Automatic student verification at registration.");
+    }
+
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    meta.pending[payload.email] = {
       codeHash: crypto.createHash("sha256").update(code).digest("hex"),
       expires: Date.now() + 15 * 60 * 1000,
-      payload: {
-        fullName: b.fullName.trim(), email: b.email.toLowerCase(), phone: b.phone, password: b.password,
-        role: b.role, avatarColor: colors[Math.floor(Math.random() * colors.length)],
-        title: b.title || undefined, expertise: b.expertise || undefined,
-        qualifications: b.qualifications || undefined, experience: b.experience || undefined,
-        bio: b.bio || undefined, proposedCourses: b.proposedCourses || undefined,
-      },
+      payload,
     };
     await persist();
-    const emailSent = await sendVerificationEmail(b.email.toLowerCase(), code);
+    const emailSent = await sendVerificationEmail(payload.email, code);
     // The code is only ever echoed to the browser outside production, or
     // when the operator explicitly enables ALLOW_REGISTRATION_CODE_DISPLAY
     // for launch testing before an email provider is connected. Never
     // tell a learner "we sent a code" when nothing was actually sent.
     const showCode = !emailSent && (process.env.NODE_ENV !== "production" || process.env.ALLOW_REGISTRATION_CODE_DISPLAY === "true");
     if (!emailSent && !showCode) {
-      delete meta.pending[b.email.toLowerCase()];
+      delete meta.pending[payload.email];
       await persist();
       throw new ApiError(503, "Registration email is not configured yet. Please contact Elimu Bora support at edvoraplatform@gmail.com or +254 110 966 455.");
     }
