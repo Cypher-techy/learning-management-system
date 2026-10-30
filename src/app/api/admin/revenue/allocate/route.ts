@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const actor = await requireRole("administrator", "owner");
     if (actor.role === "administrator") requireVerified(actor);
-    const db = getDB();
+    const db = await getDB();
     const { periodId, refunds = 0, fees = 0, taxes = 0 } = await req.json();
     const period = db.revenuePeriods.find(p => p.id === periodId);
     if (!period) throw new ApiError(404, "Revenue period not found.");
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     }
     Object.assign(period, { gross, refunds, fees, taxes, net, tutorPool: pool, platformShare: net - pool, tutorPercent, allocated: true, allocatedAt: now() });
     audit(actor.id, "revenue.allocated", period.id, `gross ${gross} net ${net} pool ${pool}`);
-    persist();
+    await persist();
     return Response.json({ ok: true, period, allocations });
   } catch (e) { return jsonError(e); }
 }

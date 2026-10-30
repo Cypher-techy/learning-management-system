@@ -52,7 +52,7 @@ export default function AuthPage() {
       if (step === 1) {
         const r = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ ...form, role }) });
         setStep(2);
-        setInfo(r.message + (r.devCode ? ` (Local evaluation code: ${r.devCode} — in production this arrives by email/SMS.)` : ""));
+        setInfo(r.message + (r.devCode ? ` Your code is ${r.devCode}.` : ""));
         if (r.devCode) setCode(r.devCode);
       } else {
         const r = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ email: form.email, verificationCode: code }) });

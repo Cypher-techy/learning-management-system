@@ -9,7 +9,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params;
     const actor = await requireRole("administrator", "owner");
     if (actor.role === "administrator") requireVerified(actor);
-    const db = getDB();
+    const db = await getDB();
     const target = db.users.find(u => u.id === id);
     if (!target) throw new ApiError(404, "User not found.");
     if (target.role === "owner") throw new ApiError(403, "This account cannot be modified.");
@@ -23,7 +23,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     db.verifications.unshift({ id: uid("v_"), userId: target.id, role: target.role, from, to: status, decidedBy: actor.id, reason: reason || "", createdAt: now() });
     audit(actor.id, `user.status.${status}`, target.id, reason);
     notify(target.id, "Account status update", `Your account status is now: ${status}.${reason ? " Reason: " + reason : ""}`);
-    persist();
+    await persist();
     return Response.json({ ok: true });
   } catch (e) { return jsonError(e); }
 }

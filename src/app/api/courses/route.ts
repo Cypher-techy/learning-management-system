@@ -4,7 +4,7 @@ import { currentUser, jsonError, ApiError, requireRole, requireVerified } from "
 
 
 export async function GET(req: Request) {
-  const db = getDB();
+  const db = await getDB();
   const user = await currentUser();
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") || "").toLowerCase();
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     requireVerified(user);
     const b = await req.json();
     if (!b.title?.trim() || !b.category) throw new ApiError(400, "Course title and category are required.");
-    const db = getDB();
+    const db = await getDB();
     const id = b.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40) + "-" + uid("").slice(0, 4);
     const course: Course = {
       id, slug: id, title: b.title.trim(), subtitle: b.subtitle || "", description: b.description || "",
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     db.courses.push(course);
     if (b.submit) db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
       db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "Course submitted for review", body: `"${course.title}" by ${user.fullName}.`, createdAt: now(), read: false, href: "/dashboard/admin/courses" }));
-    persist();
+    await persist();
     return Response.json({ ok: true, course: serializeCourse(db, course, user) });
   } catch (e) { return jsonError(e); }
 }

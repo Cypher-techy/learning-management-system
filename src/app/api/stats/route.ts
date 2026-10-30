@@ -1,6 +1,6 @@
 import { getDB, courseLessons } from "@/lib/db";
 export async function GET() {
-  const db = getDB();
+  const db = await getDB();
   const published = db.courses.filter(c => c.status === "published");
   return Response.json({
     courses: published.length,

@@ -4,7 +4,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const user = await requireRole("student");
-    const db = getDB();
+    const db = await getDB();
     const assignment = db.assignments.find(a => a.id === id);
     if (!assignment) throw new ApiError(404, "Assignment not found.");
     const course = db.courses.find(c => c.id === assignment.courseId)!;
@@ -15,7 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (sub) { sub.content = content || sub.content; sub.fileName = fileName; sub.submittedAt = now(); sub.status = "submitted"; sub.grade = undefined; sub.feedback = undefined; }
     else { sub = { id: uid("s_"), assignmentId: id, courseId: assignment.courseId, studentId: user.id, content: content || "", fileName, submittedAt: now(), status: "submitted" }; db.submissions.push(sub); }
     notify(course.tutorId, "New assignment submission", `${user.fullName} submitted "${assignment.title}".`, "/dashboard/tutor/students");
-    persist();
+    await persist();
     return Response.json({ ok: true, submission: sub });
   } catch (e) { return jsonError(e); }
 }

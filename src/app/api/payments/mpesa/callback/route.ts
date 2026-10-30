@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const cb = parseStkCallback(body);
   if (!cb) return Response.json({ ResultCode: 1, ResultDesc: "Malformed callback" });
-  const db = getDB();
+  const db = await getDB();
   const payment = db.payments.find(p => p.checkoutRequestId === cb.CheckoutRequestID);
   if (!payment) return Response.json({ ResultCode: 0, ResultDesc: "Unknown checkout — ignored" });
   if (payment.callbackProcessed) return Response.json({ ResultCode: 0, ResultDesc: "Already processed" });
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     if (amount !== payment.amount || !receipt) {
       payment.status = "failed"; payment.resultDesc = "Callback amount/receipt mismatch — flagged for reconciliation.";
       db.auditLogs.unshift({ id: uid("al_"), actorId: "mpesa-callback", action: "payment.mismatch", target: payment.id, reason: `expected ${payment.amount} got ${amount}`, createdAt: now() });
-      persist();
+      await persist();
       return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
     payment.status = "completed"; payment.completedAt = now(); payment.mpesaReceipt = receipt;
@@ -39,6 +39,6 @@ export async function POST(req: Request) {
     const student = db.users.find(u => u.id === payment.studentId);
     if (student) notify(student.id, "Payment not completed", cb.ResultDesc || "Your M-Pesa payment did not complete. No premium access was activated.");
   }
-  persist();
+  await persist();
   return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
 }

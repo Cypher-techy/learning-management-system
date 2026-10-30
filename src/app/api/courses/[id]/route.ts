@@ -4,7 +4,7 @@ import { serializeCourse } from "@/lib/serialize";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const db = getDB();
+  const db = await getDB();
   const user = await currentUser();
   const course = db.courses.find(c => c.id === id || c.slug === id);
   if (!course) return Response.json({ error: "Course not found" }, { status: 404 });
@@ -25,7 +25,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { id } = await params;
     const user = await currentUser();
     if (!user) throw new ApiError(401, "Please sign in.");
-    const db = getDB();
+    const db = await getDB();
     const course = db.courses.find(c => c.id === id);
     if (!course) throw new ApiError(404, "Course not found.");
     const b = await req.json();
@@ -37,7 +37,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       else if (b.action === "publish" && course.status === "approved") { course.status = "published"; course.publishedAt = now(); }
       else if (b.patch) Object.assign(course, { title: b.patch.title ?? course.title, subtitle: b.patch.subtitle ?? course.subtitle, description: b.patch.description ?? course.description, access: b.patch.access ?? course.access, level: b.patch.level ?? course.level, category: b.patch.category ?? course.category });
       else throw new ApiError(400, "That transition is not allowed from the current course state.");
-      persist();
+      await persist();
       return Response.json({ ok: true, course: serializeCourse(db, course, user) });
     }
     // Admin / owner moderation
@@ -50,7 +50,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       else throw new ApiError(400, "Unknown moderation action.");
       db.auditLogs.unshift({ id: "al_" + Date.now(), actorId: user.id, action: `course.${b.action || "access"}`, target: course.id, reason: b.note, createdAt: now() });
       db.notifications.unshift({ id: "n_" + Date.now(), userId: course.tutorId, title: `Course update: ${course.title}`, body: course.moderationNote || `Your course status is now ${course.status}.`, createdAt: now(), read: false, href: "/dashboard/tutor/courses" });
-      persist();
+      await persist();
       return Response.json({ ok: true, course: serializeCourse(db, course, user) });
     }
     throw new ApiError(403, "You cannot modify this course.");

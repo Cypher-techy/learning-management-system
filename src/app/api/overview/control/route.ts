@@ -4,7 +4,7 @@ import { adminData, wallet, nameOf } from "@/lib/overview";
 export async function GET() {
   try {
     const u = await requireRole("owner");
-    const db = getDB();
+    const db = await getDB();
     const base = adminData(db, u);
     return Response.json({
       ...base, user: publicUser(u),

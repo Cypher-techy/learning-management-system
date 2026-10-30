@@ -117,5 +117,27 @@ const stu = new Jar();
   ok("Office/Windows tutorials include steps + shortcut tables",
     winBlocks.some(b => b.type === "steps") && winBlocks.some(b => b.type === "table"));
 }
+// 10. Fresh student registration (regression: production storage must never 500)
+{
+  const fresh = new Jar();
+  const email = `verify-${Date.now()}@example.com`;
+  const step1 = await fresh.req("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ fullName: "Verify Student", email, phone: "0110966455", password: "Learn@2026", confirmPassword: "Learn@2026", role: "student" }),
+  });
+  const explicitEmailConfigError = step1.res.status === 503 && /registration email is not configured/i.test(step1.data.error || "");
+  ok("New student registration never returns the generic storage 500", step1.res.status === 200 || explicitEmailConfigError, `(${step1.res.status})`);
+  if (step1.data.devCode) {
+    const step2 = await fresh.req("/api/auth/register", { method: "POST", body: JSON.stringify({ email, verificationCode: step1.data.devCode }) });
+    ok("Student account created + auto-verified after code", step2.res.status === 200 && step2.data.role === "student" && step2.data.status === "verified");
+    const me = await fresh.req("/api/auth/me");
+    ok("New student session resolves to the created account", me.data.user?.email === email);
+    const relogin = new Jar();
+    const again = await login(relogin, email, "Learn@2026", "student");
+    ok("New student can sign in again after registration", again.res.status === 200);
+  } else if (step1.res.status === 200) {
+    console.log("  (verification code delivered by configured email provider; on-screen completion checks skipped)");
+  }
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

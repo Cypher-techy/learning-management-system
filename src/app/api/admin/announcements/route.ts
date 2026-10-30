@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     if (actor.role !== "owner") requireVerified(actor);
     const { title, body, audience, courseId } = await req.json();
     if (!title?.trim() || !body?.trim()) throw new ApiError(400, "Title and message are required.");
-    const db = getDB();
+    const db = await getDB();
     if (actor.role === "tutor") {
       const course = db.courses.find(c => c.id === courseId && c.tutorId === actor.id);
       if (!course) throw new ApiError(403, "Tutors can only announce to their own courses.");
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     else if (audience === "course" && courseId) targets = targets.filter(u => db.enrollments.some(e => e.courseId === courseId && e.studentId === u.id));
     targets.forEach(u => notify(u.id, title, body));
     audit(actor.id, "announcement.published", audience || "all-students", title);
-    persist();
+    await persist();
     return Response.json({ ok: true, deliveredTo: targets.length });
   } catch (e) { return jsonError(e); }
 }

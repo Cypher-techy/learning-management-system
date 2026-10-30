@@ -4,7 +4,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const user = await requireRole("student");
-    const db = getDB();
+    const db = await getDB();
     const course = db.courses.find(c => c.id === id);
     if (!course) throw new ApiError(404, "Course not found.");
     if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Premium access required.");
@@ -18,7 +18,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (typeof activeMin === "number" && activeMin > 0 && activeMin <= 30) enr.activeMin += activeMin;
     const total = courseLessons(course).length;
     if (total > 0 && enr.completedLessons.length >= total && !enr.completedAt) enr.completedAt = now();
-    persist();
+    await persist();
     return Response.json({ ok: true, enrollment: enr, progress: total ? Math.round((enr.completedLessons.length / total) * 100) : 0 });
   } catch (e) { return jsonError(e); }
 }

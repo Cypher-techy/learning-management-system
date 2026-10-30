@@ -24,6 +24,7 @@ export function verifyToken(token: string | undefined): Payload | null {
 }
 
 export async function setSession(user: User) {
+  await getDB(); // ensure the persisted fallback session seed is loaded before signing
   const token = sign({ uid: user.id, role: user.role, exp: Date.now() + 1000 * 60 * 60 * 24 * 7 });
   const jar = await cookies();
   jar.set(COOKIE, token, { httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 7 });
@@ -35,9 +36,9 @@ export async function clearSession() {
 /** Server-side session resolution — role is ALWAYS read from the DB, never trusted from the client. */
 export async function currentUser(): Promise<User | null> {
   const jar = await cookies();
+  const db = await getDB(); // load first: token verification may need the persisted session seed
   const payload = verifyToken(jar.get(COOKIE)?.value);
   if (!payload) return null;
-  const db = getDB();
   const user = db.users.find((u) => u.id === payload.uid);
   if (!user || user.status === "disabled" || user.status === "suspended") return null;
   return user;

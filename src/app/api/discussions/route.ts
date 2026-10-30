@@ -2,7 +2,7 @@ import { getDB, persist, uid, now } from "@/lib/db";
 import { jsonError, ApiError, requireRole, currentUser } from "@/lib/auth";
 
 export async function GET(req: Request) {
-  const db = getDB();
+  const db = await getDB();
   const courseId = new URL(req.url).searchParams.get("courseId");
   const list = db.discussions.filter(d => !courseId || d.courseId === courseId).map(d => ({
     ...d, authorName: db.users.find(u => u.id === d.authorId)?.fullName || "Member",
@@ -14,13 +14,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const user = await requireRole("student", "tutor", "administrator", "owner");
-    const db = getDB();
+    const db = await getDB();
     const { courseId, title, body } = await req.json();
     if (!courseId || !title?.trim() || !body?.trim()) throw new ApiError(400, "Course, title and message are required.");
     if (user.role === "student" && !db.enrollments.some(e => e.courseId === courseId && e.studentId === user.id))
       throw new ApiError(403, "Enrol in this course to join its discussion.");
     const d = { id: uid("d_"), courseId, authorId: user.id, title: title.trim(), body: body.trim(), createdAt: now() };
-    db.discussions.unshift(d); persist();
+    db.discussions.unshift(d); await persist();
     return Response.json({ ok: true, discussion: d });
   } catch (e) { return jsonError(e); }
 }
@@ -29,7 +29,7 @@ export async function DELETE(req: Request) {
     const user = await requireRole("administrator", "owner", "tutor");
     const id = new URL(req.url).searchParams.get("id");
     void (await currentUser());
-    const db = getDB();
+    const db = await getDB();
     const d = db.discussions.find(x => x.id === id);
     if (!d) throw new ApiError(404, "Discussion not found.");
     if (user.role === "tutor") {
@@ -38,7 +38,7 @@ export async function DELETE(req: Request) {
     }
     db.discussions = db.discussions.filter(x => x.id !== id);
     db.replies = db.replies.filter(x => x.discussionId !== id);
-    persist();
+    await persist();
     return Response.json({ ok: true });
   } catch (e) { return jsonError(e); }
 }
