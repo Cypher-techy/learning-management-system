@@ -4,7 +4,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const user = await requireRole("student", "tutor", "administrator", "owner");
-    const db = getDB();
+    const db = await getDB();
     const d = db.discussions.find(x => x.id === id);
     if (!d) throw new ApiError(404, "Discussion not found.");
     const { body } = await req.json();
@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const r = { id: uid("rp_"), discussionId: id, authorId: user.id, body: body.trim(), createdAt: now() };
     db.replies.push(r);
     if (d.authorId !== user.id) notify(d.authorId, "New reply to your discussion", `${user.fullName} replied to "${d.title}".`, "/dashboard/student/community");
-    persist();
+    await persist();
     return Response.json({ ok: true, reply: r });
   } catch (e) { return jsonError(e); }
 }

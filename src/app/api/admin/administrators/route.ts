@@ -4,7 +4,7 @@ import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     const actor = await requireRole("owner");
-    const db = getDB();
+    const db = await getDB();
     const { fullName, email, phone, temporaryPassword } = await req.json();
     if (!fullName || !email) throw new ApiError(400, "Name and email are required.");
     if (db.users.some(u => u.email.toLowerCase() === email.toLowerCase())) throw new ApiError(409, "An account with this email already exists.");
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     };
     db.users.push(user);
     audit(actor.id, "administrator.invited", user.id);
-    persist();
+    await persist();
     return Response.json({ ok: true, administrator: { id: user.id, fullName: user.fullName, email: user.email, status: user.status } });
   } catch (e) { return jsonError(e); }
 }

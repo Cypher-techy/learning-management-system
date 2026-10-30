@@ -6,7 +6,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params;
     const actor = await requireRole("administrator", "owner");
     if (actor.role === "administrator") requireVerified(actor);
-    const db = getDB();
+    const db = await getDB();
     const wd = db.withdrawals.find(w => w.id === id);
     if (!wd) throw new ApiError(404, "Withdrawal not found.");
     const { action, payoutRef, note } = await req.json();
@@ -30,7 +30,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       audit(actor.id, "withdrawal.paid", wd.id, payoutRef);
       notify(wd.tutorId, "Payout sent", `KSh ${wd.amount.toLocaleString()} sent. Reference: ${payoutRef}.`, "/dashboard/tutor/earnings");
     } else throw new ApiError(400, "Unknown action.");
-    persist();
+    await persist();
     return Response.json({ ok: true, withdrawal: wd });
   } catch (e) { return jsonError(e); }
 }

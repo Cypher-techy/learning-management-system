@@ -8,7 +8,7 @@ import crypto from "crypto";
 export async function POST(req: Request) {
   try {
     const { email, setupSecret, fullName, password } = await req.json();
-    const db = getDB();
+    const db = await getDB();
     if (db.meta.ownerInitialised || db.meta.setupSecretUsed) throw new ApiError(403, "Initialisation has already been completed.");
     const expectedEmail = process.env.OWNER_EMAIL;
     const expectedSecret = process.env.OWNER_SETUP_SECRET;
@@ -27,12 +27,12 @@ export async function POST(req: Request) {
     db.users.push(user);
     db.meta.ownerInitialised = true; db.meta.setupSecretUsed = true;
     db.auditLogs.unshift({ id: uid("al_"), actorId: user.id, action: "platform.bootstrap", target: user.id, createdAt: now() });
-    persist();
+    await persist();
     await setSession(user as any);
     return Response.json({ ok: true });
   } catch (e) { return jsonError(e); }
 }
 export async function GET() {
-  const db = getDB();
+  const db = await getDB();
   return Response.json({ initialised: db.meta.ownerInitialised, configured: !!(process.env.OWNER_EMAIL && process.env.OWNER_SETUP_SECRET) });
 }

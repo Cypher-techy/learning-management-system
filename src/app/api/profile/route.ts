@@ -3,7 +3,7 @@ import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function PATCH(req: Request) {
   try {
     const user = await requireRole("student", "tutor", "administrator", "owner");
-    const db = getDB();
+    const db = await getDB();
     const me = db.users.find(u => u.id === user.id)!;
     const b = await req.json();
     if (b.newPassword) {
@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
     for (const k of ["fullName", "phone", "bio", "title", "payoutMethod", "payoutAccount"] as const)
       if (b[k] !== undefined) (me as any)[k] = b[k];
     if (b.notificationPrefs) me.notificationPrefs = { ...me.notificationPrefs, ...b.notificationPrefs };
-    persist();
+    await persist();
     return Response.json({ ok: true, user: publicUser(me) });
   } catch (e) { return jsonError(e); }
 }

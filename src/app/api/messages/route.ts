@@ -3,7 +3,7 @@ import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function GET() {
   try {
     const user = await requireRole("student", "tutor", "administrator", "owner");
-    const db = getDB();
+    const db = await getDB();
     const mine = db.messages.filter(m => m.fromId === user.id || m.toId === user.id)
       .map(m => ({ ...m, fromName: db.users.find(u => u.id === m.fromId)?.fullName, toName: db.users.find(u => u.id === m.toId)?.fullName }));
     const partners = db.users.filter(u => u.id !== user.id && u.role !== "owner" &&
@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const user = await requireRole("student", "tutor", "administrator", "owner");
-    const db = getDB();
+    const db = await getDB();
     const { toId, body } = await req.json();
     if (!toId || !body?.trim()) throw new ApiError(400, "Choose a recipient and write a message.");
     const to = db.users.find(u => u.id === toId);
@@ -25,16 +25,16 @@ export async function POST(req: Request) {
     const m = { id: uid("m_"), fromId: user.id, toId, body: body.trim(), createdAt: now(), read: false };
     db.messages.push(m);
     notify(toId, "New message", `${user.fullName}: ${body.slice(0, 90)}`, user.role === "tutor" ? "/dashboard/student/messages" : "/dashboard/tutor/messages");
-    persist();
+    await persist();
     return Response.json({ ok: true, message: m });
   } catch (e) { return jsonError(e); }
 }
 export async function PATCH() {
   try {
     const user = await requireRole("student", "tutor", "administrator", "owner");
-    const db = getDB();
+    const db = await getDB();
     db.messages.forEach(m => { if (m.toId === user.id) m.read = true; });
-    persist();
+    await persist();
     return Response.json({ ok: true });
   } catch (e) { return jsonError(e); }
 }

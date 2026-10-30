@@ -4,7 +4,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const user = await requireRole("student");
-    const db = getDB();
+    const db = await getDB();
     const quiz = db.quizzes.find(q => q.id === id);
     if (!quiz) throw new ApiError(404, "Quiz not found.");
     const course = db.courses.find(c => c.id === quiz.courseId)!;
@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const attempt = { id: uid("qa_"), quizId: id, courseId: quiz.courseId, studentId: user.id, answers: answers || {}, score, total, passed: pct >= quiz.passMark, submittedAt: now(), manualPending };
     db.quizAttempts.push(attempt);
     notify(user.id, "Quiz result ready", `"${quiz.title}": ${score}/${total} (${Math.round(pct)}%) — ${attempt.passed ? "Passed" : "Keep practising"}.`, "/dashboard/student/quizzes");
-    persist();
+    await persist();
     return Response.json({ ok: true, attempt, feedback, attemptsLeft: quiz.maxAttempts - prior - 1 });
   } catch (e) { return jsonError(e); }
 }

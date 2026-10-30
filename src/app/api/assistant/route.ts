@@ -9,7 +9,7 @@ import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     const user = await requireRole("student");
-    const db = getDB();
+    const db = await getDB();
     const { courseId, question, mode } = await req.json();
     const course = db.courses.find(c => c.id === courseId && c.status === "published");
     if (!course) throw new ApiError(404, "Course not found.");

@@ -6,7 +6,7 @@ A complete, modern Learning Management System for Kenya and beyond: free & premi
 
 - **Next.js 15 (App Router) + TypeScript + Tailwind CSS**
 - **GSAP ScrollTrigger + Lenis** cinematic scrolling on public pages; **Framer Motion** UI transitions; **Lucide** icons
-- **Data layer:** built-in persistent store (`src/lib/db.ts`, JSON file under `data/`) so the platform runs anywhere immediately; production **Supabase Postgres** schema + RLS policies ship in `supabase/migrations/`
+- **Data layer:** `src/lib/db.ts` stores application state in **Supabase Postgres** when `SUPABASE_DATABASE_URL` is set (use the transaction-pooler string, port 6543; the state table is created automatically), and falls back to a local JSON file under `data/` for development — or the OS temp directory on read-only serverless filesystems. The normalized production **Supabase Postgres** schema + RLS policies also ship in `supabase/migrations/`
 - **M-Pesa Daraja** STK Push + idempotent callback (`src/lib/mpesa.ts`)
 
 ## Run locally
@@ -50,8 +50,9 @@ Choose the matching account type on the sign-in screen (quick-fill buttons inclu
 See `.env.example`. Highlights:
 
 - `MPESA_*` — required for live/sandbox STK Push. **Without credentials the checkout returns an explicit "not configured" error; payments are never simulated.**
-- `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — production database/auth/storage. Apply `supabase/migrations/0001_edvora_init.sql`, create the storage buckets noted at the end of the file, and point the data layer at Supabase.
-- `RESEND_API_KEY` — email delivery for verification codes (locally, codes are shown on-screen in development only).
+- `SUPABASE_DATABASE_URL` — **required on Vercel** for durable accounts/data. Use Supabase's *transaction pooler* connection string (port `6543`), not the direct/session string. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` cover Supabase API/storage use; the normalized schema remains in `supabase/migrations/0001_edvora_init.sql`.
+- `RESEND_API_KEY` + `EMAIL_FROM` — required in production so registration verification codes are actually emailed. For temporary launch testing only, `ALLOW_REGISTRATION_CODE_DISPLAY=true` shows the code on the registration page; remove it before real learners register.
+- `SESSION_SECRET` — set a long random value in production so sign-in sessions are stable across serverless instances.
 - `OPENAI_API_KEY` — optional; without it the study assistant falls back to on-platform retrieval over authorised lessons.
 - Additional server-only bootstrap variables are documented in `.env.example`; initialisation is one-time and self-invalidating.
 
@@ -66,10 +67,10 @@ npm run verify    # §28 acceptance checks: authz, premium gating, certificates,
 ## Deployment (Vercel)
 
 1. Import the repo; framework preset: Next.js.
-2. Add all environment variables from `.env.example` (production scope).
-3. Set `MPESA_CALLBACK_URL` to `https://<domain>/api/payments/mpesa/callback` and register it with Safaricom.
-4. Run the Supabase migration; configure Auth redirect URLs for your domain.
-5. Deploy, then run `BASE=https://<domain> npm run verify`.
+2. Add all environment variables from `.env.example` (production scope). In particular, set `SUPABASE_DATABASE_URL` to Supabase's **transaction pooler** string (port `6543`) and set `SESSION_SECRET`. The app creates its state table automatically on first request; the SQL in `supabase/migrations/` remains the normalized schema for a later full relational cutover.
+3. Configure `RESEND_API_KEY`/`EMAIL_FROM` for verification emails (or temporarily use `ALLOW_REGISTRATION_CODE_DISPLAY=true` while testing).
+4. Set `MPESA_CALLBACK_URL` to `https://<domain>/api/payments/mpesa/callback` and register it with Safaricom.
+5. Redeploy after changing environment variables, then run `BASE=https://<domain> npm run verify` and test a fresh student registration end-to-end.
 
 ## Project layout
 

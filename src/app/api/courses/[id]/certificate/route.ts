@@ -4,7 +4,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const user = await requireRole("student");
-    const db = getDB();
+    const db = await getDB();
     const course = db.courses.find(c => c.id === id);
     if (!course) throw new ApiError(404, "Course not found.");
     const enr = db.enrollments.find(e => e.courseId === id && e.studentId === user.id);
@@ -24,7 +24,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       db.certificates.push(cert);
       notify(user.id, "Certificate issued", `Your certificate for "${course.title}" is ready.`, "/dashboard/student/certificates");
     }
-    persist();
+    await persist();
     return Response.json({ ok: true, certificate: cert });
   } catch (e) { return jsonError(e); }
 }

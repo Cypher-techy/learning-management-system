@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const user = await requireRole("tutor");
     requireVerified(user);
-    const db = getDB();
+    const db = await getDB();
     const { amount, idempotencyKey } = await req.json();
     if (idempotencyKey && db.withdrawals.some(w => w.idempotencyKey === idempotencyKey))
       return Response.json({ ok: true, duplicate: true });
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     db.withdrawals.unshift(wd);
     db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
       notify(a.id, "Withdrawal request", `${user.fullName} requested KSh ${amt.toLocaleString()} via ${wd.method}.`, "/dashboard/admin/finance"));
-    persist();
+    await persist();
     return Response.json({ ok: true, withdrawal: wd });
   } catch (e) { return jsonError(e); }
 }

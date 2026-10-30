@@ -5,7 +5,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params;
     const user = await requireRole("tutor", "administrator", "owner");
     if (user.role === "tutor") requireVerified(user);
-    const db = getDB();
+    const db = await getDB();
     const sub = db.submissions.find(s => s.id === id);
     if (!sub) throw new ApiError(404, "Submission not found.");
     const course = db.courses.find(c => c.id === sub.courseId)!;
@@ -15,7 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (typeof grade !== "number" || grade < 0 || grade > (assignment?.maxScore || 100)) throw new ApiError(400, "Enter a valid grade.");
     sub.grade = grade; sub.feedback = feedback || ""; sub.status = "graded";
     notify(sub.studentId, "Assignment graded", `"${assignment?.title}": ${grade}/${assignment?.maxScore || 100}.`, "/dashboard/student/assignments");
-    persist();
+    await persist();
     return Response.json({ ok: true, submission: sub });
   } catch (e) { return jsonError(e); }
 }

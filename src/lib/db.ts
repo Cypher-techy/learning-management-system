@@ -1,6 +1,8 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import crypto from "crypto";
+import { Pool } from "pg";
 import { TUTORIAL_COURSES, TUTORIAL_QUIZZES, TUTORIAL_ASSIGNMENTS } from "./tutorials";
 
 /* ---------------- Types ---------------- */
@@ -91,10 +93,125 @@ export interface DB {
   meta: { ownerInitialised: boolean; setupSecretUsed: boolean; sessionSeed: string; seededAt: string; contentVersion?: number };
 }
 
-/* ---------------- Storage ---------------- */
-const DATA_DIR = path.join(process.cwd(), "data");
-const FILE = path.join(DATA_DIR, "edvora.json");
+/* ---------------- Storage ----------------
+ * Production on Vercel cannot write to the project directory: its
+ * filesystem is read-only outside the OS temp directory. Writing to
+ * ./data/edvora.json therefore throws EACCES/EROFS in production and
+ * every mutating API route returns a generic 500.
+ *
+ * Storage is now resolved in this order:
+ *   1. Supabase/Postgres when SUPABASE_DATABASE_URL (or DATABASE_URL)
+ *      is set — use Supabase's *transaction pooler* connection string
+ *      (port 6543) for this serverless app. The full application state
+ *      is kept in one JSONB row (`edvora_private.edvora_app_state`, created
+ *      automatically) so accounts survive cold starts and are shared
+ *      across function instances.
+ *   2. A writable JSON file for local development (./data/edvora.json),
+ *      falling back to the OS temp directory when the project directory
+ *      is not writable (e.g. Vercel without a database URL).
+ *   3. In-memory only, as a last resort, so a storage problem degrades
+ *      gracefully instead of crashing requests.
+ * `persist()` never throws.
+ */
+const DATABASE_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || "";
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+const PROJECT_DATA_DIR = path.join(process.cwd(), "data");
+const FALLBACK_DATA_DIR = path.join(os.tmpdir(), "edvora-data");
+let activeDataDir = process.env.EDVORA_DATA_DIR || (IS_SERVERLESS ? FALLBACK_DATA_DIR : PROJECT_DATA_DIR);
+const fileFor = (dir: string) => path.join(dir, "edvora.json");
 let cache: DB | null = null;
+let loading: Promise<DB> | null = null;
+let cacheLoadedAt = 0;
+let storageMode: "postgres" | "file" | "memory" = DATABASE_URL ? "postgres" : "file";
+let pgPool: Pool | null = null;
+let pgTableReady: Promise<void> | null = null;
+const POSTGRES_CACHE_TTL_MS = 2000;
+const EPHEMERAL_SECRET = crypto.randomBytes(32).toString("hex");
+
+function candidateDirs(): string[] {
+  return [...new Set([activeDataDir, FALLBACK_DATA_DIR, PROJECT_DATA_DIR])];
+}
+function loadFromFile(): DB | null {
+  for (const dir of candidateDirs()) {
+    const file = fileFor(dir);
+    try {
+      if (fs.existsSync(file)) {
+        const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as DB;
+        activeDataDir = dir;
+        return parsed;
+      }
+    } catch (e) {
+      console.error(`EDVORA: could not read data file ${file}; trying next location.`, e);
+    }
+  }
+  return null;
+}
+function saveToFile(db: DB): boolean {
+  let lastError: unknown = null;
+  for (const dir of candidateDirs()) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(fileFor(dir), JSON.stringify(db, null, 1));
+      activeDataDir = dir;
+      if (storageMode !== "postgres") storageMode = "file";
+      return true;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  storageMode = "memory";
+  console.error("EDVORA: no writable data directory available; continuing in memory only.", lastError);
+  return false;
+}
+function getPool(): Pool {
+  if (!pgPool) {
+    const needsSsl = DATABASE_URL.includes("supabase.co") || DATABASE_URL.includes("sslmode=require");
+    pgPool = new Pool({
+      connectionString: DATABASE_URL,
+      ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+      max: 1,
+      idleTimeoutMillis: 10000,
+    });
+    pgPool.on("error", (e) => console.error("EDVORA: idle Postgres client error.", e));
+  }
+  return pgPool;
+}
+async function loadFromPostgres(): Promise<DB> {
+  const pool = getPool();
+  if (!pgTableReady) {
+    pgTableReady = (async () => {
+      // Private schema on purpose: the state row contains password
+      // hashes and must never be reachable through Supabase's public
+      // Data API. RLS is enabled as a second line of defence; the
+      // direct pooler connection (table owner) is unaffected.
+      await pool.query("CREATE SCHEMA IF NOT EXISTS edvora_private");
+      await pool.query(`CREATE TABLE IF NOT EXISTS edvora_private.edvora_app_state (
+        id smallint PRIMARY KEY,
+        data jsonb NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )`);
+      await pool.query("ALTER TABLE edvora_private.edvora_app_state ENABLE ROW LEVEL SECURITY");
+    })();
+  }
+  await pgTableReady;
+  const result = await pool.query("SELECT data FROM edvora_private.edvora_app_state WHERE id = 1");
+  const row = result.rows[0] as { data: DB | string } | undefined;
+  if (row?.data) return typeof row.data === "string" ? (JSON.parse(row.data) as DB) : row.data;
+  const seeded = seed();
+  await pool.query("INSERT INTO edvora_private.edvora_app_state (id, data) VALUES (1, $1) ON CONFLICT (id) DO NOTHING", [JSON.stringify(seeded)]);
+  // Another cold-starting instance may have won the seed race; prefer
+  // the row that is actually stored so every instance agrees.
+  const winner = await pool.query("SELECT data FROM edvora_private.edvora_app_state WHERE id = 1");
+  const winnerRow = winner.rows[0] as { data: DB | string } | undefined;
+  if (winnerRow?.data) return typeof winnerRow.data === "string" ? (JSON.parse(winnerRow.data) as DB) : winnerRow.data;
+  return seeded;
+}
+async function saveToPostgres(db: DB): Promise<void> {
+  await getPool().query(
+    "INSERT INTO edvora_private.edvora_app_state (id, data, updated_at) VALUES (1, $1, now()) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()",
+    [JSON.stringify(db)]
+  );
+}
 
 export const uid = (p = "") => p + crypto.randomBytes(6).toString("hex");
 export const now = () => new Date().toISOString();
@@ -110,21 +227,52 @@ export function verifyPassword(pw: string, stored: string) {
   return crypto.timingSafeEqual(Buffer.from(h, "hex"), test);
 }
 
-function save(db: DB) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(db, null, 1));
-}
-export function getDB(): DB {
-  if (cache) return cache;
-  if (fs.existsSync(FILE)) { cache = JSON.parse(fs.readFileSync(FILE, "utf8")) as DB; applyContentMigrations(cache); return cache; }
-  cache = seed();
-  save(cache);
-  return cache;
+export async function getDB(): Promise<DB> {
+  if (cache && (storageMode !== "postgres" || Date.now() - cacheLoadedAt < POSTGRES_CACHE_TTL_MS)) return cache;
+  if (loading) return loading;
+  loading = (async (): Promise<DB> => {
+    if (DATABASE_URL) {
+      try {
+        const loaded = await loadFromPostgres();
+        const migrated = applyContentMigrations(loaded);
+        cache = loaded;
+        storageMode = "postgres";
+        cacheLoadedAt = Date.now();
+        if (migrated) await persist();
+        return cache;
+      } catch (e) {
+        // Never take the whole app down because the database URL is
+        // wrong or unreachable: log loudly and fall back to file/temp
+        // storage so the deployment keeps working while it is fixed.
+        console.error("EDVORA: Postgres storage failed (check SUPABASE_DATABASE_URL — it should be the Supabase transaction pooler, port 6543). Falling back to file storage.", e);
+        storageMode = "file";
+        if (cache) return cache;
+      }
+    }
+    const existing = loadFromFile();
+    if (existing) {
+      const migrated = applyContentMigrations(existing);
+      cache = existing;
+      cacheLoadedAt = Date.now();
+      if (migrated) saveToFile(cache);
+      return cache;
+    }
+    cache = seed();
+    cacheLoadedAt = Date.now();
+    saveToFile(cache);
+    return cache;
+  })();
+  try {
+    return await loading;
+  } finally {
+    loading = null;
+  }
 }
 /** Idempotent content packs: merges new catalogue content into existing
- *  deployments without disturbing users, enrolments or finances. */
-function applyContentMigrations(db: DB) {
-  if ((db.meta.contentVersion ?? 1) >= 3) return;
+ *  deployments without disturbing users, enrolments or finances.
+ *  Returns true when the state changed and should be persisted. */
+function applyContentMigrations(db: DB): boolean {
+  if ((db.meta.contentVersion ?? 1) >= 3) return false;
   const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
     for (const item of items) {
       const i = list.findIndex((x) => x.id === item.id);
@@ -135,20 +283,39 @@ function applyContentMigrations(db: DB) {
   upsert(db.quizzes, TUTORIAL_QUIZZES);
   upsert(db.assignments, TUTORIAL_ASSIGNMENTS);
   db.meta.contentVersion = 3;
-  save(db);
+  return true;
 }
-export function persist() { if (cache) save(cache); }
+/** Persist the current state. Never throws: a storage failure is logged
+ *  and the request continues with in-memory state rather than returning
+ *  a generic 500 to the learner. */
+export async function persist(): Promise<void> {
+  if (!cache) return;
+  if (DATABASE_URL && storageMode === "postgres") {
+    try {
+      await saveToPostgres(cache);
+      cacheLoadedAt = Date.now();
+      return;
+    } catch (e) {
+      console.error("EDVORA: Postgres persist failed; falling back to file storage.", e);
+      storageMode = "file";
+    }
+  }
+  saveToFile(cache);
+  cacheLoadedAt = Date.now();
+}
 export function sessionSecret() {
-  const db = getDB();
-  return process.env.SESSION_SECRET || db.meta.sessionSeed;
+  // Routes always `await getDB()` before signing/verifying, so the
+  // cache (and its persisted fallback seed) is available here. On
+  // serverless, set SESSION_SECRET so sessions survive every instance.
+  return process.env.SESSION_SECRET || cache?.meta.sessionSeed || EPHEMERAL_SECRET;
 }
 export function audit(actorId: string, action: string, target: string, reason?: string) {
-  const db = getDB();
-  db.auditLogs.unshift({ id: uid("al_"), actorId, action, target, reason, createdAt: now() });
+  if (!cache) return;
+  cache.auditLogs.unshift({ id: uid("al_"), actorId, action, target, reason, createdAt: now() });
 }
 export function notify(userId: string, title: string, body: string, href?: string) {
-  const db = getDB();
-  db.notifications.unshift({ id: uid("n_"), userId, title, body, createdAt: now(), read: false, href });
+  if (!cache) return;
+  cache.notifications.unshift({ id: uid("n_"), userId, title, body, createdAt: now(), read: false, href });
 }
 export function publicUser(u: User) {
   const { passwordHash, ...rest } = u; void passwordHash; return rest;

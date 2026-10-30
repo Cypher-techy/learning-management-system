@@ -4,10 +4,40 @@ import crypto from "crypto";
 
 const PUBLIC_ROLES: Role[] = ["student", "tutor", "administrator"];
 
+/** Deliver the verification code through Resend when configured.
+ *  Returns false when no mail provider is set; throws a clear,
+ *  learner-facing error when the provider rejects the send. */
+async function sendVerificationEmail(email: string, code: string): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return false;
+  let res: Response;
+  try {
+    res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM || "EDVORA <edvoraplatform@gmail.com>",
+        to: [email],
+        subject: "Your EDVORA verification code",
+        text: `Your EDVORA verification code is ${code}. It expires in 15 minutes. If you did not create an EDVORA account, you can ignore this email.`,
+        html: `<p>Your EDVORA verification code is <strong>${code}</strong>.</p><p>It expires in 15 minutes. If you did not create an EDVORA account, you can ignore this email.</p>`,
+      }),
+    });
+  } catch (e) {
+    console.error("EDVORA: verification email request failed.", e);
+    throw new ApiError(502, "We could not send your verification email. Please try again shortly.");
+  }
+  if (!res.ok) {
+    console.error("EDVORA: verification email provider rejected the send.", res.status, await res.text().catch(() => ""));
+    throw new ApiError(502, "We could not send your verification email. Please try again shortly.");
+  }
+  return true;
+}
+
 export async function POST(req: Request) {
   try {
     const b = await req.json();
-    const db = getDB();
+    const db = await getDB();
     const meta = db.meta as unknown as Record<string, any>;
     meta.pending = meta.pending || {};
 
@@ -35,7 +65,7 @@ export async function POST(req: Request) {
       if (user.role === "tutor") db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
         db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "New tutor application", body: `${user.fullName} applied to teach.`, createdAt: now(), read: false, href: "/dashboard/admin/tutors" }));
       audit(user.id, "account.registered", user.id, user.role);
-      persist();
+      await persist();
       await setSession(user as any);
       return Response.json({ ok: true, role: user.role, status: user.status });
     }
@@ -62,15 +92,24 @@ export async function POST(req: Request) {
         bio: b.bio || undefined, proposedCourses: b.proposedCourses || undefined,
       },
     };
-    persist();
-    // In production this code is delivered by the configured email/SMS provider
-    // (Supabase Auth confirmations). It is only echoed back outside production
-    // when no mail provider is configured, so local evaluation can proceed.
-    const mailConfigured = !!process.env.RESEND_API_KEY || !!process.env.SUPABASE_URL;
+    await persist();
+    const emailSent = await sendVerificationEmail(b.email.toLowerCase(), code);
+    // The code is only ever echoed to the browser outside production, or
+    // when the operator explicitly enables ALLOW_REGISTRATION_CODE_DISPLAY
+    // for launch testing before an email provider is connected. Never
+    // tell a learner "we sent a code" when nothing was actually sent.
+    const showCode = !emailSent && (process.env.NODE_ENV !== "production" || process.env.ALLOW_REGISTRATION_CODE_DISPLAY === "true");
+    if (!emailSent && !showCode) {
+      delete meta.pending[b.email.toLowerCase()];
+      await persist();
+      throw new ApiError(503, "Registration email is not configured yet. Please contact EDVORA support at edvoraplatform@gmail.com or +254 110 966 455.");
+    }
     return Response.json({
       needsVerification: true,
-      message: "We sent a 6-digit verification code to your email.",
-      devCode: !mailConfigured && process.env.NODE_ENV !== "production" ? code : undefined,
+      message: emailSent
+        ? "We sent a 6-digit verification code to your email."
+        : "Use this 6-digit verification code to finish creating your account.",
+      devCode: showCode ? code : undefined,
     });
   } catch (e) { return jsonError(e); }
 }
