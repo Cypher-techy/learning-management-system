@@ -51,6 +51,11 @@ export default function AuthPage() {
     try {
       if (step === 1) {
         const r = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ ...form, role }) });
+        if (r.ok) {
+          // Student accounts are created and auto-verified by the first request.
+          redirect(r);
+          return;
+        }
         setStep(2);
         setInfo(r.message + (r.devCode ? ` Your code is ${r.devCode}.` : ""));
         if (r.devCode) setCode(r.devCode);
@@ -79,7 +84,7 @@ export default function AuthPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="mx-auto my-auto w-full max-w-md py-10">
           <span className="chip grad-bg text-white">{meta.title.toUpperCase()} ACCOUNT</span>
           <h1 className="mt-4 text-3xl font-extrabold">{mode === "login" ? "Welcome back" : role === "tutor" ? "Apply as a tutor" : role === "administrator" ? "Request administrator access" : "Create your account"}</h1>
-          <p className="mt-2 text-sm text-slate-500">{mode === "login" ? meta.subtitle : role === "student" ? "Verified instantly after contact confirmation — start learning free today." : role === "tutor" ? "Applications are reviewed by our administration team before publishing is enabled." : "Administrator access is controlled and requires final approval."}</p>
+          <p className="mt-2 text-sm text-slate-500">{mode === "login" ? meta.subtitle : role === "student" ? "Verified automatically when you register — no email code or approval wait." : role === "tutor" ? "Applications are reviewed by our administration team before publishing is enabled." : "Administrator access is controlled and requires final approval."}</p>
 
           <div className="mt-7 grid grid-cols-2 rounded-full bg-slate-200/70 p-1" role="tablist">
             {(["login", "register"] as const).map(m => <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(""); setInfo(""); setStep(1); }} className={`rounded-full py-2.5 text-sm font-bold transition ${mode === m ? "bg-white shadow-soft text-navy-900" : "text-slate-500"}`}>{m === "login" ? "Sign In" : "Register"}</button>)}
@@ -130,7 +135,7 @@ export default function AuthPage() {
                 <div><label className="label">Password</label><input required type="password" className="input" value={form.password} onChange={set("password")} placeholder="Min. 8 characters" /></div>
                 <div><label className="label">Confirm password</label><input required type="password" className="input" value={form.confirmPassword} onChange={set("confirmPassword")} placeholder="Repeat password" /></div>
               </div>
-              <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Please wait…" : role === "tutor" ? "Submit Application" : "Register & Verify Contact"}</button>
+              <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Please wait…" : role === "student" ? "Create Verified Student Account" : role === "tutor" ? "Submit Application" : "Register & Verify Contact"}</button>
               <p className="text-center text-xs text-slate-400">By registering you agree to Elimu Bora's <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
             </form>
           )}

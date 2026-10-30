@@ -34,8 +34,8 @@ Choose the matching account type on the sign-in screen (quick-fill buttons inclu
 
 ## What works end-to-end
 
-- Role selection → role-specific auth with contact-verification codes; **database role is always authoritative** (portal selection can never escalate access)
-- Student auto-verification; tutor application → admin approval; controlled administrator appointment
+- Role selection → role-specific auth; **database role is always authoritative** (portal selection can never escalate access)
+- Student accounts are created and auto-verified in one step at registration (no email code); tutor application → admin approval; controlled administrator appointment
 - **Free tutorial track** in W3Schools-style format — Windows Basics, Microsoft Word, Excel & PowerPoint, and HTML/Web Foundations — with structured notes, step-by-step instructions, shortcut tables, exercises with model answers, and editable *Try It* code runners
 - Marketplace with search/filters; course pages with locked premium previews (protected media is never sent to unauthorised clients)
 - Classroom: video/reading lessons, resume-where-you-left-off, progress, quizzes (MCQ/true-false/short-answer, attempt limits, auto-grading), assignments + grading + feedback, discussions, reporting, study assistant constrained to authorised material
@@ -51,7 +51,7 @@ See `.env.example`. Highlights:
 
 - `MPESA_*` — required for live/sandbox STK Push. **Without credentials the checkout returns an explicit "not configured" error; payments are never simulated.**
 - `SUPABASE_DATABASE_URL` — **required on Vercel** for durable accounts/data. Use Supabase's *transaction pooler* connection string (port `6543`), not the direct/session string. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` cover Supabase API/storage use; the normalized schema remains in `supabase/migrations/0001_edvora_init.sql`.
-- `RESEND_API_KEY` + `EMAIL_FROM` — required in production so registration verification codes are actually emailed. For temporary launch testing only, `ALLOW_REGISTRATION_CODE_DISPLAY=true` shows the code on the registration page; remove it before real learners register.
+- `RESEND_API_KEY` + `EMAIL_FROM` — student registration is auto-verified without email, so Resend is not required for students. It is required in production for tutor/administrator contact-verification codes. For temporary launch testing only, `ALLOW_REGISTRATION_CODE_DISPLAY=true` shows those applicants' codes on the registration page; remove it afterwards.
 - `SESSION_SECRET` — set a long random value in production so sign-in sessions are stable across serverless instances.
 - `OPENAI_API_KEY` — optional; without it the study assistant falls back to on-platform retrieval over authorised lessons.
 - Additional server-only bootstrap variables are documented in `.env.example`; initialisation is one-time and self-invalidating.
@@ -68,7 +68,7 @@ npm run verify    # §28 acceptance checks: authz, premium gating, certificates,
 
 1. Import the repo; framework preset: Next.js.
 2. Add all environment variables from `.env.example` (production scope). In particular, set `SUPABASE_DATABASE_URL` to Supabase's **transaction pooler** string (port `6543`) and set `SESSION_SECRET`. The app creates its state table automatically on first request; the SQL in `supabase/migrations/` remains the normalized schema for a later full relational cutover.
-3. Configure `RESEND_API_KEY`/`EMAIL_FROM` for verification emails (or temporarily use `ALLOW_REGISTRATION_CODE_DISPLAY=true` while testing).
+3. Students register and are auto-verified without an email provider. Configure `RESEND_API_KEY`/`EMAIL_FROM` for tutor/administrator verification emails (or temporarily use `ALLOW_REGISTRATION_CODE_DISPLAY=true` while testing those flows).
 4. Set `MPESA_CALLBACK_URL` to `https://<domain>/api/payments/mpesa/callback` and register it with Safaricom.
 5. Redeploy after changing environment variables, then run `BASE=https://<domain> npm run verify` and test a fresh student registration end-to-end.
 
