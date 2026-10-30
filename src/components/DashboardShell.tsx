@@ -40,7 +40,7 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
       <div className="flex flex-col items-center gap-4"><Emblem size={56} /><div className="h-1 w-40 overflow-hidden rounded-full bg-white/10"><div className="splash-bar h-full grad-bg" /></div><p className="text-xs text-slate-400">Preparing your workspace…</p></div>
     </div>
   );
-  const pendingBlocked = (user.role === "teacher" || user.role === "administrator") && user.status !== "verified";
+  const pendingBlocked = (user.role === "tutor" || user.role === "administrator") && user.status !== "verified";
 
   return (
     <div className="min-h-screen bg-[#f7f8fc] lg:flex">
@@ -86,7 +86,7 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
               <span className="chip bg-amber-100 text-amber-700">APPLICATION {user.status.toUpperCase()}</span>
               <h1 className="mt-4 text-2xl font-extrabold">Your application is under review</h1>
               <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                {user.role === "teacher"
+                {user.role === "tutor"
                   ? "Our administration team is reviewing your credentials. You will be notified as soon as a decision is made. Course creation, publishing and earnings unlock immediately after approval."
                   : "Administrator access requires final approval before it becomes active. You will be notified once your access is approved."}
               </p>

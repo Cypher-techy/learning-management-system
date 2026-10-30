@@ -3,7 +3,7 @@ import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const user = await requireRole("student", "teacher", "administrator", "owner");
+    const user = await requireRole("student", "tutor", "administrator", "owner");
     const db = getDB();
     const d = db.discussions.find(x => x.id === id);
     if (!d) throw new ApiError(404, "Discussion not found.");

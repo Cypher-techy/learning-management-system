@@ -2,7 +2,7 @@ import { getDB, persist, uid, now, notify } from "@/lib/db";
 import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
-    const u = await requireRole("student", "teacher", "administrator", "owner");
+    const u = await requireRole("student", "tutor", "administrator", "owner");
     const db = getDB();
     const { targetType, targetId, reason } = await req.json();
     if (!reason?.trim()) throw new ApiError(400, "Tell us why you are reporting this.");

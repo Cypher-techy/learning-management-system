@@ -14,7 +14,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     let sub = db.submissions.find(s => s.assignmentId === id && s.studentId === user.id);
     if (sub) { sub.content = content || sub.content; sub.fileName = fileName; sub.submittedAt = now(); sub.status = "submitted"; sub.grade = undefined; sub.feedback = undefined; }
     else { sub = { id: uid("s_"), assignmentId: id, courseId: assignment.courseId, studentId: user.id, content: content || "", fileName, submittedAt: now(), status: "submitted" }; db.submissions.push(sub); }
-    notify(course.instructorId, "New assignment submission", `${user.fullName} submitted "${assignment.title}".`, "/dashboard/teacher/students");
+    notify(course.tutorId, "New assignment submission", `${user.fullName} submitted "${assignment.title}".`, "/dashboard/tutor/students");
     persist();
     return Response.json({ ok: true, submission: sub });
   } catch (e) { return jsonError(e); }

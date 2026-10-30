@@ -6,9 +6,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ code: s
   if (!cert) return Response.json({ valid: false, message: "No certificate with this reference exists." });
   const student = db.users.find(u => u.id === cert.studentId);
   const course = db.courses.find(c => c.id === cert.courseId);
-  const instructor = db.users.find(u => u.id === course?.instructorId);
+  const tutor = db.users.find(u => u.id === course?.tutorId);
   return Response.json({
     valid: !cert.revoked, revoked: !!cert.revoked, code: cert.code, issuedAt: cert.issuedAt,
-    studentName: student?.fullName, courseTitle: course?.title, instructorName: instructor?.fullName,
+    studentName: student?.fullName, courseTitle: course?.title, tutorName: tutor?.fullName,
   });
 }

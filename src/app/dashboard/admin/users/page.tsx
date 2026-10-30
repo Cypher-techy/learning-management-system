@@ -22,7 +22,7 @@ export default function AdminUsers() {
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <div className="mb-5 flex gap-2">
-        {[["all", "All Users"], ["student", "Students"], ["teacher", "Teachers"], ["administrator", "Administrators"]].map(([k, l]) => (
+        {[["all", "All Users"], ["student", "Students"], ["tutor", "Tutors"], ["administrator", "Administrators"]].map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)} className={`rounded-full px-4 py-2 text-sm font-semibold ${filter === k ? "grad-bg text-white" : "bg-white border border-slate-200"}`}>{l}</button>
         ))}
       </div>

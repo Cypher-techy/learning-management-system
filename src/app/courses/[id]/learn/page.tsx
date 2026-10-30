@@ -199,7 +199,7 @@ function LearnInner() {
                   {activeQuiz !== q.id && <button className="btn-dark" onClick={() => { setActiveQuiz(q.id); setQuizResult(null); setAnswers({}); }}>Start / Retake</button>}</div>
                 {quizResult?.quizId === q.id && (
                   <div className={`mt-4 rounded-xl p-4 text-sm ${quizResult.attempt.passed ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>
-                    <strong>Result: {quizResult.attempt.score}/{quizResult.attempt.total}</strong> — {quizResult.attempt.passed ? "Passed. Hongera!" : "Not yet at the pass mark."} {quizResult.attempt.manualPending ? "Short-answer responses await instructor review." : ""} Attempts left: {quizResult.attemptsLeft}
+                    <strong>Result: {quizResult.attempt.score}/{quizResult.attempt.total}</strong> — {quizResult.attempt.passed ? "Passed. Hongera!" : "Not yet at the pass mark."} {quizResult.attempt.manualPending ? "Short-answer responses await tutor review." : ""} Attempts left: {quizResult.attemptsLeft}
                     <ul className="mt-3 space-y-2">{quizResult.feedback.map((f: any, i: number) => <li key={i} className="rounded-lg bg-white/70 p-3">Q{i + 1}: {f.correct === null ? "Pending manual grading" : f.correct ? "Correct" : `Incorrect — answer: ${f.correctAnswer}`}<br /><span className="text-xs opacity-80">{f.explanation}</span></li>)}</ul>
                   </div>
                 )}

@@ -58,6 +58,6 @@ export function jsonError(e: unknown) {
   return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
 }
 export function requireVerified(user: User) {
-  if (user.role === "teacher" && user.status !== "verified") throw new ApiError(403, "Your teacher application is still pending verification.");
+  if (user.role === "tutor" && user.status !== "verified") throw new ApiError(403, "Your tutor application is still pending verification.");
   if (user.role === "administrator" && user.status !== "verified") throw new ApiError(403, "Your administrator access has not been approved yet.");
 }

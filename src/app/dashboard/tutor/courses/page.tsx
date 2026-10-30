@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useApi, api } from "@/lib/client";
 import { Loading, Empty, PageTitle, StatusChip } from "@/components/ui";
 
-export default function TeacherCourses() {
-  const { data, loading, reload } = useApi("/api/overview/teacher");
+export default function TutorCourses() {
+  const { data, loading, reload } = useApi("/api/overview/tutor");
   const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
   if (loading || !data) return <Loading />;
   async function act(id: string, action: string) {
@@ -15,10 +15,10 @@ export default function TeacherCourses() {
   }
   return (
     <div>
-      <PageTitle title="My Courses" sub="Drafts, moderation status and publishing controls. Courses go live after administrator review." right={<Link href="/dashboard/teacher/courses/new" className="btn-primary">+ New Course</Link>} />
+      <PageTitle title="My Courses" sub="Drafts, moderation status and publishing controls. Courses go live after administrator review." right={<Link href="/dashboard/tutor/courses/new" className="btn-primary">+ New Course</Link>} />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
-      {data.courses.length === 0 ? <Empty title="No courses yet" body="Build your first course with sections, lessons, quizzes and assignments." action={<Link href="/dashboard/teacher/courses/new" className="btn-primary">Create Course</Link>} /> : (
+      {data.courses.length === 0 ? <Empty title="No courses yet" body="Build your first course with sections, lessons, quizzes and assignments." action={<Link href="/dashboard/tutor/courses/new" className="btn-primary">Create Course</Link>} /> : (
         <div className="space-y-4">
           {data.courses.map((c: any) => (
             <div key={c.id} className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center">

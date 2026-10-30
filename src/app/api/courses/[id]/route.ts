@@ -8,7 +8,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const user = await currentUser();
   const course = db.courses.find(c => c.id === id || c.slug === id);
   if (!course) return Response.json({ error: "Course not found" }, { status: 404 });
-  const privileged = user && (user.role === "owner" || user.role === "administrator" || course.instructorId === user.id);
+  const privileged = user && (user.role === "owner" || user.role === "administrator" || course.tutorId === user.id);
   if (course.status !== "published" && !privileged) return Response.json({ error: "Course not found" }, { status: 404 });
   const enrollment = user ? db.enrollments.find(e => e.courseId === course.id && e.studentId === user.id) : null;
   return Response.json({
@@ -29,9 +29,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const course = db.courses.find(c => c.id === id);
     if (!course) throw new ApiError(404, "Course not found.");
     const b = await req.json();
-    // Teacher lifecycle transitions (own courses only)
-    if (user.role === "teacher" && course.instructorId === user.id) {
-      if (user.status !== "verified") throw new ApiError(403, "Unverified teachers cannot publish or submit courses.");
+    // Tutor lifecycle transitions (own courses only)
+    if (user.role === "tutor" && course.tutorId === user.id) {
+      if (user.status !== "verified") throw new ApiError(403, "Unverified tutors cannot publish or submit courses.");
       if (b.action === "submit" && ["draft", "rejected", "unpublished"].includes(course.status)) course.status = "in_review";
       else if (b.action === "unpublish" && course.status === "published") course.status = "unpublished";
       else if (b.action === "publish" && course.status === "approved") { course.status = "published"; course.publishedAt = now(); }
@@ -49,7 +49,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       else if (b.access) course.access = b.access;
       else throw new ApiError(400, "Unknown moderation action.");
       db.auditLogs.unshift({ id: "al_" + Date.now(), actorId: user.id, action: `course.${b.action || "access"}`, target: course.id, reason: b.note, createdAt: now() });
-      db.notifications.unshift({ id: "n_" + Date.now(), userId: course.instructorId, title: `Course update: ${course.title}`, body: course.moderationNote || `Your course status is now ${course.status}.`, createdAt: now(), read: false, href: "/dashboard/teacher/courses" });
+      db.notifications.unshift({ id: "n_" + Date.now(), userId: course.tutorId, title: `Course update: ${course.title}`, body: course.moderationNote || `Your course status is now ${course.status}.`, createdAt: now(), read: false, href: "/dashboard/tutor/courses" });
       persist();
       return Response.json({ ok: true, course: serializeCourse(db, course, user) });
     }

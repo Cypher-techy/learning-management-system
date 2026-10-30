@@ -14,21 +14,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       if (wd.status !== "pending") throw new ApiError(400, "Only pending withdrawals can be approved.");
       wd.status = "approved"; wd.decidedBy = actor.id; wd.note = note;
       audit(actor.id, "withdrawal.approved", wd.id, note);
-      notify(wd.teacherId, "Withdrawal approved", `Your withdrawal of KSh ${wd.amount.toLocaleString()} has been approved and is being processed.`, "/dashboard/teacher/earnings");
+      notify(wd.tutorId, "Withdrawal approved", `Your withdrawal of KSh ${wd.amount.toLocaleString()} has been approved and is being processed.`, "/dashboard/tutor/earnings");
     } else if (action === "reject") {
       if (wd.status !== "pending") throw new ApiError(400, "Only pending withdrawals can be rejected.");
       wd.status = "rejected"; wd.decidedBy = actor.id; wd.note = note;
       audit(actor.id, "withdrawal.rejected", wd.id, note);
-      notify(wd.teacherId, "Withdrawal rejected", note || "Your withdrawal request was rejected. Funds remain in your wallet.", "/dashboard/teacher/earnings");
+      notify(wd.tutorId, "Withdrawal rejected", note || "Your withdrawal request was rejected. Funds remain in your wallet.", "/dashboard/tutor/earnings");
     } else if (action === "paid") {
       if (wd.status !== "approved") throw new ApiError(400, "Approve the withdrawal before marking it paid.");
       if (!payoutRef?.trim()) throw new ApiError(400, "Record the M-Pesa/bank transaction reference before marking paid.");
-      const w = wallet(db, wd.teacherId);
+      const w = wallet(db, wd.tutorId);
       if (w.balance < wd.amount) throw new ApiError(400, "Insufficient wallet balance for this payout.");
       wd.status = "paid"; wd.payoutRef = payoutRef.trim(); wd.decidedBy = actor.id;
-      db.walletTxs.unshift({ id: uid("w_"), teacherId: wd.teacherId, type: "withdrawal", amount: -wd.amount, note: `${wd.method === "mpesa" ? "M-Pesa" : "Bank"} payout ${payoutRef}`, createdAt: now() });
+      db.walletTxs.unshift({ id: uid("w_"), tutorId: wd.tutorId, type: "withdrawal", amount: -wd.amount, note: `${wd.method === "mpesa" ? "M-Pesa" : "Bank"} payout ${payoutRef}`, createdAt: now() });
       audit(actor.id, "withdrawal.paid", wd.id, payoutRef);
-      notify(wd.teacherId, "Payout sent", `KSh ${wd.amount.toLocaleString()} sent. Reference: ${payoutRef}.`, "/dashboard/teacher/earnings");
+      notify(wd.tutorId, "Payout sent", `KSh ${wd.amount.toLocaleString()} sent. Reference: ${payoutRef}.`, "/dashboard/tutor/earnings");
     } else throw new ApiError(400, "Unknown action.");
     persist();
     return Response.json({ ok: true, withdrawal: wd });

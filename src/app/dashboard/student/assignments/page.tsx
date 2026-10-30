@@ -7,7 +7,7 @@ export default function Assignments() {
   if (loading) return <Loading />; if (error || !data) return <p className="text-rose-600">{error}</p>;
   return (
     <div>
-      <PageTitle title="Assignments" sub="Instructions, due dates, submissions, grades and teacher feedback." />
+      <PageTitle title="Assignments" sub="Instructions, due dates, submissions, grades and tutor feedback." />
       {data.assignments.length === 0 ? <Empty title="No assignments yet" body="Assignments from your enrolled courses will appear here." /> : (
         <div className="space-y-4">
           {data.assignments.map((a: any) => (

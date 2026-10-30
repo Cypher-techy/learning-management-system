@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 }
 export async function POST(req: Request) {
   try {
-    const user = await requireRole("student", "teacher", "administrator", "owner");
+    const user = await requireRole("student", "tutor", "administrator", "owner");
     const db = getDB();
     const { courseId, title, body } = await req.json();
     if (!courseId || !title?.trim() || !body?.trim()) throw new ApiError(400, "Course, title and message are required.");
@@ -26,15 +26,15 @@ export async function POST(req: Request) {
 }
 export async function DELETE(req: Request) {
   try {
-    const user = await requireRole("administrator", "owner", "teacher");
+    const user = await requireRole("administrator", "owner", "tutor");
     const id = new URL(req.url).searchParams.get("id");
     void (await currentUser());
     const db = getDB();
     const d = db.discussions.find(x => x.id === id);
     if (!d) throw new ApiError(404, "Discussion not found.");
-    if (user.role === "teacher") {
+    if (user.role === "tutor") {
       const c = db.courses.find(x => x.id === d.courseId);
-      if (!c || c.instructorId !== user.id) throw new ApiError(403, "You can only moderate discussions in your own courses.");
+      if (!c || c.tutorId !== user.id) throw new ApiError(403, "You can only moderate discussions in your own courses.");
     }
     db.discussions = db.discussions.filter(x => x.id !== id);
     db.replies = db.replies.filter(x => x.discussionId !== id);

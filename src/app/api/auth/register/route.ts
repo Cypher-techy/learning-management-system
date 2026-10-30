@@ -2,7 +2,7 @@ import { getDB, persist, uid, now, hashPassword, audit, type Role } from "@/lib/
 import { jsonError, ApiError, setSession } from "@/lib/auth";
 import crypto from "crypto";
 
-const PUBLIC_ROLES: Role[] = ["student", "teacher", "administrator"];
+const PUBLIC_ROLES: Role[] = ["student", "tutor", "administrator"];
 
 export async function POST(req: Request) {
   try {
@@ -32,8 +32,8 @@ export async function POST(req: Request) {
         db.verifications.push({ id: uid("v_"), userId: user.id, role: "student", from: "pending", to: "verified", decidedBy: "system", reason: "Automatic verification after contact confirmation.", createdAt: now() });
         db.notifications.unshift({ id: uid("n_"), userId: user.id, title: "Welcome to EDVORA", body: "Your account is verified. Start with any free course.", createdAt: now(), read: false });
       }
-      if (user.role === "teacher") db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
-        db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "New teacher application", body: `${user.fullName} applied to teach.`, createdAt: now(), read: false, href: "/dashboard/admin/teachers" }));
+      if (user.role === "tutor") db.users.filter(u => u.role === "administrator" && u.status === "verified").forEach(a =>
+        db.notifications.unshift({ id: uid("n_"), userId: a.id, title: "New tutor application", body: `${user.fullName} applied to teach.`, createdAt: now(), read: false, href: "/dashboard/admin/tutors" }));
       audit(user.id, "account.registered", user.id, user.role);
       persist();
       await setSession(user as any);
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     if (!b.password || b.password.length < 8) throw new ApiError(400, "Password must be at least 8 characters.");
     if (b.password !== b.confirmPassword) throw new ApiError(400, "Passwords do not match.");
     if (db.users.some(u => u.email.toLowerCase() === b.email.toLowerCase())) throw new ApiError(409, "An account with this email already exists. Please sign in.");
-    if (b.role === "teacher" && (!b.title || !b.expertise || !b.qualifications)) throw new ApiError(400, "Teacher applications require a professional title, area of expertise and qualifications.");
+    if (b.role === "tutor" && (!b.title || !b.expertise || !b.qualifications)) throw new ApiError(400, "Tutor applications require a professional title, area of expertise and qualifications.");
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const colors = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706", "#db2777"];

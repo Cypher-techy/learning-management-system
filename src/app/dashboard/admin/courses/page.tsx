@@ -9,7 +9,7 @@ export default function AdminCourses() {
   const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
   if (loading || !data) return <Loading />;
   async function act(c: any, action: string) {
-    const note = window.prompt(`Moderation note for "${c.title}" (${action}) — shared with the instructor:`, "") ?? null;
+    const note = window.prompt(`Moderation note for "${c.title}" (${action}) — shared with the tutor:`, "") ?? null;
     if (note === null) return;
     setMsg(""); setErr("");
     try { await api(`/api/courses/${c.id}`, { method: "PATCH", body: JSON.stringify({ action, note }) }); setMsg(`"${c.title}" — ${action} recorded.`); reload(); }
@@ -22,7 +22,7 @@ export default function AdminCourses() {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={c.image} alt="" className="h-24 w-full shrink-0 rounded-xl object-cover sm:w-40" />
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap gap-2"><StatusChip status={c.status} /><StatusChip status={c.access} /><span className="text-xs text-slate-400">{c.category} · by {c.instructorName}</span></div>
+        <div className="flex flex-wrap gap-2"><StatusChip status={c.status} /><StatusChip status={c.access} /><span className="text-xs text-slate-400">{c.category} · by {c.tutorName}</span></div>
         <h3 className="mt-2 font-extrabold">{c.title}</h3><p className="text-xs text-slate-500">{c.totalLessons} lessons · {c.enrolledCount} enrolments</p>
         {c.moderationNote && <p className="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600"><strong>Note:</strong> {c.moderationNote}</p>}
       </div>
@@ -36,7 +36,7 @@ export default function AdminCourses() {
   );
   return (
     <div>
-      <PageTitle title="Course Moderation" sub="Approve, reject and moderate instructor courses. Only approved, published courses appear in the marketplace." />
+      <PageTitle title="Course Moderation" sub="Approve, reject and moderate tutor courses. Only approved, published courses appear in the marketplace." />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <h2 className="mb-4 text-lg font-extrabold">Awaiting review ({inReview.length})</h2>

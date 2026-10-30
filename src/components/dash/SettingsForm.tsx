@@ -31,7 +31,7 @@ export default function SettingsForm() {
           <div><label className="label">Full name</label><input className="input" value={form.fullName || ""} onChange={e => setForm({ ...form, fullName: e.target.value })} /></div>
           <div><label className="label">Email</label><input className="input bg-slate-50" value={form.email || ""} disabled /></div>
           <div><label className="label">Phone</label><input className="input" value={form.phone || ""} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
-          {me.role === "teacher" && <>
+          {me.role === "tutor" && <>
             <div><label className="label">Professional title</label><input className="input" value={form.title || ""} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
             <div><label className="label">Bio</label><textarea className="input" rows={3} value={form.bio || ""} onChange={e => setForm({ ...form, bio: e.target.value })} /></div>
           </>}

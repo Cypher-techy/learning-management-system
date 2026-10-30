@@ -7,9 +7,9 @@ export async function PATCH(req: Request) {
     const db = getDB();
     const b = await req.json();
     // Revenue share is owner-only.
-    if (b.teacherPercent !== undefined && actor.role !== "owner")
+    if (b.tutorPercent !== undefined && actor.role !== "owner")
       throw new ApiError(403, "Only the platform owner can change the revenue-sharing percentage.");
-    const allowed = ["platformName", "tagline", "premiumPriceKES", "teacherPercent", "minWithdrawalKES", "certificateMinProgress", "certificateMinQuiz", "supportEmail", "supportPhone", "renewReminderDays"];
+    const allowed = ["platformName", "tagline", "premiumPriceKES", "tutorPercent", "minWithdrawalKES", "certificateMinProgress", "certificateMinQuiz", "supportEmail", "supportPhone", "renewReminderDays"];
     for (const k of allowed) if (b[k] !== undefined) (db.settings as any)[k] = b[k];
     if (b.premiumPriceKES !== undefined && db.plans[0]) db.plans[0].priceKES = b.premiumPriceKES;
     audit(actor.id, "settings.updated", "platform", JSON.stringify(Object.keys(b)));

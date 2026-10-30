@@ -30,7 +30,7 @@ export default function Certificates() {
                 <p className="mt-1 text-2xl font-extrabold">{data.user.fullName}</p>
                 <p className="mt-2 text-sm text-slate-500">has successfully completed</p>
                 <p className="mt-1 text-lg font-bold text-brand-600">{cert.courseTitle}</p>
-                <p className="mt-3 text-xs text-slate-400">Instructor: {cert.instructorName} · Issued {fmtDate(cert.issuedAt)}</p>
+                <p className="mt-3 text-xs text-slate-400">Tutor: {cert.tutorName} · Issued {fmtDate(cert.issuedAt)}</p>
                 <p className="mt-1 text-xs font-semibold">Reference: {cert.code}{cert.revoked ? " · REVOKED" : ""}</p>
                 <div className="mt-5 flex justify-center gap-2">
                   <button onClick={() => window.print()} className="btn-dark !py-2 !text-xs"><Printer size={14} /> Print / Save PDF</button>

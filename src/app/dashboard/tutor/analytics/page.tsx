@@ -2,14 +2,14 @@
 import { useApi, kes } from "@/lib/client";
 import { Loading, PageTitle, Bar, Stat } from "@/components/ui";
 export default function Analytics() {
-  const { data, loading } = useApi("/api/overview/teacher");
+  const { data, loading } = useApi("/api/overview/tutor");
   if (loading || !data) return <Loading />;
   const maxEnr = Math.max(...data.courses.map((c: any) => c.enrolledCount), 1);
   const earnings = data.walletTxs.filter((t: any) => t.type === "earning");
   const maxEarn = Math.max(...earnings.map((t: any) => t.amount), 1);
   return (
     <div>
-      <PageTitle title="Instructor Analytics" sub="Enrolments, engagement and revenue contribution — all computed from live platform records." />
+      <PageTitle title="Tutor Analytics" sub="Enrolments, engagement and revenue contribution — all computed from live platform records." />
       <div className="grid gap-5 sm:grid-cols-3">
         <Stat label="Students Reached" value={data.stats.students} />
         <Stat label="Completion Rate" value={`${data.stats.completionRate}%`} />

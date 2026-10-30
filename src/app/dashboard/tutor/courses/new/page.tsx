@@ -21,7 +21,7 @@ export default function NewCourse() {
     setBusy(true); setErr("");
     try {
       await api("/api/courses", { method: "POST", body: JSON.stringify({ ...form, sections, submit }) });
-      router.push("/dashboard/teacher/courses");
+      router.push("/dashboard/tutor/courses");
     } catch (e) { setErr(e instanceof Error ? e.message : "Could not save course"); setBusy(false); }
   }
   return (

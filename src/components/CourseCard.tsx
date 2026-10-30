@@ -21,7 +21,7 @@ export default function CourseCard({ course }: { course: any }) {
         <h3 className="line-clamp-2 min-h-[3rem] font-bold leading-snug text-slate-900 group-hover:text-brand-600">{course.title}</h3>
         <p className="mt-1 line-clamp-2 text-sm text-slate-500">{course.subtitle}</p>
         <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
-          <span className="font-semibold text-slate-700">{course.instructorName}</span>
+          <span className="font-semibold text-slate-700">{course.tutorName}</span>
           <span className="flex items-center gap-3">
             {course.rating ? <span className="flex items-center gap-1 font-bold text-amber-500"><Star size={13} fill="currentColor" />{course.rating.toFixed(1)}</span> : null}
             <span className="flex items-center gap-1"><Users size={13} />{course.enrolledCount}</span>

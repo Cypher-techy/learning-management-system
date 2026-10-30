@@ -30,7 +30,7 @@ export default function MyLearning() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2"><StatusChip status={c.access} /><span className="text-xs text-slate-400">{c.category}</span></div>
                 <h3 className="mt-1.5 line-clamp-2 font-bold leading-snug">{c.title}</h3>
-                <p className="text-xs text-slate-500">{c.instructorName}</p>
+                <p className="text-xs text-slate-500">{c.tutorName}</p>
                 <div className="mt-3 flex items-center gap-3"><ProgressBar value={c.progress} className="flex-1" /><span className="text-xs font-bold">{c.progress}%</span></div>
                 <Link href={`/courses/${c.id}/learn`} className="btn-dark mt-3 !py-2 !text-xs">{c.progress === 100 ? "Review Course" : c.progress > 0 ? "Resume Learning" : "Start Course"}</Link>
               </div>

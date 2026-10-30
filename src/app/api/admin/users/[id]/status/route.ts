@@ -2,7 +2,7 @@ import { getDB, persist, uid, now, audit, notify, type AccountStatus } from "@/l
 import { jsonError, ApiError, requireRole, requireVerified } from "@/lib/auth";
 
 /** Verification & status decisions with strict hierarchy:
- *  - administrators: teachers + students only, never themselves, never other administrators
+ *  - administrators: tutors + students only, never themselves, never other administrators
  *  - owner: anyone except the owner account itself */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

@@ -88,7 +88,7 @@ function OwnerConsole({ me }: { me: any }) {
     act(api(`/api/admin/users/${u.id}/status`, { method: "POST", body: JSON.stringify({ status, reason }) }), `${u.fullName} → ${status}`);
   };
 
-  const tabs = [["overview", "Overview"], ["administrators", "Administrators"], ["people", "Teachers & Students"], ["courses", "Courses"], ["finance", "Finance & Wallets"], ["config", "Configuration"], ["audit", "Security Audit"]];
+  const tabs = [["overview", "Overview"], ["administrators", "Administrators"], ["people", "Tutors & Students"], ["courses", "Courses"], ["finance", "Finance & Wallets"], ["config", "Configuration"], ["audit", "Security Audit"]];
 
   return (
     <div className="min-h-screen bg-[#070a1c] text-slate-200">
@@ -111,7 +111,7 @@ function OwnerConsole({ me }: { me: any }) {
           <div>
             <div className="grid gap-5 text-slate-900 sm:grid-cols-2 lg:grid-cols-4">
               <Stat label="Students" value={s.students} sub={`${s.verifiedStudents} verified`} icon={<Users size={19} />} />
-              <Stat label="Teachers" value={s.teachers} sub={`${s.pendingTeachers} pending`} icon={<GraduationCap size={19} />} />
+              <Stat label="Tutors" value={s.tutors} sub={`${s.pendingTutors} pending`} icon={<GraduationCap size={19} />} />
               <Stat label="Active Subscriptions" value={s.activeSubscriptions} icon={<Crown size={19} />} />
               <Stat label="Revenue Collected" value={kes(s.revenueKES)} icon={<Landmark size={19} />} />
             </div>
@@ -165,22 +165,22 @@ function OwnerConsole({ me }: { me: any }) {
         )}
 
         {tab === "courses" && (
-          <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>Course</th><th>Instructor</th><th>Access</th><th>Status</th><th>Enrolments</th></tr></thead>
-            <tbody>{data.courses.map((c: any) => <tr key={c.id}><td className="font-semibold">{c.title}</td><td>{c.instructorName}</td><td><StatusChip status={c.access} /></td><td><StatusChip status={c.status} /></td><td>{c.enrolledCount}</td></tr>)}</tbody></table></div>
+          <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>Course</th><th>Tutor</th><th>Access</th><th>Status</th><th>Enrolments</th></tr></thead>
+            <tbody>{data.courses.map((c: any) => <tr key={c.id}><td className="font-semibold">{c.title}</td><td>{c.tutorName}</td><td><StatusChip status={c.access} /></td><td><StatusChip status={c.status} /></td><td>{c.enrolledCount}</td></tr>)}</tbody></table></div>
         )}
 
         {tab === "finance" && (
           <div className="space-y-6 text-slate-900">
             <div className="grid gap-5 sm:grid-cols-3">
               <Stat label="Revenue Collected" value={kes(s.revenueKES)} />
-              <Stat label="Teacher Pool Share" value={`${data.settings.teacherPercent}%`} sub="of net distributable revenue" />
+              <Stat label="Tutor Pool Share" value={`${data.settings.tutorPercent}%`} sub="of net distributable revenue" />
               <Stat label="Premium Price" value={kes(data.settings.premiumPriceKES)} sub="per month" />
             </div>
-            <div className="card p-6"><h3 className="font-extrabold">Teacher wallet balances</h3>
-              <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Teacher</th><th>Earned</th><th>Withdrawn</th><th>Balance</th><th>Available</th></tr></thead>
-                <tbody>{data.teacherWallets.map((w: any) => <tr key={w.teacherId}><td className="font-semibold">{w.teacherName}</td><td>{kes(w.earned)}</td><td>{kes(w.withdrawn)}</td><td>{kes(w.balance)}</td><td className="font-bold text-emerald-600">{kes(w.available)}</td></tr>)}</tbody></table></div></div>
+            <div className="card p-6"><h3 className="font-extrabold">Tutor wallet balances</h3>
+              <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Tutor</th><th>Earned</th><th>Withdrawn</th><th>Balance</th><th>Available</th></tr></thead>
+                <tbody>{data.tutorWallets.map((w: any) => <tr key={w.tutorId}><td className="font-semibold">{w.tutorName}</td><td>{kes(w.earned)}</td><td>{kes(w.withdrawn)}</td><td>{kes(w.balance)}</td><td className="font-bold text-emerald-600">{kes(w.available)}</td></tr>)}</tbody></table></div></div>
             <div className="card p-6"><h3 className="font-extrabold">Revenue periods</h3>
-              {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between rounded-xl bg-slate-50 p-4 text-sm"><span><strong>{p.label}</strong> · Gross {kes(p.gross)} · Net {kes(p.net)} · Pool {kes(p.teacherPool)} · Platform {kes(p.platformShare)}</span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "OPEN"}</span></div>)}</div>
+              {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between rounded-xl bg-slate-50 p-4 text-sm"><span><strong>{p.label}</strong> · Gross {kes(p.gross)} · Net {kes(p.net)} · Pool {kes(p.tutorPool)} · Platform {kes(p.platformShare)}</span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "OPEN"}</span></div>)}</div>
           </div>
         )}
 
@@ -189,7 +189,7 @@ function OwnerConsole({ me }: { me: any }) {
             <h3 className="flex items-center gap-2 font-extrabold"><Settings2 className="text-brand-500" /> Global configuration (owner authority)</h3>
             <div className="grid gap-5 sm:grid-cols-2">
               <div><label className="label">Premium price (KSh/month)</label><input type="number" className="input" value={settings.premiumPriceKES} onChange={e => setSettings({ ...settings, premiumPriceKES: Number(e.target.value) })} /></div>
-              <div><label className="label">Teacher revenue share %</label><input type="number" min={0} max={100} className="input" value={settings.teacherPercent} onChange={e => setSettings({ ...settings, teacherPercent: Number(e.target.value) })} /></div>
+              <div><label className="label">Tutor revenue share %</label><input type="number" min={0} max={100} className="input" value={settings.tutorPercent} onChange={e => setSettings({ ...settings, tutorPercent: Number(e.target.value) })} /></div>
               <div><label className="label">Minimum withdrawal (KSh)</label><input type="number" className="input" value={settings.minWithdrawalKES} onChange={e => setSettings({ ...settings, minWithdrawalKES: Number(e.target.value) })} /></div>
               <div><label className="label">Platform name</label><input className="input" value={settings.platformName} onChange={e => setSettings({ ...settings, platformName: e.target.value })} /></div>
               <div><label className="label">Tagline</label><input className="input" value={settings.tagline} onChange={e => setSettings({ ...settings, tagline: e.target.value })} /></div>

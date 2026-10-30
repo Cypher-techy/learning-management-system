@@ -26,7 +26,7 @@ function Inner() {
             <div><p className="flex items-center gap-2 text-lg font-extrabold text-emerald-700"><BadgeCheck /> Valid EDVORA Certificate</p>
               <div className="mt-4 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
                 <p><strong>Learner:</strong> {result.studentName}</p><p><strong>Course:</strong> {result.courseTitle}</p>
-                <p><strong>Instructor:</strong> {result.instructorName}</p><p><strong>Issued:</strong> {fmtDate(result.issuedAt)}</p>
+                <p><strong>Tutor:</strong> {result.tutorName}</p><p><strong>Issued:</strong> {fmtDate(result.issuedAt)}</p>
                 <p><strong>Reference:</strong> {result.code}</p>
               </div></div>
           ) : <p className="flex items-center gap-2 font-bold text-rose-600"><ShieldAlert /> {result.revoked ? "This certificate has been revoked." : result.message || "No certificate with this reference exists."}</p>}

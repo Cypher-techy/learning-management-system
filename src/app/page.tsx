@@ -48,12 +48,12 @@ export default function Home() {
   }, [courses.length]);
 
   const featured = courses.filter(c => c.featured).concat(courses.filter(c => !c.featured)).slice(0, 6);
-  const instructors = [...new Map(courses.map(c => [c.instructorId, c])).values()];
+  const tutors = [...new Map(courses.map(c => [c.tutorId, c])).values()];
   const faqs = [
     { q: "Is EDVORA really free to start?", a: "Yes. Create a student account, verify your contact details, and you are verified instantly — no waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
     { q: "How does Premium work?", a: "One monthly subscription unlocks every eligible premium course on the platform — you never pay per course. Pay securely with M-Pesa and your access activates automatically once Safaricom confirms payment." },
     { q: "Are certificates verifiable?", a: "Yes. Every certificate carries a unique reference code and a public verification page. Certificates are earned — you must complete the lessons and pass the assessments." },
-    { q: "How do teachers earn?", a: "Verified instructors share in subscription revenue. The teacher pool (80% of net subscription revenue by default) is allocated monthly by genuine premium student engagement in their courses, and paid out via M-Pesa or bank after review." },
+    { q: "How do tutors earn?", a: "Verified tutors share in subscription revenue. The tutor pool (80% of net subscription revenue by default) is allocated monthly by genuine premium student engagement in their courses, and paid out via M-Pesa or bank after review." },
   ];
 
   return (
@@ -70,7 +70,7 @@ export default function Home() {
             <h1 data-hero className="mt-6 text-5xl font-black leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl">
               Discover Knowledge.<br /><span className="grad-text">Develop Skills.</span><br />Shape Your Future.
             </h1>
-            <p data-hero className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">Learn from verified instructors with structured courses, real assessments and certificates employers can verify. Start free — go Premium when you are ready. <strong className="text-white">LEARN BEYOND LIMITS.</strong></p>
+            <p data-hero className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">Learn from verified tutors with structured courses, real assessments and certificates employers can verify. Start free — go Premium when you are ready. <strong className="text-white">LEARN BEYOND LIMITS.</strong></p>
             <div data-hero className="mt-9 flex flex-wrap gap-4">
               <Link href="/roles" className="btn-primary !px-8 !py-4 !text-base">Start Learning Free <ArrowRight size={18} /></Link>
               <Link href="/explore" className="btn-ghost border-white/25 text-white hover:bg-white/10 !px-8 !py-4 !text-base"><PlayCircle size={18} /> Explore Courses</Link>
@@ -79,7 +79,7 @@ export default function Home() {
               <div data-hero className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
                 <div><p className="text-3xl font-extrabold"><Counter value={stats.courses} /></p><p className="mt-1 text-xs uppercase tracking-widest text-slate-400">Live Courses</p></div>
                 <div><p className="text-3xl font-extrabold"><Counter value={stats.lessons} /></p><p className="mt-1 text-xs uppercase tracking-widest text-slate-400">Lessons</p></div>
-                <div><p className="text-3xl font-extrabold"><Counter value={stats.teachers} /></p><p className="mt-1 text-xs uppercase tracking-widest text-slate-400">Verified Instructors</p></div>
+                <div><p className="text-3xl font-extrabold"><Counter value={stats.tutors} /></p><p className="mt-1 text-xs uppercase tracking-widest text-slate-400">Verified Tutors</p></div>
               </div>
             )}
           </div>
@@ -90,8 +90,8 @@ export default function Home() {
               </div>
             </div>
             <div className="floaty glass absolute -left-6 bottom-16 hidden rounded-2xl px-4 py-3 sm:block" style={{ animationDelay: "0.6s" }}>
-              <p className="flex items-center gap-2 text-xs font-bold"><BadgeCheck size={15} className="text-emerald-400" /> Verified Instructors</p>
-              <p className="mt-0.5 text-[11px] text-slate-400">Every teacher is reviewed & approved</p>
+              <p className="flex items-center gap-2 text-xs font-bold"><BadgeCheck size={15} className="text-emerald-400" /> Verified Tutors</p>
+              <p className="mt-0.5 text-[11px] text-slate-400">Every tutor is reviewed & approved</p>
             </div>
             <div className="floaty glass absolute -right-4 top-10 hidden rounded-2xl px-4 py-3 sm:block">
               <p className="flex items-center gap-2 text-xs font-bold"><Smartphone size={15} className="text-brand-300" /> Pay with M-Pesa</p>
@@ -116,7 +116,7 @@ export default function Home() {
           <h2 className="mt-3 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">From sign-up to certificate,<br className="hidden sm:block" /> in four honest steps</h2></Reveal>
         <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student, Teacher or Administrator — pick your path. Students are verified instantly after contact confirmation." },
+            { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student, Tutor or Administrator — pick your path. Students are verified instantly after contact confirmation." },
             { icon: <BookOpenCheck size={26} />, t: "Learn with structure", d: "Sections, video lessons, notes, assignments and quizzes. Pick up exactly where you left off, on any device." },
             { icon: <Crown size={26} />, t: "Unlock everything", d: "One M-Pesa subscription opens all premium courses. No per-course payments, no surprises." },
             { icon: <Trophy size={26} />, t: "Earn proof", d: "Complete lessons and pass assessments to earn a certificate anyone can verify online." },
@@ -177,23 +177,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------------- INSTRUCTORS ---------------- */}
+      {/* ---------------- TUTORS ---------------- */}
       <section className="bg-[#f7f8fc] py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <Reveal><div className="flex flex-wrap items-end justify-between gap-6">
-            <div><p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-600">Meet the Instructors</p>
+            <div><p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-600">Meet the Tutors</p>
               <h2 className="mt-3 text-4xl font-extrabold tracking-tight">Verified experts,<br />real classrooms</h2></div>
-            <Link href="/instructors" className="btn-dark">All Instructors <ArrowRight size={16} /></Link></div></Reveal>
+            <Link href="/tutors" className="btn-dark">All Tutors <ArrowRight size={16} /></Link></div></Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {instructors.slice(0, 3).map((c, i) => (
-              <Reveal key={c.instructorId} delay={i * 0.08}>
-                <Link href={`/instructors/${c.instructorId}`} className="card group block overflow-hidden transition hover:-translate-y-1.5 hover:shadow-card">
+            {tutors.slice(0, 3).map((c, i) => (
+              <Reveal key={c.tutorId} delay={i * 0.08}>
+                <Link href={`/tutors/${c.tutorId}`} className="card group block overflow-hidden transition hover:-translate-y-1.5 hover:shadow-card">
                   <div className="h-28 grad-bg relative"><div className="absolute inset-0 bg-navy-950/25" /></div>
                   <div className="relative px-6 pb-6">
-                    <span className="-mt-9 flex h-[72px] w-[72px] items-center justify-center rounded-2xl border-4 border-white text-xl font-extrabold text-white shadow-soft" style={{ background: c.instructorColor }}>{c.instructorName.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}</span>
-                    <h3 className="mt-4 flex items-center gap-1.5 font-bold group-hover:text-brand-600">{c.instructorName}<BadgeCheck size={16} className="text-brand-500" /></h3>
-                    <p className="text-sm text-slate-500">{c.instructorTitle}</p>
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Teaching: {c.title}</p>
+                    <span className="-mt-9 flex h-[72px] w-[72px] items-center justify-center rounded-2xl border-4 border-white text-xl font-extrabold text-white shadow-soft" style={{ background: c.tutorColor }}>{c.tutorName.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}</span>
+                    <h3 className="mt-4 flex items-center gap-1.5 font-bold group-hover:text-brand-600">{c.tutorName}<BadgeCheck size={16} className="text-brand-500" /></h3>
+                    <p className="text-sm text-slate-500">{c.tutorTitle}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Tutoring: {c.title}</p>
                   </div>
                 </Link>
               </Reveal>
@@ -204,13 +204,13 @@ export default function Home() {
               <div className="pointer-events-none absolute -left-10 bottom-0 h-56 w-56 rounded-full bg-brand-500/30 blur-[90px]" />
               <div className="relative grid items-center gap-8 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <h3 className="text-2xl font-extrabold lg:text-3xl">Teach on EDVORA. Earn from every engaged learner.</h3>
+                  <h3 className="text-2xl font-extrabold lg:text-3xl">Tutor on EDVORA. Earn from every engaged learner.</h3>
                   <p className="mt-3 max-w-xl text-slate-300">Apply once, get verified, publish courses — then share in subscription revenue with transparent monthly statements and M-Pesa payouts.</p>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="flex items-center gap-2 text-sm"><Wallet size={17} className="text-brand-300" /> 80% teacher revenue pool</p>
+                  <p className="flex items-center gap-2 text-sm"><Wallet size={17} className="text-brand-300" /> 80% tutor revenue pool</p>
                   <p className="flex items-center gap-2 text-sm"><ShieldCheck size={17} className="text-brand-300" /> Usage-based, fraud-resistant allocation</p>
-                  <Link href="/roles" className="btn-primary mt-2">Apply to Teach <ArrowRight size={16} /></Link>
+                  <Link href="/roles" className="btn-primary mt-2">Apply as a Tutor <ArrowRight size={16} /></Link>
                 </div>
               </div>
             </div>

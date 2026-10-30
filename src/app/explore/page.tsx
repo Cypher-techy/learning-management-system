@@ -25,7 +25,7 @@ function ExploreInner() {
       <section className="bg-navy-950 pb-14 pt-32 text-white">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <h1 className="text-4xl font-extrabold lg:text-5xl">Explore <span className="grad-text">Courses</span></h1>
-          <p className="mt-3 max-w-xl text-slate-300">Free and premium courses from verified instructors. One Premium subscription unlocks them all.</p>
+          <p className="mt-3 max-w-xl text-slate-300">Free and premium courses from verified tutors. One Premium subscription unlocks them all.</p>
           <div className="mt-8 flex max-w-2xl items-center gap-2 rounded-full bg-white p-1.5 shadow-card">
             <Search size={18} className="ml-3 text-slate-400" />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search courses, skills, topics…" className="w-full bg-transparent py-2 text-sm text-slate-800 outline-none" aria-label="Search courses" />

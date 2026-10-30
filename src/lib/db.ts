@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 
 /* ---------------- Types ---------------- */
-export type Role = "student" | "teacher" | "administrator" | "owner";
+export type Role = "student" | "tutor" | "administrator" | "owner";
 export type AccountStatus = "pending" | "verified" | "rejected" | "suspended" | "disabled";
 
 export interface User {
@@ -28,7 +28,7 @@ export interface Assignment { id: string; courseId: string; title: string; instr
 export interface Course {
   id: string; slug: string; title: string; subtitle: string; description: string;
   category: string; level: "Beginner" | "Intermediate" | "Advanced" | "All levels";
-  access: "free" | "premium"; instructorId: string;
+  access: "free" | "premium"; tutorId: string;
   status: "draft" | "in_review" | "approved" | "rejected" | "published" | "unpublished";
   image: string; objectives: string[]; requirements: string[];
   sections: Section[]; createdAt: string; publishedAt?: string; featured: boolean;
@@ -47,9 +47,9 @@ export interface Payment {
   checkoutRequestId?: string; merchantRequestId?: string; mpesaReceipt?: string;
   resultDesc?: string; createdAt: string; completedAt?: string; callbackProcessed?: boolean;
 }
-export interface RevenuePeriod { id: string; label: string; startsAt: string; endsAt: string; gross: number; refunds: number; fees: number; taxes: number; net: number; teacherPool: number; platformShare: number; teacherPercent: number; allocated: boolean; allocatedAt?: string }
-export interface WalletTx { id: string; teacherId: string; type: "earning" | "withdrawal" | "adjustment"; amount: number; note: string; createdAt: string; periodId?: string }
-export interface Withdrawal { id: string; teacherId: string; amount: number; method: "mpesa" | "bank"; account: string; status: "pending" | "approved" | "rejected" | "paid"; createdAt: string; decidedBy?: string; payoutRef?: string; note?: string; idempotencyKey: string }
+export interface RevenuePeriod { id: string; label: string; startsAt: string; endsAt: string; gross: number; refunds: number; fees: number; taxes: number; net: number; tutorPool: number; platformShare: number; tutorPercent: number; allocated: boolean; allocatedAt?: string }
+export interface WalletTx { id: string; tutorId: string; type: "earning" | "withdrawal" | "adjustment"; amount: number; note: string; createdAt: string; periodId?: string }
+export interface Withdrawal { id: string; tutorId: string; amount: number; method: "mpesa" | "bank"; account: string; status: "pending" | "approved" | "rejected" | "paid"; createdAt: string; decidedBy?: string; payoutRef?: string; note?: string; idempotencyKey: string }
 export interface Notification { id: string; userId: string; title: string; body: string; createdAt: string; read: boolean; href?: string }
 export interface Discussion { id: string; courseId: string; authorId: string; title: string; body: string; createdAt: string; pinned?: boolean }
 export interface Reply { id: string; discussionId: string; authorId: string; body: string; createdAt: string }
@@ -60,7 +60,7 @@ export interface AuditLog { id: string; actorId: string; action: string; target:
 export interface Announcement { id: string; authorId: string; audience: string; title: string; body: string; createdAt: string }
 export interface Goal { id: string; studentId: string; title: string; targetHoursPerWeek: number; createdAt: string; done: boolean }
 export interface Settings {
-  platformName: string; tagline: string; premiumPriceKES: number; teacherPercent: number;
+  platformName: string; tagline: string; premiumPriceKES: number; tutorPercent: number;
   minWithdrawalKES: number; certificateMinProgress: number; certificateMinQuiz: number;
   supportEmail: string; supportPhone: string; paymentMethods: string[];
   renewReminderDays: number;
@@ -135,7 +135,7 @@ export function canAccessCourse(db: DB, u: User | null, c: Course) {
   if (c.access === "free") return true;
   if (!u) return false;
   if (u.role === "owner" || u.role === "administrator") return true;
-  if (u.role === "teacher" && c.instructorId === u.id) return true;
+  if (u.role === "tutor" && c.tutorId === u.id) return true;
   return isPremiumActive(db, u);
 }
 
@@ -153,7 +153,7 @@ function mkCourse(o: Partial<Course> & { outline: [string, [string, number, stri
   return {
     id: o.id!, slug: o.id!, title: o.title!, subtitle: o.subtitle || "", description: o.description || "",
     category: o.category!, level: o.level || "Beginner", access: o.access || "free",
-    instructorId: o.instructorId!, status: o.status || "published", image: o.image!,
+    tutorId: o.tutorId!, status: o.status || "published", image: o.image!,
     objectives: o.objectives || [], requirements: o.requirements || [], sections,
     createdAt: o.createdAt || now(), publishedAt: o.publishedAt || now(), featured: !!o.featured,
   };
@@ -165,10 +165,10 @@ function seed(): DB {
   const users: User[] = [
     { ...base, id: "u_admin1", fullName: "Grace Wanjiru", email: "admin@edvora.ac.ke", phone: "+254700000010", passwordHash: pw("Admin@2026"), role: "administrator", status: "verified", avatarColor: "#4f46e5", plan: "free", title: "Platform Operations Lead" },
     { ...base, id: "u_admin_pending", fullName: "Brian Kiprop", email: "brian.kiprop@example.co.ke", phone: "+254700000011", passwordHash: pw("Brian@2026"), role: "administrator", status: "pending", avatarColor: "#0ea5e9", plan: "free", title: "Operations Assistant (invited)" },
-    { ...base, id: "u_teacher1", fullName: "Dr. Amina Odhiambo", email: "amina@edvora.ac.ke", phone: "+254700000020", passwordHash: pw("Teach@2026"), role: "teacher", status: "verified", avatarColor: "#2563eb", plan: "free", title: "Senior Lecturer, Computer Science", expertise: "Software Engineering & Web Development", qualifications: "PhD Computer Science, University of Nairobi", experience: "12 years university teaching", bio: "Dr Amina Odhiambo leads software engineering programmes and has mentored hundreds of engineers across East Africa.", payoutMethod: "mpesa", payoutAccount: "+254700000020" },
-    { ...base, id: "u_teacher2", fullName: "Peter Mwangi", email: "peter@edvora.ac.ke", phone: "+254700000021", passwordHash: pw("Teach@2026"), role: "teacher", status: "verified", avatarColor: "#7c3aed", plan: "free", title: "Data Science Consultant", expertise: "Data Analytics & Machine Learning", qualifications: "MSc Data Science", experience: "8 years industry + training", bio: "Peter Mwangi helps Kenyan businesses turn messy data into decisions, and teaches the exact workflows he uses with clients.", payoutMethod: "bank", payoutAccount: "KCB •••• 4412" },
-    { ...base, id: "u_teacher3", fullName: "Mary Njeri", email: "mary@edvora.ac.ke", phone: "+254700000022", passwordHash: pw("Teach@2026"), role: "teacher", status: "verified", avatarColor: "#0891b2", plan: "free", title: "Chartered Accountant (CPA-K)", expertise: "Business, Finance & Accounting", qualifications: "CPA-K, BCom Finance", experience: "10 years practice and tutoring", bio: "Mary Njeri makes finance practical — from bookkeeping for SMEs to investment fundamentals for beginners.", payoutMethod: "mpesa", payoutAccount: "+254700000022" },
-    { ...base, id: "u_teacher_pending", fullName: "Kevin Omondi", email: "kevin.omondi@example.co.ke", phone: "+254700000023", passwordHash: pw("Kevin@2026"), role: "teacher", status: "pending", avatarColor: "#db2777", plan: "free", title: "Digital Marketing Specialist", expertise: "Digital Marketing", qualifications: "BBA Marketing, Google Digital Marketing Certificate", experience: "6 years agency work in Nairobi", bio: "I help local brands grow online with small budgets and measurable campaigns.", proposedCourses: "Social Media Marketing for Kenyan SMEs; Content Strategy Basics" },
+    { ...base, id: "u_tutor1", fullName: "Dr. Amina Odhiambo", email: "amina@edvora.ac.ke", phone: "+254700000020", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#2563eb", plan: "free", title: "Senior Tutor, Computer Science", expertise: "Software Engineering & Web Development", qualifications: "PhD Computer Science, University of Nairobi", experience: "12 years university teaching", bio: "Dr Amina Odhiambo leads software engineering programmes and has mentored hundreds of engineers across East Africa.", payoutMethod: "mpesa", payoutAccount: "+254700000020" },
+    { ...base, id: "u_tutor2", fullName: "Peter Mwangi", email: "peter@edvora.ac.ke", phone: "+254700000021", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#7c3aed", plan: "free", title: "Data Science Consultant", expertise: "Data Analytics & Machine Learning", qualifications: "MSc Data Science", experience: "8 years industry + training", bio: "Peter Mwangi helps Kenyan businesses turn messy data into decisions, and teaches the exact workflows he uses with clients.", payoutMethod: "bank", payoutAccount: "KCB •••• 4412" },
+    { ...base, id: "u_tutor3", fullName: "Mary Njeri", email: "mary@edvora.ac.ke", phone: "+254700000022", passwordHash: pw("Teach@2026"), role: "tutor", status: "verified", avatarColor: "#0891b2", plan: "free", title: "Chartered Accountant (CPA-K)", expertise: "Business, Finance & Accounting", qualifications: "CPA-K, BCom Finance", experience: "10 years practice and tutoring", bio: "Mary Njeri makes finance practical — from bookkeeping for SMEs to investment fundamentals for beginners.", payoutMethod: "mpesa", payoutAccount: "+254700000022" },
+    { ...base, id: "u_tutor_pending", fullName: "Kevin Omondi", email: "kevin.omondi@example.co.ke", phone: "+254700000023", passwordHash: pw("Kevin@2026"), role: "tutor", status: "pending", avatarColor: "#db2777", plan: "free", title: "Digital Marketing Specialist", expertise: "Digital Marketing", qualifications: "BBA Marketing, Google Digital Marketing Certificate", experience: "6 years agency work in Nairobi", bio: "I help local brands grow online with small budgets and measurable campaigns.", proposedCourses: "Social Media Marketing for Kenyan SMEs; Content Strategy Basics" },
     { ...base, id: "u_student_free", fullName: "Faith Chebet", email: "faith@example.co.ke", phone: "+254700000030", passwordHash: pw("Learn@2026"), role: "student", status: "verified", avatarColor: "#059669", plan: "free" },
     { ...base, id: "u_student_pro", fullName: "David Otieno", email: "david@example.co.ke", phone: "+254700000031", passwordHash: pw("Learn@2026"), role: "student", status: "verified", avatarColor: "#d97706", plan: "premium", subscriptionId: "sub_demo1" },
     { ...base, id: "u_student3", fullName: "Zawadi Muthoni", email: "zawadi@example.co.ke", phone: "+254700000032", passwordHash: pw("Learn@2026"), role: "student", status: "verified", avatarColor: "#9333ea", plan: "premium", subscriptionId: "sub_demo2" },
@@ -179,7 +179,7 @@ function seed(): DB {
     mkCourse({
       id: "web-foundations", title: "Web Development Foundations", subtitle: "HTML, CSS and JavaScript — from zero to your first deployed site",
       description: "A complete, project-based introduction to building for the web. You will structure pages with semantic HTML, style them with modern CSS, add interactivity with JavaScript, and deploy a real portfolio site.",
-      category: "Technology", level: "Beginner", access: "free", instructorId: "u_teacher1", featured: true,
+      category: "Technology", level: "Beginner", access: "free", tutorId: "u_tutor1", featured: true,
       image: IMG("photo-1498050108023-c5249f4df085"),
       objectives: ["Build semantic, accessible web pages", "Style responsive layouts with Flexbox and Grid", "Add interactivity with vanilla JavaScript", "Deploy a website and share it publicly"],
       requirements: ["A computer with a browser", "No prior coding experience needed"],
@@ -200,7 +200,7 @@ function seed(): DB {
     mkCourse({
       id: "python-data", title: "Python for Data Analysis", subtitle: "Pandas, visualisation and real Kenyan datasets",
       description: "Learn Python by analysing real data: clean messy spreadsheets with pandas, visualise trends, and present insights the way employers expect. Includes downloadable datasets and graded projects.",
-      category: "Data Science", level: "Intermediate", access: "premium", instructorId: "u_teacher2", featured: true,
+      category: "Data Science", level: "Intermediate", access: "premium", tutorId: "u_tutor2", featured: true,
       image: IMG("photo-1551288049-bebda4e38f71"),
       objectives: ["Clean and reshape data with pandas", "Create publication-quality charts", "Answer business questions with data", "Build a portfolio-ready analysis project"],
       requirements: ["Basic computer skills", "No Python experience required — we start gently"],
@@ -219,7 +219,7 @@ function seed(): DB {
     mkCourse({
       id: "business-finance", title: "Business Finance Essentials", subtitle: "Bookkeeping, cashflow and smart money decisions for SMEs",
       description: "Practical finance for founders and professionals: record-keeping that satisfies KRA, reading financial statements, managing cashflow, pricing for profit and planning taxes without panic.",
-      category: "Business", level: "Beginner", access: "premium", instructorId: "u_teacher3", featured: true,
+      category: "Business", level: "Beginner", access: "premium", tutorId: "u_tutor3", featured: true,
       image: IMG("photo-1554224155-6726b3ff858f"),
       objectives: ["Keep clean books from day one", "Read income statements and balance sheets", "Forecast and protect cashflow", "Understand Kenyan tax obligations for SMEs"],
       requirements: ["Basic numeracy", "A notebook or spreadsheet app"],
@@ -236,7 +236,7 @@ function seed(): DB {
     mkCourse({
       id: "KCSE-maths", title: "Mathematics Masterclass: Secondary Level", subtitle: "Algebra, geometry and exam technique for KCSE success",
       description: "Step-by-step mastery of the secondary mathematics syllabus with hundreds of worked examples, timed practice and proven exam technique.",
-      category: "Academic", level: "All levels", access: "free", instructorId: "u_teacher1", featured: false,
+      category: "Academic", level: "All levels", access: "free", tutorId: "u_tutor1", featured: false,
       image: IMG("photo-1509228468518-180dd4864904"),
       objectives: ["Master algebra and equations", "Solve geometry problems confidently", "Improve speed with exam technique"],
       requirements: ["Secondary school enrolment or revision goal"],
@@ -252,7 +252,7 @@ function seed(): DB {
     mkCourse({
       id: "digital-marketing", title: "Digital Marketing for Growth", subtitle: "Social media, content and ads that work on a Kenyan budget",
       description: "Grow a brand with limited resources: audience research, content systems for TikTok/Instagram/WhatsApp Business, and measuring what actually sells.",
-      category: "Business", level: "Beginner", access: "free", instructorId: "u_teacher2", featured: false,
+      category: "Business", level: "Beginner", access: "free", tutorId: "u_tutor2", featured: false,
       image: IMG("photo-1460925895917-afdab827c52f"),
       objectives: ["Define and research your audience", "Plan a month of content in a day", "Run small, measurable ad tests"],
       requirements: ["A smartphone", "A business or brand idea"],
@@ -268,7 +268,7 @@ function seed(): DB {
     mkCourse({
       id: "ml-intro", title: "Introduction to Machine Learning", subtitle: "Models, evaluation and responsible AI — hands on",
       description: "A rigorous but friendly entry into ML: regression, classification, train/test discipline, and the ethics of deploying models that affect real people.",
-      category: "Data Science", level: "Advanced", access: "premium", instructorId: "u_teacher2", featured: false,
+      category: "Data Science", level: "Advanced", access: "premium", tutorId: "u_tutor2", featured: false,
       image: IMG("photo-1555255707-c07966088b7b"),
       objectives: ["Train and evaluate ML models", "Avoid leakage and overfitting", "Communicate model results honestly"],
       requirements: ["Python basics", "Comfort with basic statistics"],
@@ -284,7 +284,7 @@ function seed(): DB {
     mkCourse({
       id: "ui-design", title: "UI Design with Figma", subtitle: "From wireframes to polished, developer-ready interfaces",
       description: "Design modern interfaces in Figma: layout, type, colour systems, components and prototyping — taught through a complete mobile app project.",
-      category: "Design", level: "Beginner", access: "premium", instructorId: "u_teacher1", featured: false, status: "in_review",
+      category: "Design", level: "Beginner", access: "premium", tutorId: "u_tutor1", featured: false, status: "in_review",
       image: IMG("photo-1561070791-2526d30994b5"),
       objectives: ["Design responsive screens in Figma", "Build a reusable component library", "Prototype and hand off to developers"],
       requirements: ["A free Figma account"],
@@ -297,7 +297,7 @@ function seed(): DB {
     mkCourse({
       id: "english-communication", title: "Professional English & Communication", subtitle: "Write, present and interview with confidence",
       description: "Upgrade your professional communication: clear business writing, presentations that land, and interview skills for local and remote roles.",
-      category: "Academic", level: "All levels", access: "free", instructorId: "u_teacher3", featured: false, status: "draft",
+      category: "Academic", level: "All levels", access: "free", tutorId: "u_tutor3", featured: false, status: "draft",
       image: IMG("photo-1455390582262-044cdead277a"),
       objectives: ["Write clear professional emails", "Present ideas with structure", "Prepare for interviews"],
       requirements: ["Intermediate English"],
@@ -365,47 +365,47 @@ function seed(): DB {
     { id: "pay_demo3", studentId: "u_student_free", amount: 499, currency: "KES", provider: "mpesa", status: "failed", phone: "+254700000030", resultDesc: "Request cancelled by user", createdAt: "2026-10-15T09:58:00.000Z", callbackProcessed: true },
   ];
   const revenuePeriods: RevenuePeriod[] = [
-    { id: "rp_sep2026", label: "September 2026", startsAt: "2026-09-01", endsAt: "2026-09-30", gross: 99750, refunds: 499, fees: 1496, taxes: 0, net: 97755, teacherPool: 78204, platformShare: 19551, teacherPercent: 80, allocated: true, allocatedAt: "2026-10-03T10:00:00.000Z" },
-    { id: "rp_oct2026", label: "October 2026", startsAt: "2026-10-01", endsAt: "2026-10-31", gross: 0, refunds: 0, fees: 0, taxes: 0, net: 0, teacherPool: 0, platformShare: 0, teacherPercent: 80, allocated: false },
+    { id: "rp_sep2026", label: "September 2026", startsAt: "2026-09-01", endsAt: "2026-09-30", gross: 99750, refunds: 499, fees: 1496, taxes: 0, net: 97755, tutorPool: 78204, platformShare: 19551, tutorPercent: 80, allocated: true, allocatedAt: "2026-10-03T10:00:00.000Z" },
+    { id: "rp_oct2026", label: "October 2026", startsAt: "2026-10-01", endsAt: "2026-10-31", gross: 0, refunds: 0, fees: 0, taxes: 0, net: 0, tutorPool: 0, platformShare: 0, tutorPercent: 80, allocated: false },
   ];
   const walletTxs: WalletTx[] = [
-    { id: "w1", teacherId: "u_teacher1", type: "earning", amount: 31280, note: "September 2026 allocation — Web Development Foundations engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
-    { id: "w2", teacherId: "u_teacher2", type: "earning", amount: 28150, note: "September 2026 allocation — Python for Data Analysis engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
-    { id: "w3", teacherId: "u_teacher3", type: "earning", amount: 18774, note: "September 2026 allocation — Business Finance Essentials engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
-    { id: "w4", teacherId: "u_teacher1", type: "withdrawal", amount: -15000, note: "M-Pesa payout QK8PAID001", createdAt: "2026-10-10T10:00:00.000Z" },
+    { id: "w1", tutorId: "u_tutor1", type: "earning", amount: 31280, note: "September 2026 allocation — Web Development Foundations engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
+    { id: "w2", tutorId: "u_tutor2", type: "earning", amount: 28150, note: "September 2026 allocation — Python for Data Analysis engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
+    { id: "w3", tutorId: "u_tutor3", type: "earning", amount: 18774, note: "September 2026 allocation — Business Finance Essentials engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
+    { id: "w4", tutorId: "u_tutor1", type: "withdrawal", amount: -15000, note: "M-Pesa payout QK8PAID001", createdAt: "2026-10-10T10:00:00.000Z" },
   ];
   const withdrawals: Withdrawal[] = [
-    { id: "wd1", teacherId: "u_teacher1", amount: 15000, method: "mpesa", account: "+254700000020", status: "paid", createdAt: "2026-10-08T10:00:00.000Z", decidedBy: "u_admin1", payoutRef: "QK8PAID001", idempotencyKey: "wd1-key" },
-    { id: "wd2", teacherId: "u_teacher2", amount: 20000, method: "bank", account: "KCB •••• 4412", status: "pending", createdAt: "2026-10-28T10:00:00.000Z", idempotencyKey: "wd2-key" },
+    { id: "wd1", tutorId: "u_tutor1", amount: 15000, method: "mpesa", account: "+254700000020", status: "paid", createdAt: "2026-10-08T10:00:00.000Z", decidedBy: "u_admin1", payoutRef: "QK8PAID001", idempotencyKey: "wd1-key" },
+    { id: "wd2", tutorId: "u_tutor2", amount: 20000, method: "bank", account: "KCB •••• 4412", status: "pending", createdAt: "2026-10-28T10:00:00.000Z", idempotencyKey: "wd2-key" },
   ];
   const discussions: Discussion[] = [
-    { id: "d1", courseId: "web-foundations", authorId: "u_teacher1", title: "Welcome — introduce yourself", body: "Karibu! Tell us where you are learning from and what you want to build first.", createdAt: "2026-09-01T10:00:00.000Z", pinned: true },
+    { id: "d1", courseId: "web-foundations", authorId: "u_tutor1", title: "Welcome — introduce yourself", body: "Karibu! Tell us where you are learning from and what you want to build first.", createdAt: "2026-09-01T10:00:00.000Z", pinned: true },
     { id: "d2", courseId: "web-foundations", authorId: "u_student_free", title: "Flexbox centring trick?", body: "I keep forgetting how to centre a div both ways. Any memorable rule?", createdAt: "2026-09-21T10:00:00.000Z" },
     { id: "d3", courseId: "python-data", authorId: "u_student3", title: "County dataset sources", body: "Where do you find clean county-level open data for practice?", createdAt: "2026-10-11T10:00:00.000Z" },
   ];
   const replies: Reply[] = [
-    { id: "rp1", discussionId: "d2", authorId: "u_teacher1", body: "display:flex; align-items:center; justify-content:center — think 'align across, justify along'.", createdAt: "2026-09-21T12:00:00.000Z" },
+    { id: "rp1", discussionId: "d2", authorId: "u_tutor1", body: "display:flex; align-items:center; justify-content:center — think 'align across, justify along'.", createdAt: "2026-09-21T12:00:00.000Z" },
     { id: "rp2", discussionId: "d1", authorId: "u_student_pro", body: "David from Nakuru — building a site for my sister's bakery.", createdAt: "2026-09-03T12:00:00.000Z" },
   ];
   const messages: Message[] = [
-    { id: "m1", fromId: "u_student_pro", toId: "u_teacher2", body: "Hi Peter, my capstone dataset has duplicate county names with different spellings. Best approach?", createdAt: "2026-10-17T10:00:00.000Z", read: true },
-    { id: "m2", fromId: "u_teacher2", toId: "u_student_pro", body: "Build a small mapping dictionary of variants → official name, then .replace(). We cover this in the cleaning lesson too.", createdAt: "2026-10-17T14:00:00.000Z", read: false },
+    { id: "m1", fromId: "u_student_pro", toId: "u_tutor2", body: "Hi Peter, my capstone dataset has duplicate county names with different spellings. Best approach?", createdAt: "2026-10-17T10:00:00.000Z", read: true },
+    { id: "m2", fromId: "u_tutor2", toId: "u_student_pro", body: "Build a small mapping dictionary of variants → official name, then .replace(). We cover this in the cleaning lesson too.", createdAt: "2026-10-17T14:00:00.000Z", read: false },
   ];
   const notifications: Notification[] = [
     { id: "n1", userId: "u_student_pro", title: "Assignment graded", body: "Build Your Landing Page — 88/100. Tap to read feedback.", createdAt: "2026-10-02T10:00:00.000Z", read: false, href: "/dashboard/student/assignments" },
-    { id: "n2", userId: "u_teacher2", title: "New submission to grade", body: "David Otieno submitted 'Clean a Messy Dataset'.", createdAt: "2026-10-18T10:00:00.000Z", read: false, href: "/dashboard/teacher/students" },
-    { id: "n3", userId: "u_admin1", title: "Teacher application awaiting review", body: "Kevin Omondi applied to teach Digital Marketing.", createdAt: "2026-10-20T10:00:00.000Z", read: false, href: "/dashboard/admin/teachers" },
+    { id: "n2", userId: "u_tutor2", title: "New submission to grade", body: "David Otieno submitted 'Clean a Messy Dataset'.", createdAt: "2026-10-18T10:00:00.000Z", read: false, href: "/dashboard/tutor/students" },
+    { id: "n3", userId: "u_admin1", title: "Tutor application awaiting review", body: "Kevin Omondi applied to teach Digital Marketing.", createdAt: "2026-10-20T10:00:00.000Z", read: false, href: "/dashboard/admin/tutors" },
     { id: "n4", userId: "u_student_free", title: "Welcome to EDVORA", body: "Your account is verified. Start with any free course.", createdAt: "2026-09-02T10:00:00.000Z", read: true },
   ];
   const reports: Report[] = [
     { id: "rep1", reporterId: "u_student4", targetType: "discussion", targetId: "d2", reason: "Off-topic spam link was posted and removed by author — flagging for awareness.", status: "open", createdAt: "2026-10-22T10:00:00.000Z" },
   ];
   const verifications: VerificationRecord[] = [
-    { id: "v1", userId: "u_teacher1", role: "teacher", from: "pending", to: "verified", decidedBy: "u_admin1", reason: "Credentials and references checked.", createdAt: "2026-06-10T10:00:00.000Z" },
+    { id: "v1", userId: "u_tutor1", role: "tutor", from: "pending", to: "verified", decidedBy: "u_admin1", reason: "Credentials and references checked.", createdAt: "2026-06-10T10:00:00.000Z" },
     { id: "v2", userId: "u_student_free", role: "student", from: "pending", to: "verified", decidedBy: "system", reason: "Automatic verification after contact confirmation.", createdAt: "2026-09-02T10:00:00.000Z" },
   ];
   const auditLogs: AuditLog[] = [
-    { id: "al1", actorId: "u_admin1", action: "teacher.verified", target: "u_teacher1", reason: "Credentials checked", createdAt: "2026-06-10T10:00:00.000Z" },
+    { id: "al1", actorId: "u_admin1", action: "tutor.verified", target: "u_tutor1", reason: "Credentials checked", createdAt: "2026-06-10T10:00:00.000Z" },
     { id: "al2", actorId: "u_admin1", action: "withdrawal.paid", target: "wd1", reason: "M-Pesa QK8PAID001", createdAt: "2026-10-10T10:00:00.000Z" },
     { id: "al3", actorId: "u_admin1", action: "course.published", target: "python-data", createdAt: "2026-08-20T10:00:00.000Z" },
   ];
@@ -424,7 +424,7 @@ function seed(): DB {
     messages, reports, verifications, auditLogs, announcements, goals,
     settings: {
       platformName: "EDVORA", tagline: "LEARN BEYOND LIMITS.", premiumPriceKES: 499,
-      teacherPercent: 80, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
+      tutorPercent: 80, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
       supportEmail: "support@edvora.ac.ke", supportPhone: "+254 700 000 000",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },

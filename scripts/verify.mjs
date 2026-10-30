@@ -39,8 +39,8 @@ const stu = new Jar();
   ok("Free student blocked from premium enrolment", bad.res.status === 403);
   const good = await stu.req("/api/courses/KCSE-maths/enroll", { method: "POST", body: "{}" });
   ok("Free course enrolment works", good.res.status === 200);
-  const teacherArea = await stu.req("/api/overview/teacher");
-  ok("Student cannot open teacher overview (403)", teacherArea.res.status === 403);
+  const tutorArea = await stu.req("/api/overview/tutor");
+  ok("Student cannot open tutor overview (403)", tutorArea.res.status === 403);
   const certEarly = await stu.req("/api/courses/web-foundations/certificate", { method: "POST", body: "{}" });
   ok("Certificate refused before completion", certEarly.res.status === 400);
 }
@@ -55,18 +55,18 @@ const stu = new Jar();
   const verify = await pro.req(`/api/certificates/verify/${cert.data.certificate.code}`);
   ok("Certificate verifies publicly", verify.data.valid === true);
 }
-// 5. Pending teacher cannot publish; verified teacher wallet works
+// 5. Pending tutor cannot publish; verified tutor wallet works
 {
   const pend = new Jar();
-  await login(pend, "kevin.omondi@example.co.ke", "Kevin@2026", "teacher");
+  await login(pend, "kevin.omondi@example.co.ke", "Kevin@2026", "tutor");
   const r = await pend.req("/api/courses", { method: "POST", body: JSON.stringify({ title: "Sneaky Course", category: "Business", sections: [] }) });
-  ok("Unverified teacher cannot create/publish courses", r.res.status === 403);
+  ok("Unverified tutor cannot create/publish courses", r.res.status === 403);
   const t = new Jar();
-  await login(t, "amina@edvora.ac.ke", "Teach@2026", "teacher");
-  const ov = await t.req("/api/overview/teacher");
-  ok("Teacher wallet reflects seeded allocation", ov.data.wallet.earned === 31280, `(${ov.data.wallet.earned})`);
+  await login(t, "amina@edvora.ac.ke", "Teach@2026", "tutor");
+  const ov = await t.req("/api/overview/tutor");
+  ok("Tutor wallet reflects seeded allocation", ov.data.wallet.earned === 31280, `(${ov.data.wallet.earned})`);
 }
-// 6. Admin hierarchy: cannot touch administrators; can verify teachers
+// 6. Admin hierarchy: cannot touch administrators; can verify tutors
 {
   const a = new Jar();
   await login(a, "admin@edvora.ac.ke", "Admin@2026", "administrator");
@@ -74,7 +74,7 @@ const stu = new Jar();
   const pendingAdmin = me.data.users.find(u => u.role === "administrator" && u.status === "pending");
   const r = await a.req(`/api/admin/users/${pendingAdmin.id}/status`, { method: "POST", body: JSON.stringify({ status: "verified", reason: "test" }) });
   ok("Administrator cannot approve another administrator", r.res.status === 403);
-  const settingsHack = await a.req("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ teacherPercent: 10 }) });
+  const settingsHack = await a.req("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ tutorPercent: 10 }) });
   ok("Administrator cannot change revenue share", settingsHack.res.status === 403);
   const sm = await a.req("/api/overview/control");
   ok("Administrator cannot open owner control (403)", sm.res.status === 403);

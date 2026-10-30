@@ -1,6 +1,6 @@
 # EDVORA — Learn Beyond Limits
 
-A complete, modern Learning Management System for Kenya and beyond: free & premium learning, verified instructors, M-Pesa subscriptions, usage-based teacher revenue sharing, and verifiable certificates.
+A complete, modern Learning Management System for Kenya and beyond: free & premium learning, verified tutors, M-Pesa subscriptions, usage-based tutor revenue sharing, and verifiable certificates.
 
 ## Stack
 
@@ -27,20 +27,20 @@ Choose the matching account type on the sign-in screen (quick-fill buttons inclu
 |---|---|---|---|
 | Student (Free) | faith@example.co.ke | Learn@2026 | Free plan |
 | Student (Premium) | david@example.co.ke | Learn@2026 | Active subscription, 1 certificate |
-| Teacher | amina@edvora.ac.ke | Teach@2026 | Verified, with earnings |
-| Teacher | peter@edvora.ac.ke | Teach@2026 | Verified, pending withdrawal |
-| Teacher applicant | kevin.omondi@example.co.ke | Kevin@2026 | Pending verification |
+| Tutor | amina@edvora.ac.ke | Teach@2026 | Verified, with earnings |
+| Tutor | peter@edvora.ac.ke | Teach@2026 | Verified, pending withdrawal |
+| Tutor applicant | kevin.omondi@example.co.ke | Kevin@2026 | Pending verification |
 | Administrator | admin@edvora.ac.ke | Admin@2026 | Verified |
 
 ## What works end-to-end
 
 - Role selection → role-specific auth with contact-verification codes; **database role is always authoritative** (portal selection can never escalate access)
-- Student auto-verification; teacher application → admin approval; controlled administrator appointment
+- Student auto-verification; tutor application → admin approval; controlled administrator appointment
 - Marketplace with search/filters; course pages with locked premium previews (protected media is never sent to unauthorised clients)
 - Classroom: video/reading lessons, resume-where-you-left-off, progress, quizzes (MCQ/true-false/short-answer, attempt limits, auto-grading), assignments + grading + feedback, discussions, reporting, study assistant constrained to authorised material
 - Certificates gated on 100% completion + quiz passes; public verification page (`/verify`)
 - Subscriptions via Daraja STK Push; premium activates **only** on verified callback; renewal extends expiry; expiry preserves all progress
-- Monthly revenue allocation: net revenue → configurable teacher pool (default 80%) weighted by verified premium engagement; single-allocation guarantee; wallets, statements, idempotent withdrawals, admin-approved payouts with references
+- Monthly revenue allocation: net revenue → configurable tutor pool (default 80%) weighted by verified premium engagement; single-allocation guarantee; wallets, statements, idempotent withdrawals, admin-approved payouts with references
 - Admin console: verification queues, moderation, finance, reports, announcements, audit logs, configurable settings/pricing
 - Branded startup loading experience, pinned horizontal course discovery, parallax hero, animated real statistics, `prefers-reduced-motion` support
 

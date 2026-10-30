@@ -32,7 +32,7 @@ export default function AdminSettings() {
           <F k="certificateMinQuiz" label="Certificate quiz pass %" type="number" />
           <F k="supportEmail" label="Support email" /><F k="supportPhone" label="Support phone" />
         </div>
-        <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Teacher revenue share is currently <strong>{s.teacherPercent}%</strong>. Changing the global revenue-sharing percentage is reserved to the platform owner.</div>
+        <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Tutor revenue share is currently <strong>{s.tutorPercent}%</strong>. Changing the global revenue-sharing percentage is reserved to the platform owner.</div>
         <button className="btn-primary" onClick={save}>Save Platform Settings</button>
       </div>
       <SettingsForm />

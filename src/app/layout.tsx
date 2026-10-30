@@ -5,7 +5,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 
 export const metadata: Metadata = {
   title: { default: "EDVORA — Learn Beyond Limits", template: "%s | EDVORA" },
-  description: "EDVORA is Kenya's premium learning platform. Free and premium courses from verified instructors, real progress tracking and verifiable certificates.",
+  description: "EDVORA is Kenya's premium learning platform. Free and premium courses from verified tutors, real progress tracking and verifiable certificates.",
   icons: { icon: "/brand/edvora-logo.png" },
 };
 

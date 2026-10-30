@@ -4,7 +4,7 @@ import { LayoutDashboard, Users, GraduationCap, BookOpenCheck, Landmark, Flag, M
 const NAV = [
   { href: "/dashboard/admin", label: "Overview", icon: <LayoutDashboard size={18} /> },
   { href: "/dashboard/admin/users", label: "Students & Users", icon: <Users size={18} /> },
-  { href: "/dashboard/admin/teachers", label: "Teacher Verification", icon: <GraduationCap size={18} /> },
+  { href: "/dashboard/admin/tutors", label: "Tutor Verification", icon: <GraduationCap size={18} /> },
   { href: "/dashboard/admin/courses", label: "Course Moderation", icon: <BookOpenCheck size={18} /> },
   { href: "/dashboard/admin/finance", label: "Finance & Payouts", icon: <Landmark size={18} /> },
   { href: "/dashboard/admin/reports", label: "Reports", icon: <Flag size={18} /> },

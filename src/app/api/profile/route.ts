@@ -2,7 +2,7 @@ import { getDB, persist, hashPassword, verifyPassword, publicUser } from "@/lib/
 import { jsonError, ApiError, requireRole } from "@/lib/auth";
 export async function PATCH(req: Request) {
   try {
-    const user = await requireRole("student", "teacher", "administrator", "owner");
+    const user = await requireRole("student", "tutor", "administrator", "owner");
     const db = getDB();
     const me = db.users.find(u => u.id === user.id)!;
     const b = await req.json();

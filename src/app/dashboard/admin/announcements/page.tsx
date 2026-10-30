@@ -14,13 +14,13 @@ export default function Announcements() {
   }
   return (
     <div>
-      <PageTitle title="Announcements" sub="Publish platform announcements to students, teachers or everyone. Delivered in-app instantly." />
+      <PageTitle title="Announcements" sub="Publish platform announcements to students, tutors or everyone. Delivered in-app instantly." />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <div className="card space-y-4 p-6">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="sm:col-span-2"><label className="label">Title</label><input className="input" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. New premium courses added" /></div>
-          <div><label className="label">Audience</label><select className="input" value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })}><option value="all-students">All students</option><option value="teachers">All teachers</option><option value="everyone">Everyone</option></select></div>
+          <div><label className="label">Audience</label><select className="input" value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })}><option value="all-students">All students</option><option value="tutors">All tutors</option><option value="everyone">Everyone</option></select></div>
         </div>
         <div><label className="label">Message</label><textarea rows={4} className="input" value={form.body} onChange={e => setForm({ ...form, body: e.target.value })} /></div>
         <button className="btn-primary" onClick={send}>Publish Announcement</button>

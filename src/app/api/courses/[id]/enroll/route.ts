@@ -14,7 +14,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!enr) {
       enr = { id: uid("e_"), studentId: user.id, courseId: id, enrolledAt: now(), completedLessons: [], saved: false, activeMin: 0 };
       db.enrollments.push(enr);
-      db.notifications.unshift({ id: uid("n_"), userId: course.instructorId, title: "New enrolment", body: `${user.fullName} enrolled in "${course.title}".`, createdAt: now(), read: false });
+      db.notifications.unshift({ id: uid("n_"), userId: course.tutorId, title: "New enrolment", body: `${user.fullName} enrolled in "${course.title}".`, createdAt: now(), read: false });
       db.notifications.unshift({ id: uid("n_"), userId: user.id, title: "Enrolment confirmed", body: `You are enrolled in "${course.title}". Happy learning!`, createdAt: now(), read: false });
     }
     persist();

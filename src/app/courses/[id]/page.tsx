@@ -47,9 +47,9 @@ export default function CoursePage() {
               <span className="flex items-center gap-1.5"><PlayCircle size={16} />{c.lessonCount} lessons</span>
               <span className="flex items-center gap-1.5"><Clock size={16} />{fmtDur(c.durationMin)}</span>
             </div>
-            <Link href={`/instructors/${c.instructorId}`} className="mt-7 flex w-fit items-center gap-3 rounded-2xl bg-white/5 p-3 pr-5 transition hover:bg-white/10">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white" style={{ background: c.instructorColor }}>{initials(c.instructorName)}</span>
-              <span><span className="flex items-center gap-1.5 text-sm font-bold">{c.instructorName}<BadgeCheck size={15} className="text-brand-300" /></span><span className="text-xs text-slate-400">{c.instructorTitle}</span></span>
+            <Link href={`/tutors/${c.tutorId}`} className="mt-7 flex w-fit items-center gap-3 rounded-2xl bg-white/5 p-3 pr-5 transition hover:bg-white/10">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white" style={{ background: c.tutorColor }}>{initials(c.tutorName)}</span>
+              <span><span className="flex items-center gap-1.5 text-sm font-bold">{c.tutorName}<BadgeCheck size={15} className="text-brand-300" /></span><span className="text-xs text-slate-400">{c.tutorTitle}</span></span>
             </Link>
           </div>
           <div className="lg:col-span-4">
@@ -79,7 +79,7 @@ export default function CoursePage() {
                 <ul className="mt-6 space-y-2.5 border-t border-slate-100 pt-5 text-sm text-slate-600">
                   <li className="flex gap-2"><PlayCircle size={17} className="text-brand-500" />{c.lessonCount} lessons · {fmtDur(c.durationMin)} total</li>
                   <li className="flex gap-2"><ClipboardList size={17} className="text-brand-500" />{data.assignments.length} assignments · {data.quizzes.length} quizzes</li>
-                  <li className="flex gap-2"><BookOpen size={17} className="text-brand-500" />Discussions & instructor messages</li>
+                  <li className="flex gap-2"><BookOpen size={17} className="text-brand-500" />Discussions & tutor messages</li>
                   <li className="flex gap-2"><CheckCircle2 size={17} className="text-brand-500" />Verifiable certificate on completion</li>
                 </ul>
               </div>

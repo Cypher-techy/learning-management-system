@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       .sort((a, b) => b.score - a.score);
     const best = ranked[0];
     if (!best || best.score === 0)
-      return Response.json({ answer: `That topic is not covered in the lessons you currently have access to in "${course.title}". Try the lesson list, or ask your instructor from the Messages page. (Connect an AI provider via OPENAI_API_KEY for free-form explanations.)` });
+      return Response.json({ answer: `That topic is not covered in the lessons you currently have access to in "${course.title}". Try the lesson list, or ask your tutor from the Messages page. (Connect an AI provider via OPENAI_API_KEY for free-form explanations.)` });
     return Response.json({ answer: `From "${best.l.title}" in ${course.title}:\n\n${best.l.body}\n\nTip: open that lesson to work through the full explanation and examples.` });
   } catch (e) { return jsonError(e); }
 }

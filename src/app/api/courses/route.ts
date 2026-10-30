@@ -11,16 +11,16 @@ export async function GET(req: Request) {
   const category = url.searchParams.get("category") || "";
   const level = url.searchParams.get("level") || "";
   const access = url.searchParams.get("access") || "";
-  const instructor = url.searchParams.get("instructor") || "";
+  const tutor = url.searchParams.get("tutor") || "";
   const sort = url.searchParams.get("sort") || "recent";
   let list = db.courses.filter(c => c.status === "published");
-  if (user?.role === "teacher") list = [...list, ...db.courses.filter(c => c.instructorId === user.id && c.status !== "published")];
+  if (user?.role === "tutor") list = [...list, ...db.courses.filter(c => c.tutorId === user.id && c.status !== "published")];
   if (user?.role === "administrator" || user?.role === "owner") list = db.courses;
   if (q) list = list.filter(c => (c.title + c.description + c.category).toLowerCase().includes(q));
   if (category) list = list.filter(c => c.category === category);
   if (level) list = list.filter(c => c.level === level);
   if (access) list = list.filter(c => c.access === access);
-  if (instructor) list = list.filter(c => c.instructorId === instructor);
+  if (tutor) list = list.filter(c => c.tutorId === tutor);
   const out = list.map(c => serializeCourse(db, c, user));
   if (sort === "popular") out.sort((a, b) => b.enrolledCount - a.enrolledCount);
   else if (sort === "rating") out.sort((a, b) => (b.rating || 0) - (a.rating || 0));
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const user = await requireRole("teacher");
+    const user = await requireRole("tutor");
     requireVerified(user);
     const b = await req.json();
     if (!b.title?.trim() || !b.category) throw new ApiError(400, "Course title and category are required.");
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const course: Course = {
       id, slug: id, title: b.title.trim(), subtitle: b.subtitle || "", description: b.description || "",
       category: b.category, level: b.level || "Beginner", access: b.access === "premium" ? "premium" : "free",
-      instructorId: user.id, status: b.submit ? "in_review" : "draft",
+      tutorId: user.id, status: b.submit ? "in_review" : "draft",
       image: b.image || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=70",
       objectives: (b.objectives || "").split("\n").filter(Boolean),
       requirements: (b.requirements || "").split("\n").filter(Boolean),

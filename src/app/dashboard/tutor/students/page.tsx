@@ -3,8 +3,8 @@ import { useState } from "react";
 import { api, useApi, fmtDate } from "@/lib/client";
 import { Loading, PageTitle, ProgressBar, StatusChip, Empty } from "@/components/ui";
 
-export default function TeacherStudents() {
-  const { data, loading, reload } = useApi("/api/overview/teacher");
+export default function TutorStudents() {
+  const { data, loading, reload } = useApi("/api/overview/tutor");
   const [grades, setGrades] = useState<Record<string, { grade: number; feedback: string }>>({});
   const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
   const [ann, setAnn] = useState({ title: "", body: "", courseId: "" });

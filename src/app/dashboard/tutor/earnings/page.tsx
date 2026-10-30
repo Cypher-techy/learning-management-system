@@ -5,7 +5,7 @@ import { api, useApi, kes, fmtDate } from "@/lib/client";
 import { Loading, PageTitle, Stat, StatusChip } from "@/components/ui";
 
 export default function Earnings() {
-  const { data, loading, reload } = useApi("/api/overview/teacher");
+  const { data, loading, reload } = useApi("/api/overview/tutor");
   const [amount, setAmount] = useState("");
   const [payout, setPayout] = useState<any>(null);
   const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
@@ -18,12 +18,12 @@ export default function Earnings() {
   }
   async function withdraw() {
     setErr(""); setMsg("");
-    try { await api("/api/teacher/withdrawals", { method: "POST", body: JSON.stringify({ amount: Number(amount), idempotencyKey: `wd-${u.id}-${Date.now()}` }) }); setMsg("Withdrawal requested. An administrator will review it; you will be notified at each step."); setAmount(""); reload(); }
+    try { await api("/api/tutor/withdrawals", { method: "POST", body: JSON.stringify({ amount: Number(amount), idempotencyKey: `wd-${u.id}-${Date.now()}` }) }); setMsg("Withdrawal requested. An administrator will review it; you will be notified at each step."); setAmount(""); reload(); }
     catch (e) { setErr(e instanceof Error ? e.message : "Withdrawal failed"); }
   }
   return (
     <div>
-      <PageTitle title="Earnings Wallet" sub="Transparent monthly revenue statements. Teacher pool: 80% of net subscription revenue, allocated by premium engagement." />
+      <PageTitle title="Earnings Wallet" sub="Transparent monthly revenue statements. Tutor pool: 80% of net subscription revenue, allocated by premium engagement." />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -56,7 +56,7 @@ export default function Earnings() {
           </div>
           <div className="card p-6">
             <h3 className="font-extrabold">Revenue periods</h3>
-            {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3.5 text-sm"><span><strong>{p.label}</strong><br /><span className="text-xs text-slate-500">Net {kes(p.net)} · Teacher pool {kes(p.teacherPool)} ({p.teacherPercent}%)</span></span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "IN PROGRESS"}</span></div>)}
+            {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3.5 text-sm"><span><strong>{p.label}</strong><br /><span className="text-xs text-slate-500">Net {kes(p.net)} · Tutor pool {kes(p.tutorPool)} ({p.tutorPercent}%)</span></span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "IN PROGRESS"}</span></div>)}
           </div>
         </div>
         <div className="card p-6 lg:col-span-7">

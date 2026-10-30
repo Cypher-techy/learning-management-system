@@ -1,11 +1,11 @@
 import { getDB, courseLessons, isPremiumActive, publicUser, type DB, type User } from "./db";
 
 export function nameOf(db: DB, id: string) { return db.users.find(u => u.id === id)?.fullName || "Unknown"; }
-export function wallet(db: DB, teacherId: string) {
-  const txs = db.walletTxs.filter(t => t.teacherId === teacherId);
+export function wallet(db: DB, tutorId: string) {
+  const txs = db.walletTxs.filter(t => t.tutorId === tutorId);
   const earned = txs.filter(t => t.type === "earning" || (t.type === "adjustment" && t.amount > 0)).reduce((a, t) => a + Math.max(t.amount, 0), 0);
   const withdrawn = Math.abs(txs.filter(t => t.type === "withdrawal").reduce((a, t) => a + t.amount, 0));
-  const heldByPending = db.withdrawals.filter(w => w.teacherId === teacherId && w.status === "pending").reduce((a, w) => a + w.amount, 0);
+  const heldByPending = db.withdrawals.filter(w => w.tutorId === tutorId && w.status === "pending").reduce((a, w) => a + w.amount, 0);
   const balance = txs.reduce((a, t) => a + t.amount, 0);
   return { earned, withdrawn, balance, available: balance - heldByPending, pending: heldByPending };
 }
@@ -13,7 +13,7 @@ export function enrichCourse(db: DB, c: any, enr?: any) {
   const total = courseLessons(c).length;
   return {
     id: c.id, title: c.title, subtitle: c.subtitle, image: c.image, category: c.category,
-    level: c.level, access: c.access, status: c.status, instructorName: nameOf(db, c.instructorId),
+    level: c.level, access: c.access, status: c.status, tutorName: nameOf(db, c.tutorId),
     progress: enr && total ? Math.round((enr.completedLessons.length / total) * 100) : 0,
     completedLessons: enr?.completedLessons.length || 0, totalLessons: total,
     lastLessonId: enr?.lastLessonId, saved: !!enr?.saved, completedAt: enr?.completedAt,
@@ -39,7 +39,7 @@ export function studentData(db: DB, user: User) {
     assignments: db.assignments.filter(a => courseIds.includes(a.courseId)).map(a => ({ ...a, courseTitle: db.courses.find(c => c.id === a.courseId)?.title, submission: mySubs.find(s => s.assignmentId === a.id) || null })),
     submissions: mySubs,
     quizzes: db.quizzes.filter(q => courseIds.includes(q.courseId)).map(q => ({ id: q.id, title: q.title, courseId: q.courseId, courseTitle: db.courses.find(c => c.id === q.courseId)?.title, timeLimitMin: q.timeLimitMin, maxAttempts: q.maxAttempts, attempts: db.quizAttempts.filter(a => a.quizId === q.id && a.studentId === user.id) })),
-    certificates: db.certificates.filter(c => c.studentId === user.id).map(c => ({ ...c, courseTitle: db.courses.find(x => x.id === c.courseId)?.title, instructorName: nameOf(db, db.courses.find(x => x.id === c.courseId)?.instructorId || "") })),
+    certificates: db.certificates.filter(c => c.studentId === user.id).map(c => ({ ...c, courseTitle: db.courses.find(x => x.id === c.courseId)?.title, tutorName: nameOf(db, db.courses.find(x => x.id === c.courseId)?.tutorId || "") })),
     subscription: sub || null,
     payments: db.payments.filter(p => p.studentId === user.id),
     notifications: db.notifications.filter(n => n.userId === user.id).slice(0, 30),
@@ -47,11 +47,11 @@ export function studentData(db: DB, user: User) {
     recommended: db.courses.filter(c => c.status === "published" && !courseIds.includes(c.id)).slice(0, 4).map(c => enrichCourse(db, c)),
     announcements: db.announcements.filter(a => ["all-students", "everyone"].includes(a.audience)).slice(0, 5),
     settings: db.settings,
-    teachers: db.users.filter(u => u.role === "teacher" && u.status === "verified").map(u => ({ id: u.id, fullName: u.fullName, title: u.title })),
+    tutors: db.users.filter(u => u.role === "tutor" && u.status === "verified").map(u => ({ id: u.id, fullName: u.fullName, title: u.title })),
   };
 }
-export function teacherData(db: DB, user: User) {
-  const myCourses = db.courses.filter(c => c.instructorId === user.id);
+export function tutorData(db: DB, user: User) {
+  const myCourses = db.courses.filter(c => c.tutorId === user.id);
   const myCourseIds = myCourses.map(c => c.id);
   const myEnr = db.enrollments.filter(e => myCourseIds.includes(e.courseId));
   const w = wallet(db, user.id);
@@ -68,8 +68,8 @@ export function teacherData(db: DB, user: User) {
     courses: myCourses.map(c => ({ ...enrichCourse(db, c), moderationNote: c.moderationNote })),
     students: myEnr.map(e => ({ enrollmentId: e.id, studentId: e.studentId, studentName: nameOf(db, e.studentId), courseTitle: db.courses.find(c => c.id === e.courseId)?.title, progress: enrichCourse(db, db.courses.find(c => c.id === e.courseId)!, e).progress, activeMin: e.activeMin })),
     submissionsToGrade: db.submissions.filter(s => myCourseIds.includes(s.courseId)).map(s => ({ ...s, studentName: nameOf(db, s.studentId), assignmentTitle: db.assignments.find(a => a.id === s.assignmentId)?.title, courseTitle: db.courses.find(c => c.id === s.courseId)?.title })),
-    wallet: w, walletTxs: db.walletTxs.filter(t => t.teacherId === user.id),
-    withdrawals: db.withdrawals.filter(x => x.teacherId === user.id),
+    wallet: w, walletTxs: db.walletTxs.filter(t => t.tutorId === user.id),
+    withdrawals: db.withdrawals.filter(x => x.tutorId === user.id),
     notifications: db.notifications.filter(n => n.userId === user.id).slice(0, 30),
     reviews: db.reviews.filter(r => myCourseIds.includes(r.courseId)).map(r => ({ ...r, studentName: nameOf(db, r.studentId), courseTitle: db.courses.find(c => c.id === r.courseId)?.title })),
     revenuePeriods: db.revenuePeriods,
@@ -83,9 +83,9 @@ export function adminData(db: DB, user: User) {
     stats: {
       students: db.users.filter(u => u.role === "student").length,
       verifiedStudents: db.users.filter(u => u.role === "student" && u.status === "verified").length,
-      teachers: db.users.filter(u => u.role === "teacher").length,
-      verifiedTeachers: db.users.filter(u => u.role === "teacher" && u.status === "verified").length,
-      pendingTeachers: db.users.filter(u => u.role === "teacher" && u.status === "pending").length,
+      tutors: db.users.filter(u => u.role === "tutor").length,
+      verifiedTutors: db.users.filter(u => u.role === "tutor" && u.status === "verified").length,
+      pendingTutors: db.users.filter(u => u.role === "tutor" && u.status === "pending").length,
       pendingAdministrators: db.users.filter(u => u.role === "administrator" && u.status === "pending").length,
       publishedCourses: db.courses.filter(c => c.status === "published").length,
       coursesInReview: db.courses.filter(c => c.status === "in_review").length,
@@ -100,7 +100,7 @@ export function adminData(db: DB, user: User) {
     courses: db.courses.map(c => ({ ...enrichCourse(db, c), moderationNote: c.moderationNote })),
     payments: db.payments.map(p => ({ ...p, studentName: nameOf(db, p.studentId) })),
     subscriptions: db.subscriptions.map(s => ({ ...s, studentName: nameOf(db, s.studentId) })),
-    withdrawals: db.withdrawals.map(w => ({ ...w, teacherName: nameOf(db, w.teacherId), available: wallet(db, w.teacherId).available })),
+    withdrawals: db.withdrawals.map(w => ({ ...w, tutorName: nameOf(db, w.tutorId), available: wallet(db, w.tutorId).available })),
     revenuePeriods: db.revenuePeriods,
     auditLogs: db.auditLogs.slice(0, 60).map(a => ({ ...a, actorName: nameOf(db, a.actorId) })),
     verifications: db.verifications.slice(0, 40).map(v => ({ ...v, userName: nameOf(db, v.userId), decidedByName: v.decidedBy === "system" ? "System (automatic)" : nameOf(db, v.decidedBy) })),

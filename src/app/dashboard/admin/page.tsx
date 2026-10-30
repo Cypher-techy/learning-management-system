@@ -9,7 +9,7 @@ export default function AdminHome() {
   if (loading) return <Loading />; if (error || !data) return <p className="text-rose-600">{error}</p>;
   const s = data.stats;
   const queue = [
-    { label: "Teacher applications pending", value: s.pendingTeachers, href: "/dashboard/admin/teachers", icon: <GraduationCap size={19} /> },
+    { label: "Tutor applications pending", value: s.pendingTutors, href: "/dashboard/admin/tutors", icon: <GraduationCap size={19} /> },
     { label: "Courses awaiting review", value: s.coursesInReview, href: "/dashboard/admin/courses", icon: <BookOpenCheck size={19} /> },
     { label: "Withdrawal requests pending", value: s.pendingWithdrawals, href: "/dashboard/admin/finance", icon: <Wallet size={19} /> },
     { label: "Open reports", value: s.openReports, href: "/dashboard/admin/reports", icon: <Flag size={19} /> },
@@ -24,7 +24,7 @@ export default function AdminHome() {
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Students" value={s.students} sub={`${s.verifiedStudents} verified`} icon={<Users size={19} />} />
-        <Stat label="Teachers" value={s.teachers} sub={`${s.verifiedTeachers} verified · ${s.pendingTeachers} pending`} icon={<GraduationCap size={19} />} />
+        <Stat label="Tutors" value={s.tutors} sub={`${s.verifiedTutors} verified · ${s.pendingTutors} pending`} icon={<GraduationCap size={19} />} />
         <Stat label="Active Subscriptions" value={s.activeSubscriptions} sub={`${s.expiredSubscriptions} expired/inactive`} icon={<Crown size={19} />} />
         <Stat label="Collected Revenue" value={kes(s.revenueKES)} sub={`${s.failedPayments} failed payments`} icon={<Landmark size={19} />} />
       </div>

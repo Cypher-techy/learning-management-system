@@ -6,7 +6,7 @@
 
 create extension if not exists pgcrypto;
 
-create type account_role    as enum ('student','teacher','administrator','owner');
+create type account_role    as enum ('student','tutor','administrator','owner');
 create type account_status  as enum ('pending','verified','rejected','suspended','disabled');
 create type course_status   as enum ('draft','in_review','approved','rejected','published','unpublished');
 create type course_access   as enum ('free','premium');
@@ -34,7 +34,7 @@ create table profiles (
 create table roles (name account_role primary key, description text);
 create table permissions (id serial primary key, code text unique not null, description text);
 create table role_permissions (role account_role references roles(name), permission int references permissions(id), primary key(role,permission));
-insert into roles values ('student','Learner'),('teacher','Teacher / Lecturer'),('administrator','Administrator'),('owner','Platform owner') on conflict do nothing;
+insert into roles values ('student','Learner'),('tutor','Tutor'),('administrator','Administrator'),('owner','Platform owner') on conflict do nothing;
 
 create table verification_records (
   id uuid primary key default gen_random_uuid(),
@@ -43,7 +43,7 @@ create table verification_records (
   decided_by uuid references profiles(id), reason text,
   created_at timestamptz not null default now()
 );
-create table teacher_applications (
+create table tutor_applications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references profiles(id), documents jsonb default '[]',
   submitted_at timestamptz not null default now()
@@ -61,7 +61,7 @@ create table courses (
   category_id int references course_categories(id),
   level text not null default 'Beginner',
   access course_access not null default 'free',
-  instructor_id uuid not null references profiles(id),
+  tutor_id uuid not null references profiles(id),
   status course_status not null default 'draft',
   thumbnail_url text, objectives jsonb default '[]', requirements jsonb default '[]',
   featured boolean not null default false, moderation_note text,
@@ -134,23 +134,23 @@ create table revenue_periods (
   id uuid primary key default gen_random_uuid(), label text not null,
   starts_at date not null, ends_at date not null,
   gross int not null default 0, refunds int not null default 0, fees int not null default 0, taxes int not null default 0,
-  net int not null default 0, teacher_pool int not null default 0, platform_share int not null default 0,
-  teacher_percent int not null default 80, allocated boolean not null default false, allocated_at timestamptz
+  net int not null default 0, tutor_pool int not null default 0, platform_share int not null default 0,
+  tutor_percent int not null default 80, allocated boolean not null default false, allocated_at timestamptz
 );
-create table teacher_revenue_allocations (
+create table tutor_revenue_allocations (
   id uuid primary key default gen_random_uuid(), period_id uuid references revenue_periods(id),
-  teacher_id uuid references profiles(id), weight numeric not null, amount int not null,
-  unique(period_id, teacher_id)
+  tutor_id uuid references profiles(id), weight numeric not null, amount int not null,
+  unique(period_id, tutor_id)
 );
-create table instructor_wallets (teacher_id uuid primary key references profiles(id), balance int not null default 0, updated_at timestamptz not null default now());
+create table tutor_wallets (tutor_id uuid primary key references profiles(id), balance int not null default 0, updated_at timestamptz not null default now());
 create table wallet_transactions (
-  id uuid primary key default gen_random_uuid(), teacher_id uuid references profiles(id),
+  id uuid primary key default gen_random_uuid(), tutor_id uuid references profiles(id),
   type text not null check (type in ('earning','withdrawal','adjustment')),
   amount int not null, note text, period_id uuid references revenue_periods(id),
   created_at timestamptz not null default now()
 );
 create table withdrawal_requests (
-  id uuid primary key default gen_random_uuid(), teacher_id uuid references profiles(id),
+  id uuid primary key default gen_random_uuid(), tutor_id uuid references profiles(id),
   amount int not null check (amount > 0), method text not null, account text not null,
   status txn_status not null default 'pending', decided_by uuid references profiles(id),
   idempotency_key text unique not null, created_at timestamptz not null default now()
@@ -204,28 +204,28 @@ create policy profiles_self on profiles for select using (id = auth.uid() or pub
 create policy profiles_update_self on profiles for update using (id = auth.uid() or public.is_owner());
 -- Role/status changes only via trusted server (service role) — no client policy grants them.
 
--- Courses: public can read published; teachers manage own; admins moderate.
-create policy courses_public on courses for select using (status='published' or instructor_id = auth.uid() or public.is_verified_admin() or public.is_owner());
-create policy courses_teacher_write on courses for insert with check (instructor_id = auth.uid() and public.my_role()='teacher');
-create policy courses_teacher_update on courses for update using (instructor_id = auth.uid() or public.is_verified_admin() or public.is_owner());
+-- Courses: public can read published; tutors manage own; admins moderate.
+create policy courses_public on courses for select using (status='published' or tutor_id = auth.uid() or public.is_verified_admin() or public.is_owner());
+create policy courses_tutor_write on courses for insert with check (tutor_id = auth.uid() and public.my_role()='tutor');
+create policy courses_tutor_update on courses for update using (tutor_id = auth.uid() or public.is_verified_admin() or public.is_owner());
 
 -- Enrollments & progress: strictly the student's own.
 create policy enrol_self on enrollments for all using (student_id = auth.uid() or public.is_verified_admin() or public.is_owner());
 create policy progress_self on lesson_progress for all using (exists(select 1 from enrollments e where e.id=enrollment_id and e.student_id = auth.uid()));
 
--- Submissions: student writes own; course instructor grades.
+-- Submissions: student writes own; course tutor grades.
 create policy subs_self on assignment_submissions for all using (
   student_id = auth.uid()
-  or exists(select 1 from assignments a join courses c on c.id=a.course_id where a.id=assignment_id and c.instructor_id = auth.uid())
+  or exists(select 1 from assignments a join courses c on c.id=a.course_id where a.id=assignment_id and c.tutor_id = auth.uid())
   or public.is_owner());
 
 -- Payments: student reads own; writes only via server (Daraja) using service role.
 create policy pay_self on payment_transactions for select using (student_id = auth.uid() or public.is_verified_admin() or public.is_owner());
 
--- Wallets/withdrawals: teacher reads own; admins approve; payouts recorded server-side.
-create policy wallet_self on wallet_transactions for select using (teacher_id = auth.uid() or public.is_verified_admin() or public.is_owner());
-create policy wd_self on withdrawal_requests for select using (teacher_id = auth.uid() or public.is_verified_admin() or public.is_owner());
-create policy wd_create on withdrawal_requests for insert with check (teacher_id = auth.uid() and public.my_role()='teacher');
+-- Wallets/withdrawals: tutor reads own; admins approve; payouts recorded server-side.
+create policy wallet_self on wallet_transactions for select using (tutor_id = auth.uid() or public.is_verified_admin() or public.is_owner());
+create policy wd_self on withdrawal_requests for select using (tutor_id = auth.uid() or public.is_verified_admin() or public.is_owner());
+create policy wd_create on withdrawal_requests for insert with check (tutor_id = auth.uid() and public.my_role()='tutor');
 
 -- Messages/notifications: participants & owners only.
 create policy msg_participants on messages for all using (from_id = auth.uid() or to_id = auth.uid());
@@ -239,5 +239,5 @@ create policy audit_admin on audit_logs for select using (public.is_verified_adm
 
 -- Storage buckets (create in dashboard):
 --   course-media (public), thumbnails (public),
---   teacher-credentials (private), submissions (private), certificates (private)
+--   tutor-credentials (private), submissions (private), certificates (private)
 -- Private buckets must use signed URLs with short expiry.

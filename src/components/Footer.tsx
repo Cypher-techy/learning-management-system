@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="relative mx-auto grid max-w-7xl gap-12 px-5 py-16 md:grid-cols-2 lg:grid-cols-5 lg:px-8">
         <div className="lg:col-span-2">
           <Logo />
-          <p className="mt-5 max-w-sm text-sm leading-relaxed">Kenya's premium learning platform. Learn from verified instructors, track real progress, and earn certificates that mean something.</p>
+          <p className="mt-5 max-w-sm text-sm leading-relaxed">Kenya's premium learning platform. Learn from verified tutors, track real progress, and earn certificates that mean something.</p>
           <div className="mt-6 space-y-2 text-sm">
             <p className="flex items-center gap-2"><Mail size={15} /> support@edvora.ac.ke</p>
             <p className="flex items-center gap-2"><Phone size={15} /> +254 700 000 000</p>
@@ -19,7 +19,7 @@ export default function Footer() {
         <div><h4 className="mb-4 text-sm font-bold uppercase tracking-widest text-white">Learn</h4><ul className="space-y-2.5 text-sm">
           <li><Link href="/explore" className="hover:text-white">Explore Courses</Link></li>
           <li><Link href="/plans" className="hover:text-white">EDVORA Premium</Link></li>
-          <li><Link href="/instructors" className="hover:text-white">Our Instructors</Link></li>
+          <li><Link href="/tutors" className="hover:text-white">Our Tutors</Link></li>
           <li><Link href="/verify" className="hover:text-white">Verify a Certificate</Link></li></ul></div>
         <div><h4 className="mb-4 text-sm font-bold uppercase tracking-widest text-white">Company</h4><ul className="space-y-2.5 text-sm">
           <li><Link href="/about" className="hover:text-white">About EDVORA</Link></li>
@@ -29,7 +29,7 @@ export default function Footer() {
         <div><h4 className="mb-4 text-sm font-bold uppercase tracking-widest text-white">Legal</h4><ul className="space-y-2.5 text-sm">
           <li><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></li>
           <li><Link href="/terms" className="hover:text-white">Terms & Conditions</Link></li>
-          <li><Link href="/roles" className="hover:text-white">Teach on EDVORA</Link></li></ul></div>
+          <li><Link href="/roles" className="hover:text-white">Tutor on EDVORA</Link></li></ul></div>
       </div>
       <div className="relative border-t border-white/10 py-6 text-center text-xs">© {new Date().getFullYear()} EDVORA. LEARN BEYOND LIMITS. All rights reserved.</div>
     </footer>

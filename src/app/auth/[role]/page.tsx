@@ -12,8 +12,8 @@ const META: Record<string, { title: string; subtitle: string; demo: { email: str
   student: { title: "Student", subtitle: "Learn, explore courses and develop new skills.", demo: [
     { email: "faith@example.co.ke", password: "Learn@2026", label: "Free student (Faith)" },
     { email: "david@example.co.ke", password: "Learn@2026", label: "Premium student (David)" }] },
-  teacher: { title: "Teacher / Lecturer", subtitle: "Share knowledge, teach students and earn.", demo: [
-    { email: "amina@edvora.ac.ke", password: "Teach@2026", label: "Verified teacher (Dr Amina)" },
+  tutor: { title: "Tutor", subtitle: "Share knowledge, teach students and earn.", demo: [
+    { email: "amina@edvora.ac.ke", password: "Teach@2026", label: "Verified tutor (Dr Amina)" },
     { email: "kevin.omondi@example.co.ke", password: "Kevin@2026", label: "Pending applicant (Kevin)" }] },
   administrator: { title: "Administrator", subtitle: "Authorized platform management services.", demo: [
     { email: "admin@edvora.ac.ke", password: "Admin@2026", label: "Verified admin (Grace)" }] },
@@ -69,7 +69,7 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent" />
         <div className="absolute bottom-12 left-12 right-12 text-white">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-300">Learn Beyond Limits.</p>
-          <h2 className="mt-3 text-4xl font-extrabold leading-tight">{role === "student" ? "Your classroom awaits." : role === "teacher" ? "Your students await." : "The platform awaits."}</h2>
+          <h2 className="mt-3 text-4xl font-extrabold leading-tight">{role === "student" ? "Your classroom awaits." : role === "tutor" ? "Your students await." : "The platform awaits."}</h2>
           <p className="mt-3 max-w-md text-slate-300">{meta.subtitle}</p>
         </div>
       </div>
@@ -78,8 +78,8 @@ export default function AuthPage() {
         <div className="flex items-center justify-between"><Logo dark={false} /><Link href="/roles" className="text-sm font-semibold text-slate-500 hover:text-brand-600">Change account type</Link></div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="mx-auto my-auto w-full max-w-md py-10">
           <span className="chip grad-bg text-white">{meta.title.toUpperCase()} ACCOUNT</span>
-          <h1 className="mt-4 text-3xl font-extrabold">{mode === "login" ? "Welcome back" : role === "teacher" ? "Apply to teach" : role === "administrator" ? "Request administrator access" : "Create your account"}</h1>
-          <p className="mt-2 text-sm text-slate-500">{mode === "login" ? meta.subtitle : role === "student" ? "Verified instantly after contact confirmation — start learning free today." : role === "teacher" ? "Applications are reviewed by our administration team before publishing is enabled." : "Administrator access is controlled and requires final approval."}</p>
+          <h1 className="mt-4 text-3xl font-extrabold">{mode === "login" ? "Welcome back" : role === "tutor" ? "Apply as a tutor" : role === "administrator" ? "Request administrator access" : "Create your account"}</h1>
+          <p className="mt-2 text-sm text-slate-500">{mode === "login" ? meta.subtitle : role === "student" ? "Verified instantly after contact confirmation — start learning free today." : role === "tutor" ? "Applications are reviewed by our administration team before publishing is enabled." : "Administrator access is controlled and requires final approval."}</p>
 
           <div className="mt-7 grid grid-cols-2 rounded-full bg-slate-200/70 p-1" role="tablist">
             {(["login", "register"] as const).map(m => <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(""); setInfo(""); setStep(1); }} className={`rounded-full py-2.5 text-sm font-bold transition ${mode === m ? "bg-white shadow-soft text-navy-900" : "text-slate-500"}`}>{m === "login" ? "Sign In" : "Register"}</button>)}
@@ -114,13 +114,13 @@ export default function AuthPage() {
                 <div><label className="label">Email</label><input required type="email" className="input" value={form.email} onChange={set("email")} placeholder="you@example.co.ke" /></div>
                 <div><label className="label">Phone (M-Pesa)</label><input required className="input" value={form.phone} onChange={set("phone")} placeholder="0712 345 678" /></div>
               </div>
-              {role === "teacher" && (<>
+              {role === "tutor" && (<>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div><label className="label">Professional title</label><input required className="input" value={form.title} onChange={set("title")} placeholder="e.g. Lecturer, Data Analyst" /></div>
+                  <div><label className="label">Professional title</label><input required className="input" value={form.title} onChange={set("title")} placeholder="e.g. Tutor, Data Analyst" /></div>
                   <div><label className="label">Area of expertise</label><input required className="input" value={form.expertise} onChange={set("expertise")} placeholder="e.g. Web Development" /></div>
                 </div>
                 <div><label className="label">Qualifications</label><input required className="input" value={form.qualifications} onChange={set("qualifications")} placeholder="e.g. MSc Computer Science, UoN" /></div>
-                <div><label className="label">Teaching experience</label><input className="input" value={form.experience} onChange={set("experience")} placeholder="e.g. 5 years tutoring & training" /></div>
+                <div><label className="label">Teaching / tutoring experience</label><input className="input" value={form.experience} onChange={set("experience")} placeholder="e.g. 5 years tutoring & training" /></div>
                 <div><label className="label">Short professional bio</label><textarea className="input" rows={3} value={form.bio} onChange={set("bio")} placeholder="Tell students who you are and how you teach…" /></div>
                 <div><label className="label">Proposed courses / subjects</label><input className="input" value={form.proposedCourses} onChange={set("proposedCourses")} placeholder="e.g. React for Beginners; Excel for Business" /></div>
                 <p className="rounded-xl bg-slate-100 p-3 text-xs text-slate-500">Credential documents and a profile photograph are requested securely during review. Publishing and earnings unlock after approval.</p>
@@ -130,7 +130,7 @@ export default function AuthPage() {
                 <div><label className="label">Password</label><input required type="password" className="input" value={form.password} onChange={set("password")} placeholder="Min. 8 characters" /></div>
                 <div><label className="label">Confirm password</label><input required type="password" className="input" value={form.confirmPassword} onChange={set("confirmPassword")} placeholder="Repeat password" /></div>
               </div>
-              <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Please wait…" : role === "teacher" ? "Submit Application" : "Register & Verify Contact"}</button>
+              <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Please wait…" : role === "tutor" ? "Submit Application" : "Register & Verify Contact"}</button>
               <p className="text-center text-xs text-slate-400">By registering you agree to EDVORA's <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
             </form>
           )}

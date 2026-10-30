@@ -3,13 +3,13 @@ import { useState } from "react";
 import { api, useApi, fmtDate } from "@/lib/client";
 import { Loading, PageTitle, StatusChip, Empty } from "@/components/ui";
 
-export default function TeacherVerification() {
+export default function TutorVerification() {
   const { data, loading, reload } = useApi("/api/overview/admin");
   const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
   if (loading || !data) return <Loading />;
-  const teachers = data.users.filter((u: any) => u.role === "teacher");
-  const pending = teachers.filter((u: any) => u.status === "pending");
-  const decided = teachers.filter((u: any) => u.status !== "pending");
+  const tutors = data.users.filter((u: any) => u.role === "tutor");
+  const pending = tutors.filter((u: any) => u.status === "pending");
+  const decided = tutors.filter((u: any) => u.status !== "pending");
   async function decide(id: string, status: string, name: string) {
     const reason = window.prompt(`${status === "verified" ? "Approve" : status === "rejected" ? "Reject" : "Update"} ${name}. Record a reason (audit log + applicant notification):`, status === "verified" ? "Credentials and profile verified." : "") ?? null;
     if (reason === null) return;
@@ -19,11 +19,11 @@ export default function TeacherVerification() {
   }
   return (
     <div>
-      <PageTitle title="Teacher Verification" sub="Only approved teachers can publish courses and earn revenue. Review credentials carefully — every decision is recorded." />
+      <PageTitle title="Tutor Verification" sub="Only approved tutors can publish courses and earn revenue. Review credentials carefully — every decision is recorded." />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <h2 className="mb-4 text-lg font-extrabold">Pending applications ({pending.length})</h2>
-      {pending.length === 0 ? <Empty title="No pending applications" body="New teacher applications will appear here for review." /> : (
+      {pending.length === 0 ? <Empty title="No pending applications" body="New tutor applications will appear here for review." /> : (
         <div className="space-y-4">
           {pending.map((u: any) => (
             <div key={u.id} className="card p-6">
@@ -39,7 +39,7 @@ export default function TeacherVerification() {
               </div>
               <p className="mt-3 text-xs text-slate-400">Credential documents are stored in a private bucket (production) and must be checked against originals before approval.</p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <button className="btn-primary !py-2.5" onClick={() => decide(u.id, "verified", u.fullName)}>Approve Teacher</button>
+                <button className="btn-primary !py-2.5" onClick={() => decide(u.id, "verified", u.fullName)}>Approve Tutor</button>
                 <button className="btn-light !py-2.5" onClick={() => decide(u.id, "rejected", u.fullName)}>Reject</button>
                 <button className="btn-light !py-2.5" onClick={() => decide(u.id, "pending", u.fullName)}>Request More Info</button>
               </div>
@@ -47,8 +47,8 @@ export default function TeacherVerification() {
           ))}
         </div>
       )}
-      <h2 className="mb-4 mt-10 text-lg font-extrabold">All teachers</h2>
-      <div className="card table-wrap"><table className="edv"><thead><tr><th>Teacher</th><th>Expertise</th><th>Status</th><th>Actions</th></tr></thead>
+      <h2 className="mb-4 mt-10 text-lg font-extrabold">All tutors</h2>
+      <div className="card table-wrap"><table className="edv"><thead><tr><th>Tutor</th><th>Expertise</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>{decided.map((u: any) => <tr key={u.id}><td><p className="font-semibold">{u.fullName}</p><p className="text-xs text-slate-400">{u.title}</p></td><td>{u.expertise}</td><td><StatusChip status={u.status} /></td>
           <td>{u.status === "verified" ? <button className="btn-light !px-3 !py-1.5 !text-[11px]" onClick={() => decide(u.id, "suspended", u.fullName)}>Suspend</button> : <button className="btn-dark !px-3 !py-1.5 !text-[11px]" onClick={() => decide(u.id, "verified", u.fullName)}>Restore / Verify</button>}</td></tr>)}</tbody></table></div>
     </div>
