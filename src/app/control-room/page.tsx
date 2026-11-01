@@ -10,7 +10,7 @@ import { Emblem } from "@/components/Logo";
 export default function ControlRoom() {
   const [boot, setBoot] = useState<any>(null);
   const [me, setMe] = useState<any>(undefined);
-  const [form, setForm] = useState({ email: "", password: "", setupSecret: "", fullName: "" });
+  const [form, setForm] = useState({ email: "", password: "", setupSecret: "" });
   const [err, setErr] = useState("");
 
   async function refresh() {
@@ -23,7 +23,13 @@ export default function ControlRoom() {
 
   async function setup(e: any) {
     e.preventDefault(); setErr("");
-    try { await api("/api/bootstrap/setup", { method: "POST", body: JSON.stringify(form) }); refresh(); }
+    try {
+      await api("/api/bootstrap/setup", {
+        method: "POST",
+        body: JSON.stringify({ email: form.email, setupSecret: form.setupSecret }),
+      });
+      refresh();
+    }
     catch (x) { setErr(x instanceof Error ? x.message : "Setup failed"); }
   }
   async function login(e: any) {
@@ -39,20 +45,18 @@ export default function ControlRoom() {
       <div className="pointer-events-none absolute left-1/3 top-0 h-80 w-80 rounded-full bg-brand-600/25 blur-[120px]" />
       <div className="card relative w-full max-w-md p-8">
         <div className="flex justify-center"><Emblem size={54} /></div>
-        <h1 className="mt-4 text-center text-xl font-extrabold">{!boot.initialised ? "Platform Initialisation" : "Restricted Access"}</h1>
+        <h1 className="mt-4 text-center text-xl font-extrabold">{!boot.initialised ? "Super Admin Sign In" : "Restricted Access"}</h1>
         <p className="mt-2 text-center text-sm text-slate-500">{!boot.initialised
-          ? boot.configured ? "One-time secure setup. Verify the configured owner email and setup secret to create the permanent credentials."
+          ? boot.configured ? "Use the OWNER_EMAIL and OWNER_SETUP_SECRET configured in Vercel. Your first successful sign-in claims the private owner account; use the same credentials here afterwards."
             : "Bootstrap environment variables (OWNER_EMAIL, OWNER_SETUP_SECRET) are not configured on this deployment."
           : "Authenticate to continue."}</p>
         {err && <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
         {!boot.initialised ? (
           <form onSubmit={setup} className="mt-6 space-y-4">
-            <div><label className="label">Full name</label><input className="input" required value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} /></div>
-            <div><label className="label">Configured email</label><input type="email" className="input" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
-            <div><label className="label">One-time setup secret</label><input className="input" required value={form.setupSecret} onChange={e => setForm({ ...form, setupSecret: e.target.value })} /></div>
-            <div><label className="label">Permanent password (12+ characters)</label><input type="password" className="input" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></div>
-            <button className="btn-primary w-full" disabled={!boot.configured}>Complete Initialisation</button>
-            <p className="text-center text-[11px] text-slate-400">The setup secret is invalidated permanently after successful initialisation.</p>
+            <div><label className="label">Owner email (OWNER_EMAIL)</label><input type="email" autoComplete="username" className="input" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
+            <div><label className="label">Setup secret / owner password (OWNER_SETUP_SECRET)</label><input type="password" autoComplete="current-password" className="input" required value={form.setupSecret} onChange={e => setForm({ ...form, setupSecret: e.target.value })} /></div>
+            <button className="btn-primary w-full" disabled={!boot.configured}>Sign In to Control Room</button>
+            <p className="text-center text-[11px] text-slate-400">This private route is not linked publicly. The one-time bootstrap path closes after the owner account is claimed.</p>
           </form>
         ) : (
           <form onSubmit={login} className="mt-6 space-y-4">
