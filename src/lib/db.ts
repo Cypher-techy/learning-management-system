@@ -301,7 +301,7 @@ export async function getDB(): Promise<DB> {
  *  Returns true when the state changed and should be persisted. */
 function applyContentMigrations(db: DB): boolean {
   const version = db.meta.contentVersion ?? 1;
-  if (version >= 6) return false;
+  if (version >= 7) return false;
   const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
     for (const item of items) {
       const i = list.findIndex((x) => x.id === item.id);
@@ -382,7 +382,17 @@ function applyContentMigrations(db: DB): boolean {
       if (!payment.kind) payment.kind = payment.courseId ? "course_purchase" : "subscription";
     }
   }
-  db.meta.contentVersion = 6;
+  if (version < 7) {
+    // Revenue share is now 70% tutor / 30% platform. This is a one-time
+    // settings migration for existing deployments; the platform owner can
+    // still change the share later from the private control room. Already
+    // allocated legacy periods keep their historical percentages/amounts.
+    db.settings.tutorPercent = 70;
+    for (const period of db.revenuePeriods) {
+      if (!period.allocated) period.tutorPercent = 70;
+    }
+  }
+  db.meta.contentVersion = 7;
   return true;
 }
 /** Persist the current state. Never throws: a storage failure is logged
@@ -697,7 +707,7 @@ function seed(): DB {
   ];
   const revenuePeriods: RevenuePeriod[] = [
     { id: "rp_sep2026", label: "September 2026", startsAt: "2026-09-01", endsAt: "2026-09-30", gross: 99750, refunds: 499, fees: 1496, taxes: 0, net: 97755, tutorPool: 78204, platformShare: 19551, tutorPercent: 80, allocated: true, allocatedAt: "2026-10-03T10:00:00.000Z" },
-    { id: "rp_oct2026", label: "October 2026", startsAt: "2026-10-01", endsAt: "2026-10-31", gross: 0, refunds: 0, fees: 0, taxes: 0, net: 0, tutorPool: 0, platformShare: 0, tutorPercent: 80, allocated: false },
+    { id: "rp_oct2026", label: "October 2026", startsAt: "2026-10-01", endsAt: "2026-10-31", gross: 0, refunds: 0, fees: 0, taxes: 0, net: 0, tutorPool: 0, platformShare: 0, tutorPercent: 70, allocated: false },
   ];
   const walletTxs: WalletTx[] = [
     { id: "w1", tutorId: "u_tutor1", type: "earning", amount: 31280, note: "September 2026 allocation — Web Development Foundations engagement", createdAt: "2026-10-03T10:00:00.000Z", periodId: "rp_sep2026" },
@@ -762,10 +772,10 @@ function seed(): DB {
     messages, reports, verifications, auditLogs, announcements, goals,
     settings: {
       platformName: "Elimu Bora", tagline: "LEARN BEYOND LIMITS.", premiumMonthlyPriceUSD: 35, premiumAnnualPriceUSD: 240,
-      tutorPercent: 80, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
+      tutorPercent: 70, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
       supportEmail: "edvoraplatform@gmail.com", supportPhone: "+254 110 966 455",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },
-    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 6 },
+    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 7 },
   };
 }

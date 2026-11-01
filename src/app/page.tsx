@@ -260,7 +260,7 @@ export default function Home() {
     { q: "Is Elimu Bora really free to start?", a: "Yes. Create a student account and it is verified automatically — no email code or waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
     { q: "How does Premium work?", a: "Each premium course is bought independently — there is no all-access subscription. You see that course's price in USD at the latest exchange rate, M-Pesa charges its exact Kenyan-shilling course price, and lifetime access activates only for that course once Safaricom confirms payment." },
     { q: "Are certificates verifiable?", a: "Yes. Every certificate carries a unique reference code and a public verification page. Certificates are earned — you must complete the lessons and pass the assessments." },
-    { q: "How do tutors earn?", a: "Verified tutors earn the owner-configured share (80% by default) of each verified sale of their own courses. The earning is credited once to their wallet after payment confirmation, then withdrawals to M-Pesa or bank are reviewed and recorded." },
+    { q: "How do tutors earn?", a: "Verified tutors earn the owner-configured share (70% tutor / 30% platform by default) of each verified sale of their own courses. The earning is credited once to their wallet after payment confirmation, then withdrawals to M-Pesa or bank are reviewed and recorded." },
   ];
   const chapters = [
     { id: "how-it-works", number: "01", label: "The Method" },
@@ -498,7 +498,7 @@ export default function Home() {
                   <p className="type-body-sm landing-card-copy landing-on-dark-copy mt-3 max-w-xl">Apply once, get verified and set your premium course price before publication. Your configured share is credited to your wallet after Safaricom confirms each learner’s payment.</p>
                 </div>
                 <div className="landing-on-dark-copy flex flex-col gap-3">
-                  <p className="flex items-center gap-2 text-sm leading-6"><Wallet size={17} className="landing-accent-dark shrink-0" /> 80% default share of your course sales</p>
+                  <p className="flex items-center gap-2 text-sm leading-6"><Wallet size={17} className="landing-accent-dark shrink-0" /> 70% default share of your course sales</p>
                   <p className="flex items-center gap-2 text-sm leading-6"><ShieldCheck size={17} className="landing-accent-dark shrink-0" /> Credited once per verified payment</p>
                   <Link href="/roles" className="btn-primary mt-2">Apply as a Tutor <ArrowRight size={16} /></Link>
                 </div>
