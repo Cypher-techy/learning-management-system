@@ -18,15 +18,15 @@ export default function Reports() {
       {data.reports.length === 0 ? <Empty title="No reports" body="User reports and support requests will appear here." /> : (
         <div className="space-y-3">{data.reports.map((r: any) => (
           <div key={r.id} className="card flex flex-wrap items-center gap-4 p-5">
-            <div className="min-w-0 flex-1"><p className="text-sm font-bold">{r.targetType} · {r.targetId}</p><p className="text-sm text-slate-600">{r.reason}</p><p className="text-xs text-slate-400">Reported by {r.reporterName} · {fmtDate(r.createdAt)}</p></div>
+            <div className="min-w-0 flex-1"><p className="text-sm font-bold">{r.targetType} · {r.targetId}</p><p className="text-sm text-slate-600">{r.reason}</p><p className="type-caption text-slate-600">Reported by {r.reporterName} · {fmtDate(r.createdAt)}</p></div>
             <StatusChip status={r.status} />
             {r.status === "open" && <div className="flex gap-2"><button className="btn-dark !py-2 !text-xs" onClick={() => act(r.id, "resolved")}>Resolve</button><button className="btn-light !py-2 !text-xs" onClick={() => act(r.id, "dismissed")}>Dismiss</button></div>}
           </div>))}</div>
       )}
-      <h2 className="mb-4 mt-10 text-lg font-extrabold">Issued certificates</h2>
+      <h2 className="mb-4 mt-10 type-h5">Issued certificates</h2>
       <div className="card table-wrap"><table className="edv"><thead><tr><th>Reference</th><th>Student</th><th>Course</th><th>Issued</th><th>Status</th><th></th></tr></thead>
         <tbody>{data.certificates.map((c: any) => <tr key={c.id}><td className="font-mono text-xs">{c.code}</td><td className="font-semibold">{c.studentName}</td><td>{c.courseTitle}</td><td>{fmtDate(c.issuedAt)}</td><td>{c.revoked ? <StatusChip status="rejected" /> : <StatusChip status="verified" />}</td>
-          <td>{!c.revoked && <button className="btn-light !px-3 !py-1.5 !text-[11px]" onClick={() => revoke(c)}>Revoke</button>}</td></tr>)}
+          <td>{!c.revoked && <button className="btn-light !px-3 !py-1.5 !text-xs" onClick={() => revoke(c)}>Revoke</button>}</td></tr>)}
           {data.certificates.length === 0 && <tr><td colSpan={6} className="text-slate-500">No certificates issued yet.</td></tr>}</tbody></table></div>
     </div>
   );

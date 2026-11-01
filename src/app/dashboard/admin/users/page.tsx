@@ -30,18 +30,18 @@ export default function AdminUsers() {
         <table className="edv"><thead><tr><th>User</th><th>Role</th><th>Plan</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>{users.map((u: any) => (
             <tr key={u.id}>
-              <td><p className="font-semibold">{u.fullName}</p><p className="text-xs text-slate-400">{u.email} · {u.phone}</p></td>
+              <td><p className="font-semibold">{u.fullName}</p><p className="type-caption text-slate-600">{u.email} · {u.phone}</p></td>
               <td className="capitalize">{u.role}</td><td><StatusChip status={u.plan} /></td><td>{fmtDate(u.createdAt)}</td><td><StatusChip status={u.status} /></td>
               <td><div className="flex flex-wrap gap-1.5">
                 {u.role !== "administrator" ? <>
-                  {u.status !== "verified" && <button className="btn-dark !px-3 !py-1.5 !text-[11px]" onClick={() => setStatus(u.id, "verified", u.fullName)}>Verify</button>}
-                  {u.status === "verified" && <button className="btn-light !px-3 !py-1.5 !text-[11px]" onClick={() => setStatus(u.id, "suspended", u.fullName)}>Suspend</button>}
-                  {u.status === "suspended" && <button className="btn-dark !px-3 !py-1.5 !text-[11px]" onClick={() => setStatus(u.id, "verified", u.fullName)}>Restore</button>}
-                </> : <span className="text-xs text-slate-400">Owner-managed</span>}
+                  {u.status !== "verified" && <button className="btn-dark !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u.id, "verified", u.fullName)}>Verify</button>}
+                  {u.status === "verified" && <button className="btn-light !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u.id, "suspended", u.fullName)}>Suspend</button>}
+                  {u.status === "suspended" && <button className="btn-dark !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u.id, "verified", u.fullName)}>Restore</button>}
+                </> : <span className="type-caption text-slate-600">Owner-managed</span>}
               </div></td>
             </tr>))}</tbody></table>
       </div>
-      <p className="mt-4 text-xs text-slate-400">Administrators cannot approve, appoint or modify other administrators — that authority is reserved to the platform owner.</p>
+      <p className="mt-4 type-caption text-slate-600">Administrators cannot approve, appoint or modify other administrators — that authority is reserved to the platform owner.</p>
     </div>
   );
 }

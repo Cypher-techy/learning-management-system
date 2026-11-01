@@ -25,10 +25,10 @@ export function Logo({ dark = true, href = "/" }: { dark?: boolean; href?: strin
     <Link href={href} className="flex items-center gap-2.5" aria-label="Elimu Bora home">
       <Emblem />
       <span className="leading-none">
-        <span className={`block text-[17px] font-black tracking-[0.14em] ${dark ? "text-white" : "text-navy-900"}`}>
+        <span className={`brand-wordmark block ${dark ? "text-white" : "text-navy-900"}`}>
           ELIMU <span className="grad-text">Bora</span>
         </span>
-        <span className={`mt-1 block text-[7.5px] font-semibold tracking-[0.28em] ${dark ? "text-slate-400" : "text-slate-500"}`}>
+        <span className={`brand-tagline mt-1 block ${dark ? "text-slate-400" : "text-slate-500"}`}>
           LEARN BEYOND LIMITS
         </span>
       </span>

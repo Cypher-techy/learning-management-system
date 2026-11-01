@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { BadgeCheck, Crown, Smartphone } from "lucide-react";
 import { api, useApi, kes, fmtDate } from "@/lib/client";
 import { Loading, PageTitle, StatusChip } from "@/components/ui";
+import { Technical } from "@/components/Typography";
 
 export default function Subscription() {
   const { data, loading, reload } = useApi("/api/overview/student");
@@ -121,8 +122,8 @@ export default function Subscription() {
         <div className="space-y-6 lg:col-span-7">
           <div className="relative overflow-hidden rounded-3xl bg-navy-900 p-7 text-white">
             <div className="pointer-events-none absolute -right-10 -top-12 h-48 w-48 rounded-full bg-violet-600/40 blur-[80px]" />
-            <p className="relative flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-300"><Crown size={15} /> Current Plan</p>
-            <p className="relative mt-2 text-3xl font-extrabold">{u.premiumActive ? "Elimu Bora Premium" : "Free Plan"}</p>
+            <p className="type-eyebrow relative flex items-center gap-2 text-brand-300"><Crown size={15} /> Current Plan</p>
+            <p className="type-h3 relative mt-2">{u.premiumActive ? "Elimu Bora Premium" : "Free Plan"}</p>
             {u.premiumActive && sub ? <p className="relative mt-2 text-sm text-slate-300">Active since {fmtDate(sub.startedAt)} · Expires {fmtDate(sub.expiresAt)}. Renew before expiry to keep uninterrupted access — renewal extends from your current expiry date.</p>
               : <p className="relative mt-2 text-sm text-slate-300">You have full access to free courses. Upgrade once to unlock every premium course on Elimu Bora.</p>}
             <ul className="relative mt-5 grid gap-2 text-sm text-slate-200 sm:grid-cols-2">
@@ -130,7 +131,7 @@ export default function Subscription() {
             </ul>
           </div>
           <div className="card p-6">
-            <h3 className="flex items-center gap-2 font-extrabold"><Smartphone className="text-emerald-500" /> {u.premiumActive ? "Renew with M-Pesa" : "Upgrade with M-Pesa"} — {kes(price)}/month</h3>
+            <h3 className="type-h5 type-numeric flex items-center gap-2"><Smartphone className="text-emerald-500" /> {u.premiumActive ? "Renew with M-Pesa" : "Upgrade with M-Pesa"} — {kes(price)}/month</h3>
             <p className="mt-2 text-sm text-slate-500">We will send an STK Push to your phone. Enter your M-Pesa PIN to pay. Premium activates automatically once Safaricom confirms — never before.</p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <input className="input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0712 345 678" aria-label="M-Pesa phone number" disabled={busy} />
@@ -138,20 +139,20 @@ export default function Subscription() {
               {busy && !initiating && <button className="btn-light shrink-0" onClick={stopWaiting}>Stop waiting</button>}
             </div>
             {paymentId && (
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                <span>Payment reference: {paymentId}. Keep your M-Pesa receipt message for support queries.</span>
+              <div className="mt-3 flex flex-wrap items-center gap-3 type-caption text-slate-600">
+                <span>Payment reference: <Technical>{paymentId}</Technical>. Keep your M-Pesa receipt message for support queries.</span>
                 {!busy && <button className="btn-light !px-3 !py-1.5 !text-xs" disabled={checking} onClick={() => checkPayment(paymentId, true)}>{checking ? "Checking…" : "Check status"}</button>}
               </div>
             )}
-            <p className="mt-3 text-xs text-slate-400">No automatic recurring charges. Renewal reminders are sent in-app before expiry. Your progress is preserved if your plan lapses.</p>
+            <p className="mt-3 type-caption text-slate-600">No automatic recurring charges. Renewal reminders are sent in-app before expiry. Your progress is preserved if your plan lapses.</p>
           </div>
         </div>
         <aside className="lg:col-span-5">
           <div className="card p-6">
-            <h3 className="font-extrabold">Payment history</h3>
+            <h3 className="type-h5">Payment history</h3>
             {data.payments.length === 0 ? <p className="mt-3 text-sm text-slate-500">No payments yet.</p> : (
-              <div className="table-wrap mt-4"><table className="edv !min-w-0"><thead><tr><th>Date</th><th>Amount</th><th>Receipt</th><th>Status</th><th>Note</th></tr></thead>
-                <tbody>{data.payments.map((p: any) => <tr key={p.id}><td>{fmtDate(p.createdAt)}</td><td className="font-semibold">{kes(p.amount)}</td><td className="font-mono text-xs">{p.mpesaReceipt || "—"}</td><td><StatusChip status={p.status} /></td><td className="max-w-[180px] truncate text-xs text-slate-400" title={p.resultDesc || ""}>{p.resultDesc || "—"}</td></tr>)}</tbody></table></div>
+              <div className="table-wrap mt-4"><table className="edv !min-w-0"><thead><tr><th>Date</th><th data-numeric>Amount</th><th>Receipt</th><th>Status</th><th>Note</th></tr></thead>
+                <tbody>{data.payments.map((p: any) => <tr key={p.id}><td>{fmtDate(p.createdAt)}</td><td data-numeric className="font-medium">{kes(p.amount)}</td><td className="type-technical">{p.mpesaReceipt || "—"}</td><td><StatusChip status={p.status} /></td><td className="max-w-[180px] truncate type-caption text-slate-600" title={p.resultDesc || ""}>{p.resultDesc || "—"}</td></tr>)}</tbody></table></div>
             )}
           </div>
         </aside>

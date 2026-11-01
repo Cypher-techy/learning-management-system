@@ -39,9 +39,9 @@ export default function CoursePage() {
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-12 lg:px-8">
           <div className="lg:col-span-8">
             <div className="flex flex-wrap gap-2"><span className="chip bg-white/10 text-brand-300">{c.category.toUpperCase()}</span><span className="chip bg-white/10">{c.level}</span>{c.access === "premium" ? <span className="chip grad-bg text-white"><Crown size={12} /> PREMIUM</span> : <span className="chip bg-emerald-500 text-white">FREE COURSE</span>}{c.tutorial && <span className="chip grad-bg text-white">TUTORIAL NOTES + EXAMPLES</span>}</div>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight lg:text-5xl">{c.title}</h1>
-            <p className="mt-4 max-w-2xl text-lg text-slate-300">{c.subtitle}</p>
-            <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-slate-300">
+            <h1 className="type-h1 mt-5">{c.title}</h1>
+            <p className="type-lead mt-4 max-w-2xl text-slate-300">{c.subtitle}</p>
+            <div className="type-body-sm type-numeric mt-6 flex flex-wrap items-center gap-5 text-slate-300">
               {c.rating && <span className="flex items-center gap-1.5 font-bold text-amber-400"><Star size={16} fill="currentColor" />{c.rating.toFixed(1)} <span className="font-normal text-slate-400">({c.reviewCount} reviews)</span></span>}
               <span className="flex items-center gap-1.5"><Users size={16} />{c.enrolledCount} enrolled</span>
               <span className="flex items-center gap-1.5"><PlayCircle size={16} />{c.lessonCount} lessons</span>
@@ -49,7 +49,7 @@ export default function CoursePage() {
             </div>
             <Link href={`/tutors/${c.tutorId}`} className="mt-7 flex w-fit items-center gap-3 rounded-2xl bg-white/5 p-3 pr-5 transition hover:bg-white/10">
               <span className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white" style={{ background: c.tutorColor }}>{initials(c.tutorName)}</span>
-              <span><span className="flex items-center gap-1.5 text-sm font-bold">{c.tutorName}<BadgeCheck size={15} className="text-brand-300" /></span><span className="text-xs text-slate-400">{c.tutorTitle}</span></span>
+              <span><span className="type-body-sm flex items-center gap-1.5 font-semibold">{c.tutorName}<BadgeCheck size={15} className="text-brand-300" /></span><span className="type-caption text-slate-400">{c.tutorTitle}</span></span>
             </Link>
           </div>
           <div className="lg:col-span-4">
@@ -61,7 +61,7 @@ export default function CoursePage() {
                 {msg && <p className="mb-3 rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-700">{msg}</p>}
                 {enr ? (
                   <>
-                    <div className="mb-3 flex justify-between text-sm"><span className="font-semibold">Your progress</span><span className="font-bold">{progress}%</span></div>
+                    <div className="type-body-sm mb-3 flex justify-between"><span className="font-medium">Your progress</span><span className="type-numeric font-semibold">{progress}%</span></div>
                     <ProgressBar value={progress} />
                     <Link href={`/courses/${id}/learn`} className="btn-primary mt-5 w-full">{progress > 0 ? "Continue Learning" : "Start Learning"}</Link>
                     <button onClick={() => save(!enr.saved)} className="btn-light mt-3 w-full">{enr.saved ? "Remove from Saved" : "Save for Later"}</button>
@@ -73,7 +73,7 @@ export default function CoursePage() {
                     <p className="flex items-center gap-2 font-bold"><Lock size={17} className="text-brand-600" /> Premium Course</p>
                     <p className="mt-2 text-sm text-slate-500">This course is included in Elimu Bora Premium — one subscription unlocks every premium course.</p>
                     <Link href={me ? "/dashboard/student/subscription" : "/plans"} className="btn-primary mt-5 w-full"><Crown size={16} /> Subscribe to Unlock</Link>
-                    <p className="mt-3 text-center text-xs text-slate-400">Preview lessons below are free to watch.</p>
+                    <p className="type-caption mt-3 text-center text-slate-600">Preview lessons below are free to watch.</p>
                   </>
                 )}
                 <ul className="mt-6 space-y-2.5 border-t border-slate-100 pt-5 text-sm text-slate-600">
@@ -91,23 +91,23 @@ export default function CoursePage() {
 
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-14 lg:grid-cols-12 lg:px-8">
         <div className="lg:col-span-8">
-          <h2 className="text-2xl font-extrabold">About this course</h2>
-          <p className="mt-4 leading-relaxed text-slate-600">{c.description}</p>
-          <h3 className="mt-10 text-xl font-extrabold">What you will learn</h3>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">{c.objectives.map((o: string) => <p key={o} className="flex gap-2 text-sm text-slate-600"><CheckCircle2 size={18} className="shrink-0 text-emerald-500" />{o}</p>)}</div>
-          {c.requirements?.length > 0 && (<><h3 className="mt-10 text-xl font-extrabold">Requirements</h3><ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">{c.requirements.map((r: string) => <li key={r}>{r}</li>)}</ul></>)}
+          <h2 className="type-h3">About this course</h2>
+          <p className="reading-prose mt-4 text-slate-700">{c.description}</p>
+          <h3 className="type-h4 mt-10">What you will learn</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">{c.objectives.map((o: string) => <p key={o} className="type-body-sm flex gap-2 text-slate-700"><CheckCircle2 size={18} className="shrink-0 text-emerald-500" />{o}</p>)}</div>
+          {c.requirements?.length > 0 && (<><h3 className="type-h4 mt-10">Requirements</h3><ul className="reading-prose mt-3 list-disc space-y-1 pl-5 text-slate-700">{c.requirements.map((r: string) => <li key={r}>{r}</li>)}</ul></>)}
 
-          <h3 className="mt-12 text-xl font-extrabold">Curriculum</h3>
+          <h3 className="type-h4 mt-12">Curriculum</h3>
           <div className="mt-4 space-y-4">
             {c.sections.map((s: any, si: number) => (
               <div key={s.id} className="card overflow-hidden">
-                <p className="border-b border-slate-100 bg-slate-50 px-5 py-3.5 font-bold">Section {si + 1}: {s.title}</p>
+                <p className="border-b border-slate-100 bg-slate-50 px-5 py-3.5 font-display text-body-sm font-semibold">Section {si + 1}: {s.title}</p>
                 {s.lessons.map((l: any) => (
                   <div key={l.id} className="flex items-center gap-3 border-b border-slate-50 px-5 py-3 last:border-0">
                     {c.unlocked || l.isPreview ? <PlayCircle size={18} className="text-brand-500" /> : <Lock size={16} className="text-slate-300" />}
-                    <span className="flex-1 text-sm font-medium">{l.title}</span>
+                    <span className="type-body-sm flex-1 font-medium">{l.title}</span>
                     {l.isPreview && <span className="chip bg-sky-100 text-sky-700">FREE PREVIEW</span>}
-                    <span className="text-xs text-slate-400">{l.durationMin} min</span>
+                    <span className="type-caption type-numeric shrink-0 text-slate-500">{l.durationMin} min</span>
                   </div>
                 ))}
               </div>
@@ -120,7 +120,7 @@ export default function CoursePage() {
             </div>
           )}
 
-          <h3 className="mt-12 text-xl font-extrabold">Student reviews</h3>
+          <h3 className="type-h4 mt-12">Student reviews</h3>
           <div className="mt-4 space-y-4">
             {data.reviews.length === 0 ? <p className="text-sm text-slate-500">No reviews yet — be the first after enrolling.</p> :
               data.reviews.map((r: any) => (
@@ -140,7 +140,7 @@ export default function CoursePage() {
         </div>
         <aside className="lg:col-span-4">
           <div className="card sticky top-24 p-6">
-            <h3 className="font-extrabold">Course discussions</h3>
+            <h3 className="type-h5">Course discussions</h3>
             <div className="mt-4 space-y-3">
               {data.discussions.slice(0, 4).map((d: any) => <div key={d.id} className="rounded-xl bg-slate-50 p-3.5"><p className="text-sm font-bold">{d.title}</p><p className="mt-1 line-clamp-2 text-xs text-slate-500">{d.body}</p></div>)}
               {data.discussions.length === 0 && <p className="text-sm text-slate-500">Discussions open once you enrol.</p>}

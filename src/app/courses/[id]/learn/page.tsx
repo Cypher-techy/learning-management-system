@@ -7,6 +7,7 @@ import { api, fmtDate } from "@/lib/client";
 import { Loading, ProgressBar } from "@/components/ui";
 import { Logo } from "@/components/Logo";
 import TutorialArticle from "@/components/TutorialArticle";
+import { Technical } from "@/components/Typography";
 
 type Tab = "learn" | "quizzes" | "assignments" | "community" | "assistant";
 
@@ -65,13 +66,13 @@ function LearnInner() {
 
   if (!me) return (
     <div className="flex min-h-screen items-center justify-center bg-navy-950 p-6"><div className="card max-w-md p-10 text-center">
-      <h1 className="text-2xl font-extrabold">Sign in to learn</h1><p className="mt-3 text-sm text-slate-500">You need a student account to enter the classroom.</p>
+      <h1 className="type-h3">Sign in to learn</h1><p className="type-body-sm mt-3 text-slate-600">You need a student account to enter the classroom.</p>
       <Link href="/roles" className="btn-primary mt-6 w-full">Sign In / Register</Link></div></div>
   );
   if (!enr && me.role === "student") return (
     <div className="flex min-h-screen items-center justify-center bg-navy-950 p-6"><div className="card max-w-md p-10 text-center">
-      <h1 className="text-2xl font-extrabold">Enrol to enter the classroom</h1>
-      <p className="mt-3 text-sm text-slate-500">{c.unlocked ? "Enrol from the course page to start tracking your progress." : "This is a Premium course. Subscribe once to unlock every premium course."}</p>
+      <h1 className="type-h3">Enrol to enter the classroom</h1>
+      <p className="type-body-sm mt-3 text-slate-600">{c.unlocked ? "Enrol from the course page to start tracking your progress." : "This is a Premium course. Subscribe once to unlock every premium course."}</p>
       <div className="mt-6 flex gap-3"><Link href={`/courses/${id}`} className="btn-light flex-1">Course Page</Link>{!c.unlocked && <Link href="/dashboard/student/subscription" className="btn-primary flex-1"><Crown size={16} /> Go Premium</Link>}</div></div></div>
   );
 
@@ -133,14 +134,14 @@ function LearnInner() {
       </header>
 
       <div className="mx-auto max-w-7xl px-5 py-6 lg:px-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{c.category}</p>
-        <h1 className="mt-1 text-2xl font-extrabold lg:text-3xl">{c.title}</h1>
+        <p className="type-eyebrow text-brand-600">{c.category}</p>
+        <h1 className="type-h3 mt-1">{c.title}</h1>
         {msg && <p className="mt-4 rounded-xl bg-emerald-50 p-3.5 text-sm font-medium text-emerald-700">{msg}</p>}
         {err && <p className="mt-4 rounded-xl bg-rose-50 p-3.5 text-sm font-medium text-rose-600">{err}</p>}
-        {cert && <p className="mt-4 rounded-xl bg-navy-900 p-4 text-sm text-white">Certificate <strong>{cert.code}</strong> issued. View and print it from <Link className="underline" href="/dashboard/student/certificates">My Certificates</Link>.</p>}
+        {cert && <p className="mt-4 rounded-xl bg-navy-900 p-4 text-sm text-white">Certificate <Technical className="text-white">{cert.code}</Technical> issued. View and print it from <Link className="underline" href="/dashboard/student/certificates">My Certificates</Link>.</p>}
 
         <div className="mt-5 flex gap-2 overflow-x-auto pb-1" role="tablist">
-          {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${tab === t.id ? "grad-bg text-white shadow-glow" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"}`}>{t.icon}{t.label}</button>)}
+          {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 font-display text-body-sm font-semibold leading-tight transition ${tab === t.id ? "grad-bg text-white shadow-glow" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"}`}>{t.icon}{t.label}</button>)}
         </div>
 
         {tab === "learn" && (
@@ -154,13 +155,13 @@ function LearnInner() {
                       <span className="text-xs font-semibold text-slate-500">Lesson {lessonIdx + 1} of {allLessons.length}</span>
                       <button disabled={lessonIdx >= allLessons.length - 1} onClick={() => goLesson(lessonIdx + 1)} className="btn-dark !px-3.5 !py-2 !text-xs disabled:opacity-40">Next <ChevronRight size={15} /></button>
                     </div>
-                    <div className="p-6 lg:p-9">
-                      <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                    <div className="reading-column p-6 lg:p-9">
+                      <p className="type-eyebrow flex flex-wrap items-center gap-2 text-slate-500">
                         <span>{lesson?.section}</span>
                         <span className="chip grad-bg text-white"><NotebookPen size={11} /> TUTORIAL NOTES</span>
                         <span className="chip bg-slate-100 text-slate-500">{lesson?.durationMin} MIN READ</span>
                       </p>
-                      <h2 className="mb-7 mt-3 text-3xl font-extrabold tracking-tight">{lesson?.title}</h2>
+                      <h2 className="type-h3 mb-7 mt-3">{lesson?.title}</h2>
                       <TutorialArticle blocks={lesson.blocks} />
                       <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-6">
                         {!enr?.completedLessons.includes(lesson?.id)
@@ -175,7 +176,7 @@ function LearnInner() {
                   </>
                 ) : lessonLocked ? (
                   <div className="flex aspect-video flex-col items-center justify-center bg-navy-950 p-8 text-center text-white">
-                    <Lock size={40} className="text-brand-300" /><h3 className="mt-4 text-xl font-extrabold">Premium lesson</h3>
+                    <Lock size={40} className="text-brand-300" /><h3 className="type-h4 mt-4">Premium lesson</h3>
                     <p className="mt-2 max-w-sm text-sm text-slate-300">Subscribe to Elimu Bora Premium to unlock this and every other premium lesson.</p>
                     <Link href="/dashboard/student/subscription" className="btn-primary mt-6"><Crown size={16} /> Subscribe to Unlock</Link>
                   </div>
@@ -185,9 +186,9 @@ function LearnInner() {
                   <div className="flex aspect-video items-center justify-center bg-navy-900 text-white"><FileText size={44} className="text-brand-300" /></div>
                 )}
                 <div className="p-6">
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{lesson?.section}</p>
-                  <h2 className="mt-1.5 text-xl font-extrabold">{lesson?.title}</h2>
-                  {!lessonLocked && <p className="mt-3 leading-relaxed text-slate-600">{lesson?.body}</p>}
+                  <p className="type-eyebrow text-slate-500">{lesson?.section}</p>
+                  <h2 className="type-h4 mt-1.5">{lesson?.title}</h2>
+                  {!lessonLocked && <p className="reading-prose mt-3 text-slate-700">{lesson?.body}</p>}
                   {lesson?.resourceUrl && !lessonLocked && <a href={lesson.resourceUrl} target="_blank" rel="noreferrer" className="btn-light mt-4"><FileText size={15} /> {lesson.resourceName || "Download resource"}</a>}
                   <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
                     {!enr?.completedLessons.includes(lesson?.id)
@@ -200,18 +201,18 @@ function LearnInner() {
             </div>
             <aside className="lg:col-span-4">
               <div className="card overflow-hidden">
-                <p className="border-b border-slate-100 bg-slate-50 px-5 py-3.5 font-bold">Course content · {progress}%</p>
+                <p className="border-b border-slate-100 bg-slate-50 px-5 py-3.5 font-display text-body-sm font-semibold">Course content · {progress}%</p>
                 <div className="max-h-[560px] overflow-y-auto">
                   {c.sections.map((s: any) => (
                     <div key={s.id}>
-                      <p className="bg-slate-50/60 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-400">{s.title}</p>
+                      <p className="type-eyebrow bg-slate-50/60 px-5 py-2.5 text-slate-500">{s.title}</p>
                       {s.lessons.map((l: any) => {
                         const done = enr?.completedLessons.includes(l.id); const locked = !c.unlocked && !l.isPreview;
                         return (
                           <button key={l.id} onClick={() => { setLessonId(l.id); window.scrollTo({ top: 0, behavior: "smooth" }); }} className={`flex w-full items-center gap-3 border-b border-slate-50 px-5 py-3 text-left transition ${lesson?.id === l.id ? "bg-brand-500/5" : "hover:bg-slate-50"}`}>
                             {locked ? <Lock size={16} className="shrink-0 text-slate-300" /> : done ? <CheckCircle2 size={17} className="shrink-0 text-emerald-500" /> : <PlayCircle size={17} className="shrink-0 text-brand-500" />}
-                            <span className="flex-1 text-sm font-medium">{l.title}</span>
-                            <span className="text-xs text-slate-400">{l.durationMin}m</span>
+                            <span className="type-body-sm flex-1 font-medium">{l.title}</span>
+                            <span className="type-caption type-numeric text-slate-500">{l.durationMin}m</span>
                           </button>
                         );
                       })}
@@ -228,7 +229,7 @@ function LearnInner() {
             {data.quizzes.length === 0 && <div className="card p-8 text-sm text-slate-500">No quizzes in this course yet.</div>}
             {data.quizzes.map((q: any) => (
               <div key={q.id} className="card p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-extrabold">{q.title}</h3><p className="text-xs text-slate-500">{q.questions.length} questions · {q.timeLimitMin} min limit · pass mark {q.passMark}% · max {q.maxAttempts} attempts</p></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="type-h5">{q.title}</h3><p className="type-caption type-numeric text-slate-600">{q.questions.length} questions · {q.timeLimitMin} min limit · pass mark {q.passMark}% · max {q.maxAttempts} attempts</p></div>
                   {activeQuiz !== q.id && <button className="btn-dark" onClick={() => { setActiveQuiz(q.id); setQuizResult(null); setAnswers({}); }}>Start / Retake</button>}</div>
                 {quizResult?.quizId === q.id && (
                   <div className={`mt-4 rounded-xl p-4 text-sm ${quizResult.attempt.passed ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>
@@ -240,10 +241,10 @@ function LearnInner() {
                   <div className="mt-5 space-y-5">
                     {q.questions.map((qq: any, i: number) => (
                       <fieldset key={qq.id} className="rounded-xl bg-slate-50 p-4">
-                        <legend className="px-1 text-sm font-bold">{i + 1}. {qq.prompt}</legend>
+                        <legend className="assessment-copy px-1 font-semibold">{i + 1}. {qq.prompt}</legend>
                         {qq.type === "short"
                           ? <textarea className="input mt-2" rows={2} value={answers[qq.id] || ""} onChange={e => setAnswers({ ...answers, [qq.id]: e.target.value })} placeholder="Type your answer…" />
-                          : <div className="mt-2 space-y-2">{(qq.options || []).map((o: string) => <label key={o} className="flex cursor-pointer items-center gap-2 rounded-lg bg-white p-2.5 text-sm"><input type="radio" name={qq.id} checked={answers[qq.id] === o} onChange={() => setAnswers({ ...answers, [qq.id]: o })} />{o}</label>)}</div>}
+                          : <div className="mt-2 space-y-2">{(qq.options || []).map((o: string) => <label key={o} className="type-body-sm flex cursor-pointer items-center gap-2 rounded-lg bg-white p-2.5"><input type="radio" name={qq.id} checked={answers[qq.id] === o} onChange={() => setAnswers({ ...answers, [qq.id]: o })} />{o}</label>)}</div>}
                       </fieldset>
                     ))}
                     <button className="btn-primary" onClick={() => { setActiveQuiz(""); submitQuiz(q); }}>Submit Quiz</button>
@@ -259,9 +260,9 @@ function LearnInner() {
             {data.assignments.length === 0 && <div className="card p-8 text-sm text-slate-500">No assignments in this course yet.</div>}
             {data.assignments.map((a: any) => (
               <div key={a.id} className="card p-6">
-                <div className="flex flex-wrap justify-between gap-2"><h3 className="font-extrabold">{a.title}</h3><span className="chip bg-amber-100 text-amber-700">DUE {fmtDate(a.dueDate)}</span></div>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{a.instructions}</p>
-                <p className="mt-1 text-xs text-slate-400">Maximum score: {a.maxScore}</p>
+                <div className="flex flex-wrap justify-between gap-2"><h3 className="type-h5">{a.title}</h3><span className="chip bg-amber-100 text-amber-700">DUE {fmtDate(a.dueDate)}</span></div>
+                <p className="assessment-copy mt-2 text-slate-700">{a.instructions}</p>
+                <p className="type-caption type-numeric mt-1 text-slate-600">Maximum score: {a.maxScore}</p>
                 <textarea className="input mt-4" rows={4} placeholder="Write your submission here (paste links to deployed work, code, or your written answer)…" value={subText[a.id] || ""} onChange={e => setSubText({ ...subText, [a.id]: e.target.value })} />
                 <button className="btn-dark mt-3" onClick={() => submitAssignment(a)}><Send size={15} /> Submit Assignment</button>
               </div>
@@ -274,11 +275,11 @@ function LearnInner() {
             <div className="space-y-4 lg:col-span-8">
               {discussions.map((d: any) => (
                 <div key={d.id} className="card p-6">
-                  <div className="flex items-start justify-between gap-3"><div><h3 className="font-extrabold">{d.title}</h3><p className="text-xs text-slate-400">by {d.authorName} · {fmtDate(d.createdAt)}</p></div>
-                    <button onClick={() => report(d.id)} className="flex items-center gap-1 text-xs text-slate-400 hover:text-rose-500"><Flag size={13} /> Report</button></div>
+                  <div className="flex items-start justify-between gap-3"><div><h3 className="type-h5">{d.title}</h3><p className="type-caption text-slate-600">by {d.authorName} · {fmtDate(d.createdAt)}</p></div>
+                    <button onClick={() => report(d.id)} className="type-caption flex items-center gap-1 font-medium text-slate-600 hover:text-rose-600"><Flag size={13} /> Report</button></div>
                   <p className="mt-2 text-sm text-slate-600">{d.body}</p>
                   <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
-                    {d.replies.map((r: any) => <div key={r.id} className="rounded-xl bg-slate-50 p-3.5"><p className="text-xs font-bold">{r.authorName} <span className="font-normal text-slate-400">· {fmtDate(r.createdAt)}</span></p><p className="mt-1 text-sm text-slate-600">{r.body}</p></div>)}
+                    {d.replies.map((r: any) => <div key={r.id} className="rounded-xl bg-slate-50 p-3.5"><p className="text-xs font-bold">{r.authorName} <span className="font-normal text-slate-600">· {fmtDate(r.createdAt)}</span></p><p className="mt-1 text-sm text-slate-600">{r.body}</p></div>)}
                     <div className="flex gap-2"><input className="input" placeholder="Write a reply…" value={replyText[d.id] || ""} onChange={e => setReplyText({ ...replyText, [d.id]: e.target.value })} /><button className="btn-dark shrink-0" onClick={() => postReply(d.id)}>Reply</button></div>
                   </div>
                 </div>
@@ -286,7 +287,7 @@ function LearnInner() {
               {discussions.length === 0 && <div className="card p-8 text-sm text-slate-500">No discussions yet — start the first one.</div>}
             </div>
             <aside className="lg:col-span-4"><div className="card sticky top-24 p-6">
-              <h3 className="font-extrabold">Start a discussion</h3>
+              <h3 className="type-h5">Start a discussion</h3>
               <input className="input mt-4" placeholder="Discussion title" value={newThread.title} onChange={e => setNewThread({ ...newThread, title: e.target.value })} />
               <textarea className="input mt-3" rows={4} placeholder="Ask a question or share an idea…" value={newThread.body} onChange={e => setNewThread({ ...newThread, body: e.target.value })} />
               <button className="btn-primary mt-4 w-full" onClick={postThread}>Post Discussion</button>
@@ -296,8 +297,8 @@ function LearnInner() {
 
         {tab === "assistant" && (
           <div className="card mx-auto mt-5 max-w-3xl p-6 lg:p-8">
-            <h3 className="flex items-center gap-2 font-extrabold"><Sparkles className="text-brand-500" /> Elimu Bora Study Assistant</h3>
-            <p className="mt-2 text-sm text-slate-500">Ask about this course. The assistant only uses lesson material you are entitled to access{c.access === "premium" && !c.unlocked ? " (free previews only on your current plan)" : ""}.</p>
+            <h3 className="type-h5 flex items-center gap-2"><Sparkles className="text-brand-500" /> Elimu Bora Study Assistant</h3>
+            <p className="type-body-sm mt-2 text-slate-600">Ask about this course. The assistant only uses lesson material you are entitled to access{c.access === "premium" && !c.unlocked ? " (free previews only on your current plan)" : ""}.</p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <input className="input" placeholder="e.g. Explain how Flexbox centring works" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} />
               <button className="btn-primary shrink-0" disabled={aiBusy} onClick={() => askAI()}>{aiBusy ? "Thinking…" : "Ask"}</button>
@@ -306,7 +307,7 @@ function LearnInner() {
               <button className="btn-light !py-2 !text-xs" onClick={() => askAI("summarise")}>Summarise my material</button>
               <button className="btn-light !py-2 !text-xs" onClick={() => askAI("practice")}>Generate practice questions</button>
             </div>
-            {aiAnswer && <div className="mt-5 whitespace-pre-wrap rounded-2xl bg-navy-950 p-5 text-sm leading-relaxed text-slate-200">{aiAnswer}</div>}
+            {aiAnswer && <div className="type-body-sm mt-5 whitespace-pre-wrap rounded-2xl bg-navy-950 p-5 text-slate-200">{aiAnswer}</div>}
           </div>
         )}
       </div>

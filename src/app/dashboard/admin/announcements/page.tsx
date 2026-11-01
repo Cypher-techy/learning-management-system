@@ -25,8 +25,8 @@ export default function Announcements() {
         <div><label className="label">Message</label><textarea rows={4} className="input" value={form.body} onChange={e => setForm({ ...form, body: e.target.value })} /></div>
         <button className="btn-primary" onClick={send}>Publish Announcement</button>
       </div>
-      <h2 className="mb-4 mt-10 text-lg font-extrabold">History</h2>
-      <div className="space-y-3">{data.announcements.map((a: any) => <div key={a.id} className="card p-5"><p className="font-bold">{a.title}</p><p className="text-sm text-slate-600">{a.body}</p><p className="mt-1 text-xs text-slate-400">Audience: {a.audience} · {fmtDate(a.createdAt)}</p></div>)}</div>
+      <h2 className="mb-4 mt-10 type-h5">History</h2>
+      <div className="space-y-3">{data.announcements.map((a: any) => <div key={a.id} className="card p-5"><p className="font-bold">{a.title}</p><p className="text-sm text-slate-600">{a.body}</p><p className="mt-1 type-caption text-slate-600">Audience: {a.audience} · {fmtDate(a.createdAt)}</p></div>)}</div>
     </div>
   );
 }

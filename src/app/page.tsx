@@ -14,7 +14,7 @@ import { api } from "@/lib/client";
 
 function ChapterEyebrow({ number, label, dark = false, center = false }: { number: string; label: string; dark?: boolean; center?: boolean }) {
   return (
-    <p className={`landing-kicker landing-eyebrow ${dark ? "landing-eyebrow-dark landing-accent-dark" : "landing-accent"} ${center ? "justify-center text-center" : ""} font-bold uppercase`}>
+    <p className={`landing-kicker landing-eyebrow ${dark ? "landing-eyebrow-dark landing-accent-dark" : "landing-accent"} ${center ? "justify-center text-center" : ""} font-semibold uppercase`}>
       <span className="landing-eyebrow-number">{number}</span>
       <span className="landing-eyebrow-rule" data-line-grow aria-hidden="true" />
       <span>{label}</span>
@@ -297,32 +297,31 @@ export default function Home() {
         <div className="relative mx-auto w-full max-w-7xl px-5 lg:px-8">
           <div className="landing-hero-copy relative z-[1] mx-auto max-w-[56rem] text-center" data-hero-copy>
             <span data-hero className="landing-kicker landing-accent-dark landing-hero-chip glass chip max-w-full !px-4 !py-2 font-bold uppercase"><Sparkles size={13} /> Kenya's Premium Learning Platform</span>
-            <h1 className="landing-display landing-on-dark mt-7 font-black">
-              <span className="block" data-hero-line>Discover Knowledge.</span>
-              <span className="landing-gradient-text block" data-hero-line data-gradient-scrub>Develop <span className="landing-serif">Skills.</span></span>
-              <span className="block" data-hero-line>Shape Your Future.</span>
+            <h1 className="landing-display landing-on-dark mt-7">
+              <span className="block" data-hero-line>Education without</span>
+              <span className="landing-gradient-text landing-display-accent block" data-hero-line data-gradient-scrub>boundaries.</span>
             </h1>
-            <p data-hero className="landing-lead landing-on-dark-copy mx-auto mt-6 max-w-[42rem]">Learn from verified tutors with structured courses, real assessments and certificates employers can verify. Start free — go Premium when you are ready. <strong className="landing-on-dark whitespace-nowrap">LEARN BEYOND LIMITS.</strong></p>
+            <p data-hero className="landing-lead landing-on-dark-copy mx-auto mt-6 max-w-[42rem]">Discover knowledge, develop practical skills and unlock your potential through one connected learning experience. <strong className="landing-on-dark whitespace-nowrap">LEARN BEYOND LIMITS.</strong></p>
             <div data-hero className="mt-8 flex flex-col items-stretch justify-center gap-3 min-[480px]:flex-row min-[480px]:flex-wrap min-[480px]:items-center">
-              <Link href="/roles" className="btn-primary w-full !px-7 !py-3.5 !text-[0.95rem] min-[480px]:w-auto">Start Learning Free <ArrowRight size={18} /></Link>
-              <Link href="/explore" className="btn-ghost w-full border-white/25 !px-7 !py-3.5 !text-[0.95rem] text-white hover:bg-white/10 min-[480px]:w-auto"><PlayCircle size={18} /> Explore Courses</Link>
+              <Link href="/roles" className="btn-primary w-full !px-7 !py-3.5 !text-body-sm min-[480px]:w-auto">Start Learning Free <ArrowRight size={18} /></Link>
+              <Link href="/explore" className="btn-ghost w-full border-white/25 !px-7 !py-3.5 !text-body-sm text-white hover:bg-white/10 min-[480px]:w-auto"><PlayCircle size={18} /> Explore Courses</Link>
             </div>
             {stats && (
               <div data-hero className="mx-auto mt-10 grid max-w-[38rem] grid-cols-3 gap-4 border-t border-white/10 pt-7 text-center sm:gap-6">
-                <div><p className="landing-stat-value landing-on-dark font-extrabold"><Counter value={stats.courses} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Live Courses</p></div>
-                <div><p className="landing-stat-value landing-on-dark font-extrabold"><Counter value={stats.lessons} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Lessons</p></div>
-                <div><p className="landing-stat-value landing-on-dark font-extrabold"><Counter value={stats.tutors} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Verified Tutors</p></div>
+                <div><p className="landing-stat-value landing-on-dark"><Counter value={stats.courses} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Live Courses</p></div>
+                <div><p className="landing-stat-value landing-on-dark"><Counter value={stats.lessons} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Lessons</p></div>
+                <div><p className="landing-stat-value landing-on-dark"><Counter value={stats.tutors} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Verified Tutors</p></div>
               </div>
             )}
           </div>
           <div className="pointer-events-none absolute inset-0 z-0 hidden xl:block" data-hero data-hero-stage aria-hidden="true">
             <div className="floaty landing-glass-badge absolute bottom-16 left-0 max-w-[15rem] rounded-2xl px-4 py-3.5" style={{ animationDelay: "0.6s" }}>
               <p className="landing-on-dark flex items-center gap-2 text-xs font-bold"><BadgeCheck size={15} className="text-emerald-300" /> Verified Tutors</p>
-              <p className="landing-on-dark-muted mt-1 text-[11px] leading-relaxed">Every tutor is reviewed & approved</p>
+              <p className="landing-on-dark-muted type-caption mt-1">Every tutor is reviewed & approved</p>
             </div>
             <div className="floaty landing-glass-badge absolute bottom-16 right-0 max-w-[15rem] rounded-2xl px-4 py-3.5">
               <p className="landing-on-dark flex items-center gap-2 text-xs font-bold"><Smartphone size={15} className="text-brand-300" /> Pay with M-Pesa</p>
-              <p className="landing-on-dark-muted mt-1 text-[11px] leading-relaxed">One subscription, every premium course</p>
+              <p className="landing-on-dark-muted type-caption mt-1">One subscription, every premium course</p>
             </div>
           </div>
         </div>
@@ -335,7 +334,7 @@ export default function Home() {
       {/* ---------------- MARQUEE ---------------- */}
       <div className="landing-marquee-shell overflow-hidden border-b border-blue-900/10 py-5" data-marquee-shell aria-hidden="true">
         <div data-marquee-drift>
-          <div className="marquee landing-faint flex w-max gap-10 text-[0.78rem] font-bold uppercase tracking-[0.22em]">
+          <div className="marquee landing-faint flex w-max gap-10 font-display text-xs font-semibold uppercase tracking-[0.18em]">
             {[...(stats?.categories || ["Technology", "Data Science", "Business", "Design", "Academic"]), ...(stats?.categories || ["Technology", "Data Science", "Business", "Design", "Academic"])].map((c: string, i: number) => (
               <span key={i} className="flex items-center gap-10">{c}<Emblem size={16} /></span>
             ))}
@@ -347,7 +346,7 @@ export default function Home() {
       <section id="how-it-works" className="landing-theme-dawn landing-section-line scroll-mt-28 py-20 sm:py-24 lg:py-32">
         <div className="relative z-[1] mx-auto max-w-7xl px-5 lg:px-8">
         <Reveal><div className="flex justify-center"><ChapterEyebrow number="01" label="How Elimu Bora Works" center /></div>
-          <h2 className="landing-section-title landing-ink mx-auto mt-4 max-w-3xl text-center font-extrabold">From sign-up to <span className="landing-serif landing-accent">certificate</span>, in four honest steps</h2></Reveal>
+          <h2 className="landing-section-title landing-ink mx-auto mt-4 max-w-3xl text-center">From sign-up to <span className="landing-display-accent landing-accent">certificate</span>, in four honest steps</h2></Reveal>
         <div className="landing-journey-line hidden md:block" aria-hidden="true">
           <span data-line-grow />
           <span className="landing-journey-dot" style={{ left: "12.5%" }} />
@@ -367,7 +366,7 @@ export default function Home() {
                 <span className="landing-step-number" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                 <span className="grad-bg flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-glow">{s.icon}</span>
                 <p className="landing-stat-label landing-muted mt-5 font-bold uppercase">Step 0{i + 1}</p>
-                <h3 className="landing-ink mt-1.5 text-[1.05rem] font-bold leading-snug">{s.t}</h3><p className="landing-card-copy landing-copy mt-2 text-sm">{s.d}</p>
+                <h3 className="type-card-title landing-ink mt-1.5">{s.t}</h3><p className="type-body-sm landing-card-copy landing-copy mt-2">{s.d}</p>
               </div>
             </Reveal>
           ))}
@@ -383,8 +382,8 @@ export default function Home() {
           <div className="grid items-end gap-6 text-center lg:grid-cols-[1fr_minmax(0,44rem)_1fr]">
             <div className="min-w-0 lg:col-start-2">
               <div className="flex justify-center"><ChapterEyebrow number="02" label="Featured Courses" dark center /></div>
-              <h2 className="landing-section-title landing-on-dark mx-auto mt-4 text-center font-extrabold">Keep scrolling.<br />Keep <span className="landing-gradient-text landing-serif" data-gradient-scrub>discovering.</span></h2>
-              <p className="landing-card-copy landing-on-dark-muted mx-auto mt-4 max-w-xl text-center text-sm">Just scroll down — the featured collection glides sideways for you.</p>
+              <h2 className="landing-section-title landing-on-dark mx-auto mt-4 text-center">Keep scrolling.<br />Keep <span className="landing-gradient-text landing-display-accent" data-gradient-scrub>discovering.</span></h2>
+              <p className="type-body-sm landing-card-copy landing-on-dark-muted mx-auto mt-4 max-w-xl text-center">Just scroll down — the featured collection glides sideways for you.</p>
             </div>
             <Link href="/explore" className="btn-ghost shrink-0 justify-self-center border-white/25 text-white hover:bg-white/10 lg:col-start-3 lg:justify-self-end">View all courses <ArrowRight size={16} /></Link>
           </div>
@@ -412,21 +411,21 @@ export default function Home() {
       <section id="access" className="landing-theme-pearl landing-section-line overflow-hidden py-20 sm:py-24 lg:py-32">
         <div className="relative z-[1] mx-auto max-w-6xl px-5 text-center lg:px-8">
           <div className="mb-7 flex justify-center"><ChapterEyebrow number="03" label="Access, Beautifully Simple" center /></div>
-          <h2 data-slide-l className="landing-statement landing-ink font-black">Free to start.</h2>
-          <h2 data-slide-r data-gradient-scrub className="landing-statement landing-gradient-text-light mt-2 font-black">Limitless to <span className="landing-serif">grow.</span></h2>
+          <h2 data-slide-l className="landing-statement landing-ink">Free to start.</h2>
+          <h2 data-slide-r data-gradient-scrub className="landing-statement landing-gradient-text-light mt-2">Limitless to <span className="landing-display-accent">grow.</span></h2>
           <Reveal delay={0.15}><p className="landing-lead landing-copy mx-auto mt-7 max-w-2xl"><span data-manifesto-line>Free students get a complete dashboard, real courses and genuine progress tracking.</span> <span data-manifesto-line>Premium simply removes the ceiling — every premium course, every download, advanced analytics and priority features,</span> <span data-manifesto-line>for one monthly price.</span></p></Reveal>
           <div className="relative mx-auto mt-12 grid max-w-4xl gap-6 text-left md:grid-cols-2 lg:mt-16">
             <div className="landing-pricing-line" aria-hidden="true"><span data-line-grow-y /></div>
             <Reveal><div className="card h-full p-6 sm:p-8" data-panel-reveal>
               <p className="landing-stat-label landing-muted font-bold uppercase">Free</p>
-              <p className="landing-price landing-ink mt-2 font-extrabold">KSh 0</p>
+              <p className="landing-price landing-ink mt-2">KSh 0</p>
               <ul className="landing-copy mt-6 space-y-3 text-sm leading-6">{["All designated free courses", "Video lessons & study materials", "Quizzes, assignments & progress", "Community discussions", "Bookmarks & learning history"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={17} className="mt-0.5 shrink-0 text-emerald-500" />{x}</li>)}</ul>
               <Link href="/roles" className="btn-dark mt-8 w-full">Create Free Account</Link>
             </div></Reveal>
             <Reveal delay={0.1}><div className="landing-premium-panel landing-sheen relative h-full overflow-hidden rounded-2xl p-6 text-white shadow-card sm:p-8" data-panel-reveal data-sheen>
               <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-violet-600/40 blur-[70px]" data-parallax="8" />
               <p className="landing-stat-label landing-accent-dark relative flex items-center gap-2 font-bold uppercase"><Crown size={14} /> Premium All-Access</p>
-              <p className="landing-price landing-on-dark relative mt-2 font-extrabold">One monthly price</p>
+              <p className="landing-price landing-on-dark relative mt-2">One monthly price</p>
               <ul className="landing-on-dark-copy relative mt-6 space-y-3 text-sm leading-6">{["Every premium course included", "Premium downloads & resources", "Advanced learning analytics", "AI study assistant allowances", "Premium certificates & paths"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={17} className="mt-0.5 shrink-0 text-brand-300" />{x}</li>)}</ul>
               <Link href="/plans" className="btn-primary relative mt-8 w-full">See Premium <ArrowRight size={16} /></Link>
             </div></Reveal>
@@ -439,7 +438,7 @@ export default function Home() {
         <div className="relative z-[1] mx-auto max-w-7xl px-5 lg:px-8">
           <Reveal><div className="flex flex-wrap items-end justify-between gap-6">
             <div className="min-w-0"><ChapterEyebrow number="04" label="Meet the Tutors" />
-              <h2 className="landing-section-title landing-ink mt-4 font-extrabold">Verified experts,<br />real <span className="landing-serif landing-accent">classrooms</span></h2></div>
+              <h2 className="landing-section-title landing-ink mt-4">Verified experts,<br />real <span className="landing-display-accent landing-accent">classrooms</span></h2></div>
             <Link href="/tutors" className="btn-dark shrink-0">All Tutors <ArrowRight size={16} /></Link></div></Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3">
             {tutors.slice(0, 3).map((c, i) => (
@@ -447,9 +446,9 @@ export default function Home() {
                 <Link href={`/tutors/${c.tutorId}`} className="card group block overflow-hidden transition hover:-translate-y-1.5 hover:shadow-card">
                   <div className="h-28 grad-bg relative"><div className="absolute inset-0 bg-navy-950/25" /></div>
                   <div className="relative px-6 pb-6">
-                    <span className="-mt-9 flex h-[72px] w-[72px] items-center justify-center rounded-2xl border-4 border-white text-xl font-extrabold text-white shadow-soft" data-tutor-avatar style={{ background: c.tutorColor }}>{c.tutorName.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}</span>
-                    <h3 className="landing-ink mt-4 flex items-center gap-1.5 text-[1.02rem] font-bold leading-snug group-hover:text-brand-600">{c.tutorName}<BadgeCheck size={16} className="shrink-0 text-brand-500" /></h3>
-                    <p className="landing-copy mt-1 text-sm leading-6">{c.tutorTitle}</p>
+                    <span className="-mt-9 flex h-[72px] w-[72px] items-center justify-center rounded-2xl border-4 border-white font-display text-h5 text-white shadow-soft" data-tutor-avatar style={{ background: c.tutorColor }}>{c.tutorName.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}</span>
+                    <h3 className="type-card-title landing-ink mt-4 flex items-center gap-1.5 group-hover:text-brand-600">{c.tutorName}<BadgeCheck size={16} className="shrink-0 text-brand-500" /></h3>
+                    <p className="type-body-sm landing-copy mt-1">{c.tutorTitle}</p>
                     <p className="landing-stat-label landing-muted mt-3 font-semibold uppercase">Tutoring: {c.title}</p>
                   </div>
                 </Link>
@@ -461,8 +460,8 @@ export default function Home() {
               <div className="pointer-events-none absolute -left-10 bottom-0 h-56 w-56 rounded-full bg-brand-500/30 blur-[90px]" data-parallax="9" />
               <div className="relative grid items-center gap-8 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <h3 className="landing-subheading landing-on-dark max-w-2xl font-extrabold">Tutor on Elimu Bora. Earn from every engaged learner.</h3>
-                  <p className="landing-card-copy landing-on-dark-copy mt-3 max-w-xl text-[0.95rem]">Apply once, get verified, publish courses — then share in subscription revenue with transparent monthly statements and M-Pesa payouts.</p>
+                  <h3 className="landing-subheading landing-on-dark max-w-2xl">Tutor on Elimu Bora. Earn from every engaged learner.</h3>
+                  <p className="type-body-sm landing-card-copy landing-on-dark-copy mt-3 max-w-xl">Apply once, get verified, publish courses — then share in subscription revenue with transparent monthly statements and M-Pesa payouts.</p>
                 </div>
                 <div className="landing-on-dark-copy flex flex-col gap-3">
                   <p className="flex items-center gap-2 text-sm leading-6"><Wallet size={17} className="landing-accent-dark shrink-0" /> 80% tutor revenue pool</p>
@@ -479,13 +478,13 @@ export default function Home() {
       <section id="faq" className="landing-theme-dawn landing-section-line py-20 sm:py-24 lg:py-32">
         <div className="relative z-[1] mx-auto max-w-4xl px-5">
         <Reveal><div className="flex justify-center"><ChapterEyebrow number="05" label="Questions" center /></div>
-          <h2 className="landing-section-title landing-ink mt-4 text-center font-extrabold">Questions, <span className="landing-serif landing-accent">answered</span></h2></Reveal>
+          <h2 className="landing-section-title landing-ink mt-4 text-center">Questions, <span className="landing-display-accent landing-accent">answered</span></h2></Reveal>
         <div className="relative mt-12 space-y-3 lg:mt-14">
           <div className="landing-faq-spine" aria-hidden="true"><span data-line-grow-y /></div>
           {faqs.map((f, i) => (
             <Reveal key={f.q} delay={i * 0.05}>
               <div className={`card landing-faq-card overflow-hidden ${faq === i ? "landing-faq-open" : ""}`}>
-                <button onClick={() => setFaq(faq === i ? -1 : i)} className="landing-ink flex w-full items-center justify-between gap-4 p-5 text-left text-[0.98rem] font-bold leading-snug" aria-expanded={faq === i}><span className="flex min-w-0 items-baseline gap-3"><span className="landing-faq-number" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><span>{f.q}</span></span><ChevronDown className={`landing-accent shrink-0 transition duration-500 ${faq === i ? "rotate-180" : ""}`} /></button>
+                <button onClick={() => setFaq(faq === i ? -1 : i)} className="landing-ink flex w-full items-center justify-between gap-4 p-5 text-left font-display text-body font-semibold leading-snug" aria-expanded={faq === i}><span className="flex min-w-0 items-baseline gap-3"><span className="landing-faq-number" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><span>{f.q}</span></span><ChevronDown className={`landing-accent shrink-0 transition duration-500 ${faq === i ? "rotate-180" : ""}`} /></button>
                 {faq === i && <p className="landing-card-copy landing-copy landing-faq-answer px-5 pb-5 pl-[3.35rem] text-sm">{f.a}</p>}
               </div>
             </Reveal>
@@ -501,9 +500,9 @@ export default function Home() {
         <div className="relative mx-auto max-w-3xl px-5">
           <div className="mb-8 flex justify-center"><ChapterEyebrow number="06" label="Begin" dark center /></div>
           <Reveal><div className="landing-cta-emblem" data-cta-emblem><Emblem size={72} /></div>
-            <h2 className="landing-section-title landing-on-dark mx-auto mt-8 max-w-2xl font-black">Your future is one <span className="landing-gradient-text landing-serif" data-gradient-scrub>lesson</span> away.</h2>
+            <h2 className="landing-section-title landing-on-dark mx-auto mt-8 max-w-2xl">Your future is one <span className="landing-gradient-text landing-display-accent" data-gradient-scrub>lesson</span> away.</h2>
             <p className="landing-lead landing-on-dark-copy mx-auto mt-5 max-w-xl">Join Elimu Bora today — free forever to start, premium when you want it all.</p>
-            <Link href="/roles" className="btn-primary mt-8 !px-8 !py-3.5 !text-[0.95rem] sm:!px-9 sm:!py-4 sm:!text-base">Create Your Free Account <ArrowRight size={18} /></Link></Reveal>
+            <Link href="/roles" className="btn-primary mt-8 !px-8 !py-3.5 !text-body-sm sm:!px-9 sm:!py-4 sm:!text-body">Create Your Free Account <ArrowRight size={18} /></Link></Reveal>
         </div>
       </section>
       <Footer />

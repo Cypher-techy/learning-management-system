@@ -14,8 +14,8 @@ export default function StudentHome() {
     <div>
       <div className="relative mb-8 overflow-hidden rounded-3xl bg-navy-900 p-7 text-white lg:p-9">
         <div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-violet-600/40 blur-[80px]" />
-        <p className="relative text-sm text-slate-300">Karibu tena,</p>
-        <h1 className="relative mt-1 text-3xl font-extrabold">{u.fullName.split(" ")[0]} — let's keep learning.</h1>
+        <p className="type-body-sm relative text-slate-300">Karibu tena,</p>
+        <h1 className="type-h3 relative mt-1">{u.fullName.split(" ")[0]} — let's keep learning.</h1>
         <div className="relative mt-4 flex flex-wrap gap-2">
           <span className={`chip ${u.premiumActive ? "grad-bg text-white" : "bg-white/15 text-white"}`}>{u.premiumActive ? "PREMIUM ACTIVE" : "FREE PLAN"}</span>
           <span className="chip bg-white/15 text-white"><Flame size={12} /> {s.lessonsDone} LESSONS COMPLETED</span>
@@ -33,16 +33,16 @@ export default function StudentHome() {
 
       {data.inProgress.length > 0 && (
         <>
-          <h2 className="mb-4 mt-10 text-xl font-extrabold">Continue learning</h2>
+          <h2 className="type-h4 mb-4 mt-10">Continue learning</h2>
           <div className="grid gap-5 md:grid-cols-2">
             {data.inProgress.map((c: any) => (
               <Link key={c.id} href={`/courses/${c.id}/learn`} className="card group flex gap-4 p-4 transition hover:shadow-card">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={c.image} alt={c.title} className="h-24 w-32 shrink-0 rounded-xl object-cover" />
-                <div className="min-w-0 flex-1"><p className="text-[11px] font-bold uppercase tracking-widest text-brand-600">{c.category}</p>
-                  <h3 className="mt-1 line-clamp-2 font-bold leading-snug group-hover:text-brand-600">{c.title}</h3>
-                  <div className="mt-3 flex items-center gap-3"><ProgressBar value={c.progress} className="flex-1" /><span className="text-xs font-bold">{c.progress}%</span></div>
-                  <p className="mt-1.5 text-xs text-slate-400">{c.completedLessons} of {c.totalLessons} lessons</p></div>
+                <div className="min-w-0 flex-1"><p className="type-eyebrow text-brand-700">{c.category}</p>
+                  <h3 className="type-card-title mt-1 line-clamp-2 group-hover:text-brand-600">{c.title}</h3>
+                  <div className="mt-3 flex items-center gap-3"><ProgressBar value={c.progress} className="flex-1" /><span className="type-caption type-numeric font-semibold">{c.progress}%</span></div>
+                  <p className="type-caption type-numeric mt-1.5 text-slate-600">{c.completedLessons} of {c.totalLessons} lessons</p></div>
               </Link>
             ))}
           </div>
@@ -50,12 +50,12 @@ export default function StudentHome() {
       )}
 
       {data.announcements?.length > 0 && (
-        <div className="card mt-10 p-6"><h2 className="font-extrabold">Announcements</h2>
-          {data.announcements.map((a: any) => <div key={a.id} className="mt-3 border-l-4 border-brand-500 bg-slate-50 p-4"><p className="font-bold">{a.title}</p><p className="text-sm text-slate-600">{a.body}</p></div>)}
+        <div className="card mt-10 p-6"><h2 className="type-h5">Announcements</h2>
+          {data.announcements.map((a: any) => <div key={a.id} className="mt-3 border-l-4 border-brand-500 bg-slate-50 p-4"><p className="font-display text-body-sm font-semibold leading-snug">{a.title}</p><p className="type-body-sm mt-0.5 text-slate-700">{a.body}</p></div>)}
         </div>
       )}
 
-      <h2 className="mb-4 mt-10 text-xl font-extrabold">Recommended for you</h2>
+      <h2 className="type-h4 mb-4 mt-10">Recommended for you</h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {data.recommended.map((c: any) => <CourseCard key={c.id} course={{ ...c, lessonCount: c.totalLessons, durationMin: 0 }} />)}
       </div>

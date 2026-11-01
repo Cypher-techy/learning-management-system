@@ -29,8 +29,8 @@ export default function Community() {
         <div className="space-y-4">
           {visible.map(d => (
             <div key={d.id} className="card p-6">
-              <div className="flex items-start justify-between gap-3"><div><span className="chip bg-brand-500/10 text-brand-600">{(d.courseTitle || "COURSE").toUpperCase()}</span><h3 className="mt-2 font-extrabold">{d.title}</h3><p className="text-xs text-slate-400">by {d.authorName} · {fmtDate(d.createdAt)}</p></div>
-                <button onClick={() => report(d.id)} className="flex items-center gap-1 text-xs text-slate-400 hover:text-rose-500"><Flag size={13} /> Report</button></div>
+              <div className="flex items-start justify-between gap-3"><div><span className="chip bg-brand-500/10 text-brand-600">{(d.courseTitle || "COURSE").toUpperCase()}</span><h3 className="type-card-title mt-2">{d.title}</h3><p className="type-caption text-slate-600">by {d.authorName} · {fmtDate(d.createdAt)}</p></div>
+                <button onClick={() => report(d.id)} className="flex items-center gap-1 type-caption text-slate-600 hover:text-rose-500"><Flag size={13} /> Report</button></div>
               <p className="mt-2 text-sm text-slate-600">{d.body}</p>
               <div className="mt-4 space-y-2.5 border-t border-slate-100 pt-4">
                 {d.replies.map((r: any) => <div key={r.id} className="rounded-xl bg-slate-50 p-3"><p className="text-xs font-bold">{r.authorName}</p><p className="text-sm text-slate-600">{r.body}</p></div>)}

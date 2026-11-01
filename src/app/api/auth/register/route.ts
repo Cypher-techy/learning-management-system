@@ -56,7 +56,7 @@ async function sendVerificationEmail(email: string, code: string): Promise<boole
         to: [email],
         subject: "Your Elimu Bora verification code",
         text: `Your Elimu Bora verification code is ${code}. It expires in 15 minutes. If you did not create an Elimu Bora account, you can ignore this email.`,
-        html: `<p>Your Elimu Bora verification code is <strong>${code}</strong>.</p><p>It expires in 15 minutes. If you did not create an Elimu Bora account, you can ignore this email.</p>`,
+        html: `<div style="max-width:560px;font-family:Inter,Arial,sans-serif;color:#11131a;line-height:1.6"><p style="font-family:'Plus Jakarta Sans',Inter,Arial,sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.02em;margin:0 0 12px">Your Elimu Bora verification code</p><p style="margin:0 0 12px">Use this code to finish creating your account:</p><p style="font-family:'JetBrains Mono',Consolas,monospace;font-size:24px;font-weight:600;letter-spacing:0.18em;margin:0 0 16px">${code}</p><p style="margin:0">It expires in 15 minutes. If you did not create an Elimu Bora account, you can ignore this email.</p></div>`,
       }),
     });
   } catch (e) {

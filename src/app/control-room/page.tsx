@@ -45,7 +45,7 @@ export default function ControlRoom() {
       <div className="pointer-events-none absolute left-1/3 top-0 h-80 w-80 rounded-full bg-brand-600/25 blur-[120px]" />
       <div className="card relative w-full max-w-md p-8">
         <div className="flex justify-center"><Emblem size={54} /></div>
-        <h1 className="mt-4 text-center text-xl font-extrabold">{!boot.initialised ? "Super Admin Sign In" : "Restricted Access"}</h1>
+        <h1 className="type-h4 mt-4 text-center">{!boot.initialised ? "Super Admin Sign In" : "Restricted Access"}</h1>
         <p className="mt-2 text-center text-sm text-slate-500">{!boot.initialised
           ? boot.configured ? "Use the OWNER_EMAIL and OWNER_SETUP_SECRET configured in Vercel. Your first successful sign-in claims the private owner account; use the same credentials here afterwards."
             : "Bootstrap environment variables (OWNER_EMAIL, OWNER_SETUP_SECRET) are not configured on this deployment."
@@ -56,7 +56,7 @@ export default function ControlRoom() {
             <div><label className="label">Owner email (OWNER_EMAIL)</label><input type="email" autoComplete="username" className="input" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
             <div><label className="label">Setup secret / owner password (OWNER_SETUP_SECRET)</label><input type="password" autoComplete="current-password" className="input" required value={form.setupSecret} onChange={e => setForm({ ...form, setupSecret: e.target.value })} /></div>
             <button className="btn-primary w-full" disabled={!boot.configured}>Sign In to Control Room</button>
-            <p className="text-center text-[11px] text-slate-400">This private route is not linked publicly. The one-time bootstrap path closes after the owner account is claimed.</p>
+            <p className="type-caption text-center text-slate-600">This private route is not linked publicly. The one-time bootstrap path closes after the owner account is claimed.</p>
           </form>
         ) : (
           <form onSubmit={login} className="mt-6 space-y-4">
@@ -99,7 +99,7 @@ function OwnerConsole({ me }: { me: any }) {
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050507]/92 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 lg:px-8">
           <Emblem size={34} />
-          <div><p className="text-sm font-extrabold tracking-widest text-white">ELIMU Bora CONTROL</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Highest platform authority · {me.fullName}</p></div>
+          <div><p className="brand-wordmark text-white">ELIMU Bora CONTROL</p><p className="type-eyebrow mt-0.5 text-slate-400">Highest platform authority · {me.fullName}</p></div>
           <button className="ml-auto flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold hover:bg-white/10" onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); window.location.href = "/"; }}><LogOut size={14} /> Sign Out</button>
         </div>
         <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 pb-3 lg:px-8" aria-label="Control">
@@ -126,11 +126,11 @@ function OwnerConsole({ me }: { me: any }) {
               <Stat label="Audit Events" value={data.allAudit.length} icon={<ScrollText size={19} />} />
             </div>
             <div className="card mt-8 p-6 text-slate-900">
-              <h3 className="font-extrabold">Integration status</h3>
+              <h3 className="type-h5">Integration status</h3>
               <div className="mt-4 grid gap-3 sm:grid-cols-4">
-                {Object.entries(data.integrations).map(([k, v]: any) => <div key={k} className="rounded-xl bg-slate-50 p-4 text-center"><p className="text-xs font-bold uppercase tracking-widest text-slate-400">{k.replace(/Configured$/, "").replace(/([A-Z])/g, " $1")}</p><p className={`mt-2 font-extrabold ${v ? "text-emerald-600" : "text-amber-600"}`}>{v ? "Configured" : "Not configured"}</p></div>)}
+                {Object.entries(data.integrations).map(([k, v]: any) => <div key={k} className="rounded-xl bg-slate-50 p-4 text-center"><p className="type-eyebrow text-slate-500">{k.replace(/Configured$/, "").replace(/([A-Z])/g, " $1")}</p><p className={`mt-2 font-display text-body-sm font-semibold ${v ? "text-emerald-700" : "text-amber-700"}`}>{v ? "Configured" : "Not configured"}</p></div>)}
               </div>
-              <p className="mt-4 text-xs text-slate-400">Configure remaining integrations through server environment variables (see .env.example). The platform runs fully on its built-in data layer until Supabase is connected.</p>
+              <p className="mt-4 type-caption text-slate-600">Configure remaining integrations through server environment variables (see .env.example). The platform runs fully on its built-in data layer until Supabase is connected.</p>
             </div>
           </div>
         )}
@@ -138,19 +138,19 @@ function OwnerConsole({ me }: { me: any }) {
         {tab === "administrators" && (
           <div className="grid gap-6 lg:grid-cols-12">
             <div className="card p-6 text-slate-900 lg:col-span-7">
-              <h3 className="font-extrabold">Administrators</h3>
+              <h3 className="type-h5">Administrators</h3>
               <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Administrator</th><th>Contact</th><th>Status</th><th>Authority actions</th></tr></thead>
                 <tbody>{data.administrators.map((u: any) => <tr key={u.id}><td className="font-semibold">{u.fullName}</td><td className="text-xs">{u.email}<br />{u.phone}</td><td><StatusChip status={u.status} /></td>
                   <td><div className="flex flex-wrap gap-1.5">
-                    {u.status !== "verified" && <button className="btn-dark !px-3 !py-1.5 !text-[11px]" onClick={() => setStatus(u, "verified")}>Approve</button>}
-                    {u.status === "verified" && <button className="btn-light !px-3 !py-1.5 !text-[11px]" onClick={() => setStatus(u, "suspended")}>Suspend</button>}
-                    <button className="btn-light !px-3 !py-1.5 !text-[11px]" onClick={() => setStatus(u, "disabled")}>Revoke</button>
+                    {u.status !== "verified" && <button className="btn-dark !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u, "verified")}>Approve</button>}
+                    {u.status === "verified" && <button className="btn-light !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u, "suspended")}>Suspend</button>}
+                    <button className="btn-light !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u, "disabled")}>Revoke</button>
                   </div></td></tr>)}
                   {data.administrators.length === 0 && <tr><td colSpan={4}>No administrators yet.</td></tr>}</tbody></table></div>
-              <p className="mt-3 text-xs text-slate-400">Only you can create, approve, suspend or revoke administrator access. Administrators can never appoint or approve one another.</p>
+              <p className="mt-3 type-caption text-slate-600">Only you can create, approve, suspend or revoke administrator access. Administrators can never appoint or approve one another.</p>
             </div>
             <div className="card h-fit p-6 text-slate-900 lg:col-span-5">
-              <h3 className="font-extrabold">Invite administrator</h3>
+              <h3 className="type-h5">Invite administrator</h3>
               <div className="mt-4 space-y-3">
                 <input className="input" placeholder="Full name" value={invite.fullName} onChange={e => setInvite({ ...invite, fullName: e.target.value })} />
                 <input className="input" placeholder="Email" value={invite.email} onChange={e => setInvite({ ...invite, email: e.target.value })} />
@@ -164,8 +164,8 @@ function OwnerConsole({ me }: { me: any }) {
 
         {tab === "people" && (
           <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>User</th><th>Role</th><th>Plan</th><th>Status</th><th>Override</th></tr></thead>
-            <tbody>{data.users.map((u: any) => <tr key={u.id}><td><p className="font-semibold">{u.fullName}</p><p className="text-xs text-slate-400">{u.email}</p></td><td className="capitalize">{u.role}</td><td><StatusChip status={u.plan} /></td><td><StatusChip status={u.status} /></td>
-              <td><div className="flex gap-1.5">{["verified", "suspended", "disabled"].filter(x => x !== u.status).map(x => <button key={x} className="btn-light !px-2.5 !py-1.5 !text-[11px] capitalize" onClick={() => setStatus(u, x)}>{x}</button>)}</div></td></tr>)}</tbody></table></div>
+            <tbody>{data.users.map((u: any) => <tr key={u.id}><td><p className="font-semibold">{u.fullName}</p><p className="type-caption text-slate-600">{u.email}</p></td><td className="capitalize">{u.role}</td><td><StatusChip status={u.plan} /></td><td><StatusChip status={u.status} /></td>
+              <td><div className="flex gap-1.5">{["verified", "suspended", "disabled"].filter(x => x !== u.status).map(x => <button key={x} className="btn-light !px-2.5 !py-1.5 !text-xs capitalize" onClick={() => setStatus(u, x)}>{x}</button>)}</div></td></tr>)}</tbody></table></div>
         )}
 
         {tab === "courses" && (
@@ -180,17 +180,17 @@ function OwnerConsole({ me }: { me: any }) {
               <Stat label="Tutor Pool Share" value={`${data.settings.tutorPercent}%`} sub="of net distributable revenue" />
               <Stat label="Premium Price" value={kes(data.settings.premiumPriceKES)} sub="per month" />
             </div>
-            <div className="card p-6"><h3 className="font-extrabold">Tutor wallet balances</h3>
+            <div className="card p-6"><h3 className="type-h5">Tutor wallet balances</h3>
               <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Tutor</th><th>Earned</th><th>Withdrawn</th><th>Balance</th><th>Available</th></tr></thead>
                 <tbody>{data.tutorWallets.map((w: any) => <tr key={w.tutorId}><td className="font-semibold">{w.tutorName}</td><td>{kes(w.earned)}</td><td>{kes(w.withdrawn)}</td><td>{kes(w.balance)}</td><td className="font-bold text-emerald-600">{kes(w.available)}</td></tr>)}</tbody></table></div></div>
-            <div className="card p-6"><h3 className="font-extrabold">Revenue periods</h3>
+            <div className="card p-6"><h3 className="type-h5">Revenue periods</h3>
               {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between rounded-xl bg-slate-50 p-4 text-sm"><span><strong>{p.label}</strong> · Gross {kes(p.gross)} · Net {kes(p.net)} · Pool {kes(p.tutorPool)} · Platform {kes(p.platformShare)}</span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "OPEN"}</span></div>)}</div>
           </div>
         )}
 
         {tab === "config" && settings && (
           <div className="card space-y-5 p-6 text-slate-900 lg:p-8">
-            <h3 className="flex items-center gap-2 font-extrabold"><Settings2 className="text-brand-500" /> Global configuration (owner authority)</h3>
+            <h3 className="type-h5 flex items-center gap-2"><Settings2 className="text-brand-500" /> Global configuration (owner authority)</h3>
             <div className="grid gap-5 sm:grid-cols-2">
               <div><label className="label">Premium price (KSh/month)</label><input type="number" className="input" value={settings.premiumPriceKES} onChange={e => setSettings({ ...settings, premiumPriceKES: Number(e.target.value) })} /></div>
               <div><label className="label">Tutor revenue share %</label><input type="number" min={0} max={100} className="input" value={settings.tutorPercent} onChange={e => setSettings({ ...settings, tutorPercent: Number(e.target.value) })} /></div>
@@ -200,13 +200,13 @@ function OwnerConsole({ me }: { me: any }) {
               <div><label className="label">Support email</label><input className="input" value={settings.supportEmail} onChange={e => setSettings({ ...settings, supportEmail: e.target.value })} /></div>
             </div>
             <button className="btn-primary" onClick={() => act(api("/api/admin/settings", { method: "PATCH", body: JSON.stringify(settings) }), "Global configuration saved.")}>Save Configuration</button>
-            <p className="text-xs text-slate-400">Branding assets live in /public/brand. Integration credentials (Supabase, Daraja, mail, AI) are server environment variables only — never enter secrets into browser forms.</p>
+            <p className="type-caption text-slate-600">Branding assets live in /public/brand. Integration credentials (Supabase, Daraja, mail, AI) are server environment variables only — never enter secrets into browser forms.</p>
           </div>
         )}
 
         {tab === "audit" && (
           <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Reason</th></tr></thead>
-            <tbody>{data.allAudit.map((a: any) => <tr key={a.id}><td>{fmtDate(a.createdAt)}</td><td className="font-semibold">{a.actorName}</td><td><span className="chip bg-slate-100 text-slate-600">{a.action.toUpperCase()}</span></td><td className="font-mono text-xs">{a.target}</td><td className="text-slate-500">{a.reason || "—"}</td></tr>)}</tbody></table></div>
+            <tbody>{data.allAudit.map((a: any) => <tr key={a.id}><td>{fmtDate(a.createdAt)}</td><td className="font-semibold">{a.actorName}</td><td><span className="chip bg-slate-100 text-slate-600">{a.action.toUpperCase()}</span></td><td className="type-technical">{a.target}</td><td className="text-slate-500">{a.reason || "—"}</td></tr>)}</tbody></table></div>
         )}
       </main>
     </div>
