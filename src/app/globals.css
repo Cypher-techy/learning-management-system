@@ -15,6 +15,17 @@ body { @apply bg-[#f7f8fc] text-slate-900 antialiased; font-family: var(--font-s
 .glass { background: rgba(255,255,255,.06); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.1); }
 .noise::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:.5; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); }
 
+/* Full-viewport Elimu Bora logo wallpaper for the public landing page. */
+.landing-wallpaper { isolation: isolate; }
+.landing-wallpaper-media { position: fixed; inset: 0; z-index: -1; height: 100dvh; overflow: hidden; pointer-events: none; background: #eaf3ff; }
+.landing-wallpaper-media img { object-position: center center; }
+.landing-wallpaper-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,8,26,.18), rgba(5,8,26,.03) 52%, rgba(255,255,255,.05)), radial-gradient(circle at 72% 42%, transparent 0 32%, rgba(5,8,26,.08) 100%); }
+.landing-hero-shade { background: linear-gradient(180deg, rgba(5,8,26,.9), rgba(5,8,26,.78)); }
+.landing-wallpaper footer { background-color: rgba(5,8,26,.9); }
+@media (min-width: 1024px) { .landing-hero-shade { background: linear-gradient(90deg, rgba(5,8,26,.93) 0%, rgba(5,8,26,.84) 47%, rgba(5,8,26,.5) 100%); } }
+@media (min-width: 1024px) { .landing-wallpaper-media img { object-position: 68% center; } }
+@media (max-width: 640px) { .landing-wallpaper-media img { object-position: center 42%; } }
+
 .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:hover:translate-y-0; background: linear-gradient(92deg,#0ea5e9,#2563eb 45%,#7c3aed); }
 .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold border transition-all duration-300; }
 .btn-dark { @apply inline-flex items-center justify-center gap-2 rounded-full bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:opacity-50; }

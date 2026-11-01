@@ -1,44 +1,78 @@
-import { getDB, persist, uid, now, notify } from "@/lib/db";
+import { getDB, persist, uid, now } from "@/lib/db";
 import { parseStkCallback, callbackValue } from "@/lib/mpesa";
+import { completePayment, failPayment } from "@/lib/payments";
 
-/** Daraja STK callback. Idempotent: a CheckoutRequestID is processed at most once.
- *  Premium is activated ONLY here, after amount + receipt validation. */
+/** Daraja STK callback. Idempotent: a callback for a CheckoutRequestID is
+ *  processed at most once. Premium activation is also keyed by payment ID,
+ *  so a late callback can safely add the receipt to a payment already
+ *  confirmed through STK Query without granting a second subscription. */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const cb = parseStkCallback(body);
-  if (!cb) return Response.json({ ResultCode: 1, ResultDesc: "Malformed callback" });
+  if (!cb) {
+    console.warn("Elimu Bora: received a malformed Daraja callback.");
+    return Response.json({ ResultCode: 1, ResultDesc: "Malformed callback" });
+  }
+
   const db = await getDB();
-  const payment = db.payments.find(p => p.checkoutRequestId === cb.CheckoutRequestID);
-  if (!payment) return Response.json({ ResultCode: 0, ResultDesc: "Unknown checkout — ignored" });
+  const payment = db.payments.find((p) => p.checkoutRequestId === cb.CheckoutRequestID);
+  if (!payment) {
+    console.warn(`Elimu Bora: Daraja callback for unknown CheckoutRequestID ${cb.CheckoutRequestID}.`);
+    return Response.json({ ResultCode: 0, ResultDesc: "Unknown checkout — ignored" });
+  }
   if (payment.callbackProcessed) return Response.json({ ResultCode: 0, ResultDesc: "Already processed" });
+
   payment.callbackProcessed = true;
-  payment.resultDesc = cb.ResultDesc;
-  if (cb.ResultCode === 0) {
+  const resultCode = Number(cb.ResultCode);
+  payment.resultCode = String(cb.ResultCode);
+
+  if (resultCode === 0) {
     const amount = Number(callbackValue(cb, "Amount"));
     const receipt = String(callbackValue(cb, "MpesaReceiptNumber") || "");
     if (amount !== payment.amount || !receipt) {
-      payment.status = "failed"; payment.resultDesc = "Callback amount/receipt mismatch — flagged for reconciliation.";
-      db.auditLogs.unshift({ id: uid("al_"), actorId: "mpesa-callback", action: "payment.mismatch", target: payment.id, reason: `expected ${payment.amount} got ${amount}`, createdAt: now() });
+      db.auditLogs.unshift({
+        id: uid("al_"),
+        actorId: "mpesa-callback",
+        action: "payment.mismatch",
+        target: payment.id,
+        reason: `expected ${payment.amount} got ${amount}; receipt ${receipt || "missing"}`,
+        createdAt: now(),
+      });
+      if (payment.status !== "completed") {
+        failPayment(db, payment, {
+          resultCode: payment.resultCode,
+          resultDesc: "Callback amount/receipt mismatch — flagged for reconciliation.",
+        });
+      } else {
+        payment.resultDesc = "Payment was confirmed by STK Query; its callback amount/receipt was flagged for reconciliation.";
+      }
       await persist();
       return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
-    payment.status = "completed"; payment.completedAt = now(); payment.mpesaReceipt = receipt;
-    const student = db.users.find(u => u.id === payment.studentId);
-    if (student) {
-      const plan = db.plans[0];
-      const existing = db.subscriptions.find(s => s.id === student.subscriptionId && s.status === "active" && new Date(s.expiresAt).getTime() > Date.now());
-      const start = existing ? new Date(existing.expiresAt) : new Date();
-      const expires = new Date(start.getTime() + (plan?.intervalDays || 30) * 86400000);
-      const sub = { id: uid("sub_"), studentId: student.id, plan: "premium" as const, status: "active" as const, startedAt: now(), expiresAt: expires.toISOString(), paymentId: payment.id };
-      db.subscriptions.unshift(sub);
-      student.plan = "premium"; student.subscriptionId = sub.id;
-      notify(student.id, "Premium activated", `Payment ${receipt} confirmed. Elimu Bora Premium is active until ${expires.toLocaleDateString("en-KE")}.`, "/dashboard/student/subscription");
-    }
+
+    completePayment(db, payment, {
+      receipt,
+      resultCode: payment.resultCode,
+      resultDesc: cb.ResultDesc || "Payment confirmed by Safaricom callback.",
+      source: "callback",
+    });
+  } else if (payment.status === "completed") {
+    db.auditLogs.unshift({
+      id: uid("al_"),
+      actorId: "mpesa-callback",
+      action: "payment.callback_conflict",
+      target: payment.id,
+      reason: `Failure callback (${cb.ResultCode}: ${cb.ResultDesc}) arrived after STK Query confirmed payment.`,
+      createdAt: now(),
+    });
+    console.warn(`Elimu Bora: conflicting failure callback ignored for completed payment ${payment.id}.`);
   } else {
-    payment.status = "failed";
-    const student = db.users.find(u => u.id === payment.studentId);
-    if (student) notify(student.id, "Payment not completed", cb.ResultDesc || "Your M-Pesa payment did not complete. No premium access was activated.");
+    failPayment(db, payment, {
+      resultCode: payment.resultCode,
+      resultDesc: cb.ResultDesc || "M-Pesa payment did not complete.",
+    });
   }
+
   await persist();
   return Response.json({ ResultCode: 0, ResultDesc: "Accepted" });
 }

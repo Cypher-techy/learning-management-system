@@ -1,11 +1,29 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 
-export async function api(url: string, options?: RequestInit) {
-  const res = await fetch(url, { headers: { "Content-Type": "application/json" }, ...options });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "Request failed");
-  return data;
+export type ApiOptions = RequestInit & { timeoutMs?: number };
+
+export async function api(url: string, options: ApiOptions = {}) {
+  const { timeoutMs = 30000, signal, headers, ...rest } = options;
+  const controller = !signal && timeoutMs > 0 ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  try {
+    const res = await fetch(url, {
+      ...rest,
+      headers: { "Content-Type": "application/json", ...(headers as Record<string, string> | undefined) },
+      signal: signal || controller?.signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Request failed");
+    return data;
+  } catch (error) {
+    if (controller && error instanceof Error && error.name === "AbortError") {
+      throw new Error("The request took too long. Please try again.");
+    }
+    throw error;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 export function useApi<T = any>(url: string | null) {
   const [data, setData] = useState<T | null>(null);

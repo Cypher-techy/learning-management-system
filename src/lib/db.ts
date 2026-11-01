@@ -61,6 +61,8 @@ export interface Payment {
   id: string; studentId: string; amount: number; currency: "KES"; provider: "mpesa";
   status: "pending" | "completed" | "failed"; phone: string;
   checkoutRequestId?: string; merchantRequestId?: string; mpesaReceipt?: string;
+  businessShortCode?: string; partyB?: string; resultCode?: string;
+  confirmationSource?: "callback" | "stk-query"; lastStatusCheckAt?: string;
   resultDesc?: string; createdAt: string; completedAt?: string; callbackProcessed?: boolean;
 }
 export interface RevenuePeriod { id: string; label: string; startsAt: string; endsAt: string; gross: number; refunds: number; fees: number; taxes: number; net: number; tutorPool: number; platformShare: number; tutorPercent: number; allocated: boolean; allocatedAt?: string }

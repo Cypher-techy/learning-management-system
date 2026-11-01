@@ -33,7 +33,6 @@ export default function Home() {
       gsap.fromTo("[data-hero]", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1.1, stagger: 0.12, ease: "power3.out", delay: 0.15 });
       gsap.to("[data-orb='1']", { yPercent: 30, ease: "none", scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true } });
       gsap.to("[data-orb='2']", { yPercent: -25, ease: "none", scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true } });
-      gsap.to("[data-heroimg]", { yPercent: 12, scale: 1.04, ease: "none", scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true } });
       // Pinned horizontal course journey (desktop)
       const track = trackRef.current, pin = pinRef.current;
       if (track && pin && window.innerWidth >= 1024) {
@@ -57,10 +56,13 @@ export default function Home() {
   ];
 
   return (
-    <>
+    <div className="landing-wallpaper relative overflow-x-clip bg-navy-950">
+      <div className="landing-wallpaper-media" aria-hidden="true">
+        <Image src="/brand/elimu-bora-logo.png" alt="" fill priority sizes="100vw" className="object-cover" />
+      </div>
       <Navbar />
       {/* ---------------- HERO ---------------- */}
-      <section ref={heroRef} className="noise relative overflow-hidden bg-navy-950 pb-24 pt-36 text-white lg:pt-44">
+      <section ref={heroRef} className="landing-hero-shade noise relative overflow-hidden pb-24 pt-36 text-white lg:pt-44">
         <div data-orb="1" className="pointer-events-none absolute -left-32 top-10 h-[480px] w-[480px] rounded-full bg-brand-500/25 blur-[130px]" />
         <div data-orb="2" className="pointer-events-none absolute -right-24 top-1/3 h-[520px] w-[520px] rounded-full bg-violet-600/25 blur-[140px]" />
         <svg className="pointer-events-none absolute inset-x-0 bottom-0 h-64 w-full opacity-50" viewBox="0 0 1440 320" preserveAspectRatio="none"><path d="M-20 240 C 240 140, 520 300, 820 210 S 1300 80, 1480 170" stroke="url(#hg)" strokeWidth="2" fill="none" /><defs><linearGradient id="hg" x1="0" x2="1"><stop stopColor="#38bdf8" /><stop offset="1" stopColor="#a855f7" /></linearGradient></defs></svg>
@@ -83,17 +85,12 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className="relative lg:col-span-5" data-hero>
-            <div className="grad-ring relative mx-auto max-w-md overflow-hidden rounded-[2rem] shadow-glow">
-              <div data-heroimg>
-                <Image src="/brand/elimu-bora-logo.png" alt="Elimu Bora — Learn Beyond Limits" width={1024} height={1024} priority className="w-full bg-white object-cover" />
-              </div>
-            </div>
-            <div className="floaty glass absolute -left-6 bottom-16 hidden rounded-2xl px-4 py-3 sm:block" style={{ animationDelay: "0.6s" }}>
+          <div className="relative hidden min-h-[34rem] lg:col-span-5 lg:block" data-hero aria-hidden="true">
+            <div className="floaty glass absolute bottom-20 left-2 rounded-2xl px-4 py-3" style={{ animationDelay: "0.6s" }}>
               <p className="flex items-center gap-2 text-xs font-bold"><BadgeCheck size={15} className="text-emerald-400" /> Verified Tutors</p>
               <p className="mt-0.5 text-[11px] text-slate-400">Every tutor is reviewed & approved</p>
             </div>
-            <div className="floaty glass absolute -right-4 top-10 hidden rounded-2xl px-4 py-3 sm:block">
+            <div className="floaty glass absolute right-2 top-16 rounded-2xl px-4 py-3">
               <p className="flex items-center gap-2 text-xs font-bold"><Smartphone size={15} className="text-brand-300" /> Pay with M-Pesa</p>
               <p className="mt-0.5 text-[11px] text-slate-400">One subscription, every premium course</p>
             </div>
@@ -102,7 +99,7 @@ export default function Home() {
       </section>
 
       {/* ---------------- MARQUEE ---------------- */}
-      <div className="overflow-hidden border-b border-slate-100 bg-white py-5" aria-hidden="true">
+      <div className="overflow-hidden border-b border-white/40 bg-white/80 py-5" aria-hidden="true">
         <div className="marquee flex w-max gap-10 text-sm font-bold uppercase tracking-[0.25em] text-slate-300">
           {[...(stats?.categories || ["Technology", "Data Science", "Business", "Design", "Academic"]), ...(stats?.categories || ["Technology", "Data Science", "Business", "Design", "Academic"])].map((c: string, i: number) => (
             <span key={i} className="flex items-center gap-10">{c}<Emblem size={16} /></span>
@@ -111,7 +108,8 @@ export default function Home() {
       </div>
 
       {/* ---------------- HOW IT WORKS ---------------- */}
-      <section className="mx-auto max-w-7xl px-5 py-24 lg:px-8">
+      <section className="bg-[rgba(247,248,252,0.84)] py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <Reveal><p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-brand-600">How Elimu Bora Works</p>
           <h2 className="mt-3 text-center text-4xl font-extrabold tracking-tight lg:text-5xl">From sign-up to certificate,<br className="hidden sm:block" /> in four honest steps</h2></Reveal>
         <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -130,10 +128,11 @@ export default function Home() {
             </Reveal>
           ))}
         </div>
+        </div>
       </section>
 
       {/* ---------------- PINNED HORIZONTAL COURSES ---------------- */}
-      <section ref={pinRef} className="noise relative overflow-hidden bg-navy-950 py-24 text-white">
+      <section ref={pinRef} className="noise relative overflow-hidden bg-navy-950/85 py-24 text-white">
         <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-violet-600/20 blur-[120px]" />
         <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-6">
@@ -154,7 +153,7 @@ export default function Home() {
       </section>
 
       {/* ---------------- BIG STATEMENT ---------------- */}
-      <section className="overflow-hidden bg-white py-24">
+      <section className="overflow-hidden bg-white/85 py-24">
         <div className="mx-auto max-w-6xl px-5 text-center lg:px-8">
           <h2 data-slide-l className="text-4xl font-black tracking-tight sm:text-6xl">Free to start.</h2>
           <h2 data-slide-r className="grad-text mt-2 text-4xl font-black tracking-tight sm:text-6xl">Limitless to grow.</h2>
@@ -178,7 +177,7 @@ export default function Home() {
       </section>
 
       {/* ---------------- TUTORS ---------------- */}
-      <section className="bg-[#f7f8fc] py-24">
+      <section className="bg-[rgba(247,248,252,0.86)] py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <Reveal><div className="flex flex-wrap items-end justify-between gap-6">
             <div><p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-600">Meet the Tutors</p>
@@ -219,7 +218,8 @@ export default function Home() {
       </section>
 
       {/* ---------------- FAQ ---------------- */}
-      <section className="mx-auto max-w-4xl px-5 py-24">
+      <section className="bg-[rgba(247,248,252,0.84)] py-24">
+        <div className="mx-auto max-w-4xl px-5">
         <Reveal><h2 className="text-center text-4xl font-extrabold tracking-tight">Questions, answered</h2></Reveal>
         <div className="mt-12 space-y-3">
           {faqs.map((f, i) => (
@@ -231,10 +231,11 @@ export default function Home() {
             </Reveal>
           ))}
         </div>
+        </div>
       </section>
 
       {/* ---------------- CTA ---------------- */}
-      <section className="noise relative overflow-hidden bg-navy-950 py-24 text-center text-white">
+      <section className="noise relative overflow-hidden bg-navy-950/85 py-24 text-center text-white">
         <div className="pointer-events-none absolute left-1/2 top-0 h-80 w-[720px] -translate-x-1/2 rounded-full bg-brand-600/25 blur-[130px]" />
         <div className="relative mx-auto max-w-3xl px-5">
           <Reveal><div className="flex justify-center"><Emblem size={72} /></div>
@@ -244,6 +245,6 @@ export default function Home() {
         </div>
       </section>
       <Footer />
-    </>
+    </div>
   );
 }
