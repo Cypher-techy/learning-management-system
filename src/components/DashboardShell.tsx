@@ -48,8 +48,8 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
       <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-navy-950 px-5 py-6 transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${mobile ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between"><Logo href={nav[0]?.href || "/"} /><button className="p-1 text-slate-400 lg:hidden" onClick={() => setMobile(false)}><X /></button></div>
         <div className="mt-8 flex items-center gap-3 rounded-2xl bg-white/5 p-3.5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: user.avatarColor || "#2563eb" }}>{initials(user.fullName)}</span>
-          <span className="min-w-0"><span className="block truncate text-sm font-bold text-white">{user.fullName}</span><span className="block text-[11px] font-semibold uppercase tracking-widest text-brand-300">{roleLabel}{user.role === "student" ? (user.premiumActive ? " · Premium" : " · Free") : ""}</span></span>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-display text-body-sm font-semibold text-white" style={{ background: user.avatarColor || "#2563eb" }}>{initials(user.fullName)}</span>
+          <span className="min-w-0"><span className="block truncate font-display text-body-sm font-semibold leading-snug text-white">{user.fullName}</span><span className="type-eyebrow block text-brand-300">{roleLabel}{user.role === "student" ? (user.premiumActive ? " · Premium" : " · Free") : ""}</span></span>
         </div>
         <nav className="mt-6 flex-1 space-y-1 overflow-y-auto" aria-label="Dashboard">
           {nav.map(item => (
@@ -67,30 +67,30 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
           <div className="ml-auto flex items-center gap-3">
             <div className="relative">
               <button onClick={markRead} className="relative rounded-full border border-white/15 bg-white/[0.06] p-2.5 text-white transition hover:bg-white/[0.12] hover:shadow-soft" aria-label="Notifications">
-                <Bell size={17} />{unread > 0 && <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full grad-bg text-[10px] font-bold text-white">{unread}</span>}
+                <Bell size={17} />{unread > 0 && <span className="type-numeric absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full grad-bg px-1 font-display text-xs font-semibold leading-none text-white">{unread}</span>}
               </button>
               {showN && (
                 <div className="absolute right-0 top-12 w-80 max-w-[85vw] rounded-2xl border border-slate-200 bg-white p-2 shadow-card">
                   {notifs.length === 0 ? <p className="p-4 text-sm text-slate-500">No notifications yet.</p> : notifs.slice(0, 10).map(n => (
-                    <div key={n.id} className="rounded-xl p-3 hover:bg-slate-50"><p className="text-sm font-semibold">{n.title}</p><p className="text-xs text-slate-500">{n.body}</p></div>
+                    <div key={n.id} className="rounded-xl p-3 hover:bg-slate-50"><p className="type-body-sm font-semibold leading-snug">{n.title}</p><p className="type-caption mt-0.5 text-slate-600">{n.body}</p></div>
                   ))}
                 </div>
               )}
             </div>
-            <Link href="/" className="hidden text-sm font-semibold text-slate-300 transition hover:text-white sm:block">Visit Website</Link>
+            <Link href="/" className="hidden font-display text-body-sm font-semibold leading-snug text-slate-300 transition hover:text-white sm:block">Visit Website</Link>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           {pendingBlocked ? (
             <div className="card mx-auto mt-10 max-w-xl p-10 text-center">
               <span className="chip bg-amber-100 text-amber-700">APPLICATION {user.status.toUpperCase()}</span>
-              <h1 className="mt-4 text-2xl font-extrabold">Your application is under review</h1>
-              <p className="mt-3 text-sm leading-relaxed text-slate-500">
+              <h1 className="type-h3 mt-4">Your application is under review</h1>
+              <p className="type-body-sm mt-3 text-slate-600">
                 {user.role === "tutor"
                   ? "Our administration team is reviewing your credentials. You will be notified as soon as a decision is made. Course creation, publishing and earnings unlock immediately after approval."
                   : "Administrator access requires final approval before it becomes active. You will be notified once your access is approved."}
               </p>
-              <div className="mt-6 rounded-xl bg-slate-50 p-4 text-left text-sm">
+              <div className="type-body-sm type-wrap-anywhere mt-6 rounded-xl bg-slate-50 p-4 text-left">
                 <p><strong>Name:</strong> {user.fullName}</p><p><strong>Email:</strong> {user.email}</p>
                 {user.expertise && <p><strong>Expertise:</strong> {user.expertise}</p>}
                 <p><strong>Status:</strong> {user.status}</p>

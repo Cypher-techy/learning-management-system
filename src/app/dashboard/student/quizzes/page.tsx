@@ -13,7 +13,7 @@ export default function Quizzes() {
           {data.quizzes.map((q: any) => (
             <div key={q.id} className="card p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div><h3 className="font-extrabold">{q.title}</h3><p className="text-xs text-slate-500">{q.courseTitle} · {q.timeLimitMin} min · {q.attempts.length}/{q.maxAttempts} attempts used</p></div>
+                <div><h3 className="type-h5">{q.title}</h3><p className="text-xs text-slate-500">{q.courseTitle} · {q.timeLimitMin} min · {q.attempts.length}/{q.maxAttempts} attempts used</p></div>
                 <Link href={`/courses/${q.courseId}/learn?tab=quizzes`} className="btn-dark !py-2 !text-xs">{q.attempts.length ? "Retake in Classroom" : "Take Quiz"}</Link>
               </div>
               {q.attempts.length > 0 && <div className="mt-4 space-y-2">{q.attempts.map((a: any) => (

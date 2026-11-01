@@ -35,7 +35,7 @@ export default function Earnings() {
       <div className="mt-8 grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-5">
           <div className="card p-6">
-            <h3 className="font-extrabold">Payment details</h3>
+            <h3 className="type-h5">Payment details</h3>
             <div className="mt-4 space-y-3">
               <select className="input" value={payoutForm.payoutMethod} onChange={e => setPayout({ ...payoutForm, payoutMethod: e.target.value })}><option value="mpesa">M-Pesa</option><option value="bank">Bank transfer</option></select>
               <input className="input" placeholder={payoutForm.payoutMethod === "mpesa" ? "M-Pesa number e.g. +2547…" : "Bank & account, e.g. KCB •••• 1234"} value={payoutForm.payoutAccount} onChange={e => setPayout({ ...payoutForm, payoutAccount: e.target.value })} />
@@ -43,7 +43,7 @@ export default function Earnings() {
             </div>
           </div>
           <div className="card p-6">
-            <h3 className="font-extrabold">Request withdrawal</h3>
+            <h3 className="type-h5">Request withdrawal</h3>
             <p className="mt-1 text-xs text-slate-500">Minimum: {kes(data.settings.minWithdrawalKES)}. Payouts are administrator-approved and recorded with a transaction reference.</p>
             <div className="mt-4 flex gap-3">
               <input type="number" className="input" placeholder="Amount (KSh)" value={amount} onChange={e => setAmount(e.target.value)} />
@@ -55,12 +55,12 @@ export default function Earnings() {
             </div>
           </div>
           <div className="card p-6">
-            <h3 className="font-extrabold">Revenue periods</h3>
+            <h3 className="type-h5">Revenue periods</h3>
             {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3.5 text-sm"><span><strong>{p.label}</strong><br /><span className="text-xs text-slate-500">Net {kes(p.net)} · Tutor pool {kes(p.tutorPool)} ({p.tutorPercent}%)</span></span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "IN PROGRESS"}</span></div>)}
           </div>
         </div>
         <div className="card p-6 lg:col-span-7">
-          <h3 className="font-extrabold">Wallet statement</h3>
+          <h3 className="type-h5">Wallet statement</h3>
           <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Date</th><th>Type</th><th>Details</th><th className="text-right">Amount</th></tr></thead>
             <tbody>{data.walletTxs.map((t: any) => <tr key={t.id}><td>{fmtDate(t.createdAt)}</td><td className="capitalize">{t.type}</td><td className="text-slate-500">{t.note}</td><td className={`text-right font-bold ${t.amount >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{t.amount >= 0 ? "+" : ""}{kes(t.amount)}</td></tr>)}
               {data.walletTxs.length === 0 && <tr><td colSpan={4} className="text-slate-500">Earnings appear here after the first monthly allocation.</td></tr>}</tbody></table></div>

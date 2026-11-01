@@ -33,7 +33,7 @@ export default function Messages({ meRole }: { meRole: string }) {
               return (
                 <button key={p.id} onClick={() => setPartner(p.id)} className={`flex w-full items-center gap-3 border-b border-slate-50 px-4 py-3.5 text-left transition ${partner === p.id ? "bg-brand-500/5" : "hover:bg-slate-50"}`}>
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-white">{initials(p.fullName)}</span>
-                  <span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold">{p.fullName}</span><span className="block truncate text-xs text-slate-400">{last ? last.body : p.title || p.role}</span></span>
+                  <span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold">{p.fullName}</span><span className="block truncate type-caption text-slate-600">{last ? last.body : p.title || p.role}</span></span>
                 </button>
               );
             })}
@@ -47,7 +47,7 @@ export default function Messages({ meRole }: { meRole: string }) {
               thread.map((m: any) => (
                 <div key={m.id} className={`flex ${m.fromId === me.id ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm ${m.fromId === me.id ? "grad-bg text-white" : "bg-slate-100 text-slate-700"}`}>
-                    <p>{m.body}</p><p className={`mt-1 text-[10px] ${m.fromId === me.id ? "text-white/70" : "text-slate-400"}`}>{fmtDate(m.createdAt)}</p>
+                    <p>{m.body}</p><p className={`mt-1 text-xs ${m.fromId === me.id ? "text-white/70" : "text-slate-400"}`}>{fmtDate(m.createdAt)}</p>
                   </div>
                 </div>
               ))}

@@ -28,7 +28,7 @@ export default function MyLearning() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={c.image} alt={c.title} className="h-28 w-36 shrink-0 rounded-xl object-cover" />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2"><StatusChip status={c.access} /><span className="text-xs text-slate-400">{c.category}</span></div>
+                <div className="flex items-center gap-2"><StatusChip status={c.access} /><span className="type-caption text-slate-600">{c.category}</span></div>
                 <h3 className="mt-1.5 line-clamp-2 font-bold leading-snug">{c.title}</h3>
                 <p className="text-xs text-slate-500">{c.tutorName}</p>
                 <div className="mt-3 flex items-center gap-3"><ProgressBar value={c.progress} className="flex-1" /><span className="text-xs font-bold">{c.progress}%</span></div>
@@ -40,7 +40,7 @@ export default function MyLearning() {
       )}
       {cats.length > 0 && (
         <div className="card mt-10 p-6">
-          <h3 className="flex items-center gap-2 font-extrabold"><Route className="text-brand-500" /> Your learning paths</h3>
+          <h3 className="type-h5 flex items-center gap-2"><Route className="text-brand-500" /> Your learning paths</h3>
           <p className="mt-1 text-sm text-slate-500">Elimu Bora groups your courses into skill paths by subject. Complete every course in a path to master the track.</p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {cats.map((cat: string) => {

@@ -46,7 +46,7 @@ export default function NewCourse() {
         </div>
       </div>
 
-      <h2 className="mb-4 mt-10 text-xl font-extrabold">Curriculum</h2>
+      <h2 className="mb-4 mt-10 type-h4">Curriculum</h2>
       <div className="space-y-5">
         {sections.map((s, si) => (
           <div key={si} className="card p-6">
@@ -81,7 +81,7 @@ export default function NewCourse() {
       <div className="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-6">
         <button disabled={busy} onClick={() => save(false)} className="btn-dark">Save as Draft</button>
         <button disabled={busy} onClick={() => save(true)} className="btn-primary">Submit for Review</button>
-        <p className="w-full text-xs text-slate-400">Quizzes and assignments can be attached after your first save via course review feedback; files are hosted in secure storage buckets in the production (Supabase) deployment — paste hosted URLs here.</p>
+        <p className="w-full type-caption text-slate-600">Quizzes and assignments can be attached after your first save via course review feedback; files are hosted in secure storage buckets in the production (Supabase) deployment — paste hosted URLs here.</p>
       </div>
     </div>
   );

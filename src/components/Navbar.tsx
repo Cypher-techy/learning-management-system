@@ -25,14 +25,14 @@ export default function Navbar() {
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8">
         <Logo />
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {LINKS.map(l => <Link key={l.href} href={l.href} className="text-sm font-medium text-slate-300 transition hover:text-white">{l.label}</Link>)}
+          {LINKS.map(l => <Link key={l.href} href={l.href} className="font-display text-body-sm font-medium leading-snug text-slate-300 transition hover:text-white">{l.label}</Link>)}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
           {user ? (<>
             <Link href={dash} className="btn-primary !px-5 !py-2.5"><LayoutDashboard size={16} /> My Dashboard</Link>
             <button onClick={logout} className="rounded-full border border-white/20 p-2.5 text-slate-300 transition hover:text-white" aria-label="Sign out"><LogOut size={16} /></button>
           </>) : (<>
-            <Link href="/roles" className="text-sm font-semibold text-slate-200 transition hover:text-white">Sign In</Link>
+            <Link href="/roles" className="font-display text-body-sm font-semibold leading-snug text-slate-200 transition hover:text-white">Sign In</Link>
             <Link href="/roles" className="btn-primary !px-5 !py-2.5">Get Started</Link>
           </>)}
         </div>
@@ -40,7 +40,7 @@ export default function Navbar() {
       </div>
       {open && (
         <nav className="border-t border-white/10 bg-navy-950/95 px-5 pb-6 pt-2 backdrop-blur-xl lg:hidden" aria-label="Mobile">
-          {LINKS.map(l => <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="block py-3 text-base font-medium text-slate-200">{l.label}</Link>)}
+          {LINKS.map(l => <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="block py-3 font-display text-body font-medium leading-snug text-slate-200">{l.label}</Link>)}
           <Link href={user ? dash : "/roles"} onClick={() => setOpen(false)} className="btn-primary mt-3 w-full">{user ? "My Dashboard" : "Get Started"}</Link>
         </nav>
       )}

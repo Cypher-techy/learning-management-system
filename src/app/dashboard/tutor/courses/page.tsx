@@ -25,8 +25,8 @@ export default function TutorCourses() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={c.image} alt="" className="h-24 w-full shrink-0 rounded-xl object-cover sm:w-40" />
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2"><StatusChip status={c.status} /><StatusChip status={c.access} /><span className="text-xs text-slate-400">{c.category} · {c.level}</span></div>
-                <h3 className="mt-2 font-extrabold">{c.title}</h3>
+                <div className="flex flex-wrap items-center gap-2"><StatusChip status={c.status} /><StatusChip status={c.access} /><span className="type-caption text-slate-600">{c.category} · {c.level}</span></div>
+                <h3 className="type-card-title mt-2">{c.title}</h3>
                 <p className="text-xs text-slate-500">{c.totalLessons} lessons · {c.enrolledCount} enrolments</p>
                 {c.moderationNote && <p className="mt-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600"><strong>Moderation:</strong> {c.moderationNote}</p>}
               </div>

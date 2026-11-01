@@ -4,19 +4,14 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { api } from "@/lib/client";
 
-const META: Record<string, { title: string; subtitle: string; demo: { email: string; password: string; label: string }[] }> = {
-  student: { title: "Student", subtitle: "Learn, explore courses and develop new skills.", demo: [
-    { email: "faith@example.co.ke", password: "Learn@2026", label: "Free student (Faith)" },
-    { email: "david@example.co.ke", password: "Learn@2026", label: "Premium student (David)" }] },
-  tutor: { title: "Tutor", subtitle: "Share knowledge, teach students and earn.", demo: [
-    { email: "amina@elimubora.ac.ke", password: "Teach@2026", label: "Verified tutor (Dr Amina)" },
-    { email: "kevin.omondi@example.co.ke", password: "Kevin@2026", label: "Pending applicant (Kevin)" }] },
-  administrator: { title: "Administrator", subtitle: "Authorized platform management services.", demo: [
-    { email: "admin@elimubora.ac.ke", password: "Admin@2026", label: "Verified admin (Grace)" }] },
+const META: Record<string, { title: string; subtitle: string }> = {
+  student: { title: "Student", subtitle: "Learn, explore courses and develop new skills." },
+  tutor: { title: "Tutor", subtitle: "Share knowledge, teach students and earn." },
+  administrator: { title: "Administrator", subtitle: "Authorized platform management services." },
 };
 
 export default function AuthPage() {
@@ -38,10 +33,10 @@ export default function AuthPage() {
     else router.replace(`/dashboard/${u.role === "administrator" ? "admin" : u.role}`);
   }
 
-  async function login(e?: any, demo?: { email: string; password: string }) {
+  async function login(e?: any) {
     e?.preventDefault(); setBusy(true); setErr(""); setInfo("");
     try {
-      const r = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email: demo?.email || form.email, password: demo?.password || form.password, expectedRole: role }) });
+      const r = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email: form.email, password: form.password, expectedRole: role }) });
       redirect(r);
     } catch (x) { setErr(x instanceof Error ? x.message : "Sign in failed"); }
     finally { setBusy(false); }
@@ -73,25 +68,25 @@ export default function AuthPage() {
         <Image src="/brand/elimu-bora-logo.png" alt="Elimu Bora" fill className="object-contain" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent" />
         <div className="absolute bottom-12 left-12 right-12 text-white">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-300">Learn Beyond Limits.</p>
-          <h2 className="mt-3 text-4xl font-extrabold leading-tight">{role === "student" ? "Your classroom awaits." : role === "tutor" ? "Your students await." : "The platform awaits."}</h2>
-          <p className="mt-3 max-w-md text-slate-300">{meta.subtitle}</p>
+          <p className="type-eyebrow text-brand-300">Learn Beyond Limits.</p>
+          <h2 className="type-h1 mt-3">{role === "student" ? "Your classroom awaits." : role === "tutor" ? "Your students await." : "The platform awaits."}</h2>
+          <p className="type-lead mt-3 max-w-md text-slate-300">{meta.subtitle}</p>
         </div>
       </div>
 
       <div className="relative flex flex-col bg-[#f4f4f1] px-5 py-8 lg:px-14">
-        <div className="flex items-center justify-between"><Logo dark={false} /><Link href="/roles" className="text-sm font-semibold text-slate-500 hover:text-brand-600">Change account type</Link></div>
+        <div className="flex items-center justify-between"><Logo dark={false} /><Link href="/roles" className="font-display text-body-sm font-semibold leading-snug text-slate-600 hover:text-brand-600">Change account type</Link></div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="mx-auto my-auto w-full max-w-md py-10">
           <span className="chip grad-bg text-white">{meta.title.toUpperCase()} ACCOUNT</span>
-          <h1 className="mt-4 text-3xl font-extrabold">{mode === "login" ? "Welcome back" : role === "tutor" ? "Apply as a tutor" : role === "administrator" ? "Request administrator access" : "Create your account"}</h1>
-          <p className="mt-2 text-sm text-slate-500">{mode === "login" ? meta.subtitle : role === "student" ? "Verified automatically when you register — no email code or approval wait." : role === "tutor" ? "Applications are reviewed by our administration team before publishing is enabled." : "Administrator access is controlled and requires final approval."}</p>
+          <h1 className="type-h2 mt-4">{mode === "login" ? "Welcome back" : role === "tutor" ? "Apply as a tutor" : role === "administrator" ? "Request administrator access" : "Create your account"}</h1>
+          <p className="type-body-sm mt-2 text-slate-600">{mode === "login" ? meta.subtitle : role === "student" ? "Verified automatically when you register — no email code or approval wait." : role === "tutor" ? "Applications are reviewed by our administration team before publishing is enabled." : "Administrator access is controlled and requires final approval."}</p>
 
           <div className="mt-7 grid grid-cols-2 rounded-full bg-slate-200/70 p-1" role="tablist">
-            {(["login", "register"] as const).map(m => <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(""); setInfo(""); setStep(1); }} className={`rounded-full py-2.5 text-sm font-bold transition ${mode === m ? "bg-white shadow-soft text-navy-900" : "text-slate-500"}`}>{m === "login" ? "Sign In" : "Register"}</button>)}
+            {(["login", "register"] as const).map(m => <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(""); setInfo(""); setStep(1); }} className={`rounded-full py-2.5 font-display text-body-sm font-semibold leading-tight transition ${mode === m ? "bg-white shadow-soft text-navy-900" : "text-slate-500"}`}>{m === "login" ? "Sign In" : "Register"}</button>)}
           </div>
 
-          {err && <p className="mt-5 rounded-xl bg-rose-50 p-3.5 text-sm font-medium text-rose-600">{err}</p>}
-          {info && <p className="mt-5 rounded-xl bg-sky-50 p-3.5 text-sm font-medium text-sky-700">{info}</p>}
+          {err && <p role="alert" className="type-body-sm mt-5 rounded-xl bg-rose-50 p-3.5 font-medium text-rose-700">{err}</p>}
+          {info && <p role="status" className="type-body-sm mt-5 rounded-xl bg-sky-50 p-3.5 font-medium text-sky-800">{info}</p>}
 
           {mode === "login" ? (
             <form onSubmit={login} className="mt-6 space-y-4">
@@ -100,17 +95,13 @@ export default function AuthPage() {
                 <div className="relative"><input id="password" type={showPw ? "text" : "password"} required className="input pr-11" value={form.password} onChange={set("password")} placeholder="••••••••" autoComplete="current-password" />
                   <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" aria-label="Toggle password visibility">{showPw ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></div>
               <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Signing in…" : `Sign In as ${meta.title}`}</button>
-              <p className="text-center text-xs text-slate-400">Forgot your password? Contact edvoraplatform@gmail.com for a secure reset.</p>
-              <div className="rounded-2xl border border-dashed border-brand-500/40 bg-brand-500/5 p-4">
-                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-600"><KeyRound size={13} /> Preview accounts</p>
-                <div className="mt-3 flex flex-wrap gap-2">{meta.demo.map(d => <button key={d.email} type="button" disabled={busy} onClick={() => login(null, d)} className="btn-light !px-3.5 !py-2 !text-xs">{d.label}</button>)}</div>
-              </div>
+              <p className="type-caption type-wrap-anywhere text-center text-slate-600">Forgot your password? Contact edvoraplatform@gmail.com for a secure reset.</p>
             </form>
           ) : step === 2 ? (
             <form onSubmit={register} className="mt-6 space-y-4">
-              <div><label className="label" htmlFor="code">Verification code</label><input id="code" className="input text-center text-2xl font-bold tracking-[0.4em]" value={code} onChange={e => setCode(e.target.value)} placeholder="••••••" maxLength={6} required /></div>
+              <div><label className="label" htmlFor="code">Verification code</label><input id="code" inputMode="numeric" autoComplete="one-time-code" className="input text-center font-mono text-h4 font-semibold tracking-[0.35em]" value={code} onChange={e => setCode(e.target.value)} placeholder="••••••" maxLength={6} required /></div>
               <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Verifying…" : "Verify & Create Account"}</button>
-              <button type="button" className="w-full text-center text-sm text-slate-500" onClick={() => setStep(1)}>← Back to details</button>
+              <button type="button" className="type-body-sm w-full text-center font-medium text-slate-600" onClick={() => setStep(1)}>← Back to details</button>
             </form>
           ) : (
             <form onSubmit={register} className="mt-6 space-y-4">
@@ -136,7 +127,7 @@ export default function AuthPage() {
                 <div><label className="label">Confirm password</label><input required type="password" className="input" value={form.confirmPassword} onChange={set("confirmPassword")} placeholder="Repeat password" /></div>
               </div>
               <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Please wait…" : role === "student" ? "Create Verified Student Account" : role === "tutor" ? "Submit Application" : "Register & Verify Contact"}</button>
-              <p className="text-center text-xs text-slate-400">By registering you agree to Elimu Bora's <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
+              <p className="type-caption text-center text-slate-600">By registering you agree to Elimu Bora's <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
             </form>
           )}
         </motion.div>

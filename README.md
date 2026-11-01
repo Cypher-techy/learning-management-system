@@ -19,19 +19,6 @@ npm run dev                  # http://localhost:3000
 
 On first run the database seeds itself with realistic courses, users and financial history.
 
-## Preview accounts
-
-Choose the matching account type on the sign-in screen (quick-fill buttons included):
-
-| Account type | Email | Password | Notes |
-|---|---|---|---|
-| Student (Free) | faith@example.co.ke | Learn@2026 | Free plan |
-| Student (Premium) | david@example.co.ke | Learn@2026 | Active subscription, 1 certificate |
-| Tutor | amina@elimubora.ac.ke | Teach@2026 | Verified, with earnings |
-| Tutor | peter@elimubora.ac.ke | Teach@2026 | Verified, pending withdrawal |
-| Tutor applicant | kevin.omondi@example.co.ke | Kevin@2026 | Pending verification |
-| Administrator | admin@elimubora.ac.ke | Admin@2026 | Verified |
-
 ## What works end-to-end
 
 - Role selection → role-specific auth; **database role is always authoritative** (portal selection can never escalate access)

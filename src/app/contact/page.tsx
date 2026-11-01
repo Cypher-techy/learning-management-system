@@ -16,7 +16,7 @@ export default function Contact() {
   return (
     <StaticPage eyebrow="Support" title="Contact & Support" intro="Questions about courses, payments or teaching? We reply within one business day.">
       <P>Email: <a href="mailto:edvoraplatform@gmail.com" className="font-bold text-brand-600 hover:underline">edvoraplatform@gmail.com</a> · Phone: <a href="tel:+254110966455" className="font-bold text-brand-600 hover:underline">+254 110 966 455</a> · Nairobi, Kenya</P>
-      {sent ? <div className="card p-8 text-center"><h2 className="text-xl font-extrabold">Message received</h2><p className="mt-2 text-sm text-slate-500">Thank you — our support team will get back to you at {form.email}. For urgent payment issues include your M-Pesa receipt number.</p></div> : (
+      {sent ? <div className="card p-8 text-center"><h2 className="type-h4">Message received</h2><p className="mt-2 text-sm text-slate-500">Thank you — our support team will get back to you at {form.email}. For urgent payment issues include your M-Pesa receipt number.</p></div> : (
         <form onSubmit={submit} className="card space-y-4 p-6 lg:p-8">
           <div className="grid gap-4 sm:grid-cols-2">
             <div><label className="label">Your name</label><input required className="input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>

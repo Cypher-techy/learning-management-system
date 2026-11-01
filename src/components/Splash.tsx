@@ -163,16 +163,16 @@ export default function Splash() {
         >
           <div className="h-full rounded-full grad-bg" style={{ width: `${progress}%` }} />
         </div>
-        <p className="mt-4 text-sm text-slate-400">
+        <p className="type-body-sm mt-4 text-slate-400">
           {progress < 100 ? "Loading your learning experience…" : "Karibu — welcome to Elimu Bora"}
-          <span className="ml-2 font-bold tabular-nums text-slate-200">{progress}%</span>
+          <span className="type-numeric ml-2 font-semibold text-slate-200">{progress}%</span>
         </p>
       </div>
       {!leaving && (
         <button
           type="button"
           onClick={() => finishRef.current?.(true)}
-          className="absolute bottom-6 right-6 rounded-full border border-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 transition hover:border-white/35 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="type-eyebrow absolute bottom-6 right-6 rounded-full border border-white/15 px-4 py-2 text-slate-400 transition hover:border-white/35 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50"
         >
           Skip intro
         </button>

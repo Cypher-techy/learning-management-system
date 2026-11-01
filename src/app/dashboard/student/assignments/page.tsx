@@ -13,7 +13,7 @@ export default function Assignments() {
           {data.assignments.map((a: any) => (
             <div key={a.id} className="card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div><h3 className="font-extrabold">{a.title}</h3><p className="text-xs text-slate-500">{a.courseTitle} · Due {fmtDate(a.dueDate)} · Max {a.maxScore} marks</p></div>
+                <div><h3 className="type-h5">{a.title}</h3><p className="text-xs text-slate-500">{a.courseTitle} · Due {fmtDate(a.dueDate)} · Max {a.maxScore} marks</p></div>
                 {a.submission ? <StatusChip status={a.submission.status} /> : <span className="chip bg-slate-200 text-slate-600">NOT SUBMITTED</span>}
               </div>
               <p className="mt-3 text-sm text-slate-600">{a.instructions}</p>
