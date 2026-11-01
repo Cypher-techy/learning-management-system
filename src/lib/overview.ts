@@ -1,4 +1,5 @@
 import { getDB, courseLessons, isPremiumActive, publicUser, type DB, type User } from "./db";
+import { subscriptionPlanOptions } from "./pricing";
 
 export function nameOf(db: DB, id: string) { return db.users.find(u => u.id === id)?.fullName || "Unknown"; }
 export function wallet(db: DB, tutorId: string) {
@@ -47,6 +48,7 @@ export function studentData(db: DB, user: User) {
     recommended: db.courses.filter(c => c.status === "published" && !courseIds.includes(c.id)).slice(0, 4).map(c => enrichCourse(db, c)),
     announcements: db.announcements.filter(a => ["all-students", "everyone"].includes(a.audience)).slice(0, 5),
     settings: db.settings,
+    subscriptionPlans: subscriptionPlanOptions(db.settings),
     tutors: db.users.filter(u => u.role === "tutor" && u.status === "verified").map(u => ({ id: u.id, fullName: u.fullName, title: u.title })),
   };
 }
@@ -109,5 +111,6 @@ export function adminData(db: DB, user: User) {
     announcements: db.announcements,
     certificates: db.certificates.map(c => ({ ...c, studentName: nameOf(db, c.studentId), courseTitle: db.courses.find(x => x.id === c.courseId)?.title })),
     settings: db.settings,
+    subscriptionPlans: subscriptionPlanOptions(db.settings),
   };
 }

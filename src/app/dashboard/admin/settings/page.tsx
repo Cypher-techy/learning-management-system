@@ -12,11 +12,11 @@ export default function AdminSettings() {
   if (loading || !data || !s) return <Loading />;
   async function save() {
     setMsg(""); setErr("");
-    try { await api("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ platformName: s.platformName, tagline: s.tagline, premiumPriceKES: Number(s.premiumPriceKES), minWithdrawalKES: Number(s.minWithdrawalKES), certificateMinProgress: Number(s.certificateMinProgress), certificateMinQuiz: Number(s.certificateMinQuiz), supportEmail: s.supportEmail, supportPhone: s.supportPhone }) }); setMsg("Platform settings saved."); }
+    try { await api("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ platformName: s.platformName, tagline: s.tagline, premiumMonthlyPriceUSD: Number(s.premiumMonthlyPriceUSD), premiumAnnualPriceUSD: Number(s.premiumAnnualPriceUSD), minWithdrawalKES: Number(s.minWithdrawalKES), certificateMinProgress: Number(s.certificateMinProgress), certificateMinQuiz: Number(s.certificateMinQuiz), supportEmail: s.supportEmail, supportPhone: s.supportPhone }) }); setMsg("Platform settings saved."); }
     catch (e) { setErr(e instanceof Error ? e.message : "Failed"); }
   }
   const F = ({ k, label, type = "text" }: { k: string; label: string; type?: string }) => (
-    <div><label className="label">{label}</label><input type={type} className="input" value={s[k] ?? ""} onChange={e => setS({ ...s, [k]: e.target.value })} /></div>
+    <div><label className="label">{label}</label><input type={type} step={type === "number" ? "any" : undefined} min={type === "number" ? 0 : undefined} className="input" value={s[k] ?? ""} onChange={e => setS({ ...s, [k]: e.target.value })} /></div>
   );
   return (
     <div>
@@ -26,13 +26,14 @@ export default function AdminSettings() {
       <div className="card mb-10 space-y-5 p-6 lg:p-8">
         <div className="grid gap-5 sm:grid-cols-2">
           <F k="platformName" label="Platform name" /><F k="tagline" label="Tagline" />
-          <F k="premiumPriceKES" label="Premium price (KSh / month)" type="number" />
+          <F k="premiumMonthlyPriceUSD" label="Premium monthly display price (USD)" type="number" />
+          <F k="premiumAnnualPriceUSD" label="Premium annual display price (USD)" type="number" />
           <F k="minWithdrawalKES" label="Minimum withdrawal (KSh)" type="number" />
           <F k="certificateMinProgress" label="Certificate lesson completion %" type="number" />
           <F k="certificateMinQuiz" label="Certificate quiz pass %" type="number" />
           <F k="supportEmail" label="Support email" /><F k="supportPhone" label="Support phone" />
         </div>
-        <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Tutor revenue share is currently <strong>{s.tutorPercent}%</strong>. Changing the global revenue-sharing percentage is reserved to the platform owner.</div>
+        <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Premium prices are displayed in USD. At checkout, the server fetches the latest USD/KES reference rate and charges the converted whole-shilling amount through M-Pesa. Tutor revenue share is currently <strong>{s.tutorPercent}%</strong>; changing it is reserved to the platform owner.</div>
         <button className="btn-primary" onClick={save}>Save Platform Settings</button>
       </div>
       <SettingsForm />

@@ -23,6 +23,12 @@ const login = async (jar, email, password, role) => jar.req("/api/auth/login", {
   const lesson = data.course.sections.flatMap(s => s.lessons).find(l => !l.isPreview);
   ok("Premium media withheld from anonymous users", lesson && !lesson.videoUrl && lesson.body === "");
   ok("Public stats are real DB aggregates", (await anon.req("/api/stats")).data.courses >= 5);
+  const pricing = await anon.req("/api/pricing/subscriptions");
+  const intervals = pricing.data.plans?.map(p => p.billingInterval) || [];
+  ok("Public subscription pricing is USD monthly + annual, settled in KES",
+    pricing.res.status === 200 && pricing.data.displayCurrency === "USD" && pricing.data.transactionCurrency === "KES" &&
+    intervals.includes("monthly") && intervals.includes("annual") &&
+    pricing.data.plans.every(p => p.displayCurrency === "USD" && Number(p.priceUSD) > 0));
 }
 // 2. Role confusion is rejected (DB role is authoritative)
 {
@@ -79,17 +85,44 @@ const stu = new Jar();
   const sm = await a.req("/api/overview/control");
   ok("Administrator cannot open owner control (403)", sm.res.status === 403);
 }
-// 7. M-Pesa: unconfigured deployments fail honestly, never fake success
+// 7. USD display pricing converts to an auditable KES M-Pesa amount.
+// Unconfigured deployments still fail honestly and never fake success.
 {
-  const r = await stu.req("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ phone: "0712345678" }) });
+  const badInterval = await stu.req("/api/payments/mpesa/stk", {
+    method: "POST",
+    body: JSON.stringify({ phone: "0712345678", interval: "weekly", amount: 1 }),
+  });
+  ok("Invalid billing interval is rejected server-side", badInterval.res.status === 400);
+
+  const quote = await stu.req("/api/payments/quote?interval=annual");
+  const quoteValid = quote.data.quote && quote.data.quote.amountKES === Math.round(quote.data.quote.priceUSD * quote.data.quote.exchangeRateUSDKES);
+  ok("Annual USD quote converts to whole KES with stored live-rate fields",
+    quote.res.status === 503 || (quote.res.status === 200 && quoteValid && quote.data.quote.billingInterval === "annual" &&
+      quote.data.quote.intervalDays === 365 && !!quote.data.quote.exchangeRateDate),
+    `(${quote.res.status})`);
+
+  const r = await stu.req("/api/payments/mpesa/stk", {
+    method: "POST",
+    body: JSON.stringify({ phone: "0712345678", interval: "annual", amount: 1 }),
+  });
   const configured = r.res.status === 200;
   ok("STK Push: configured→initiated pending, else explicit 503", configured || r.res.status === 503);
   if (configured) {
     const st = await stu.req(`/api/payments/status?id=${r.data.paymentId}`);
-    ok("Configured STK records Daraja routing for reconciliation", !!st.data.payment.businessShortCode && !!st.data.payment.partyB && !!st.data.payment.checkoutRequestId);
-  } else {
+    const p = st.data.payment;
+    ok("Configured STK records plan, Daraja routing and USD→KES conversion",
+      !!p.businessShortCode && !!p.partyB && !!p.checkoutRequestId && p.billingInterval === "annual" &&
+      p.intervalDays === 365 && p.displayCurrency === "USD" && Number(p.displayAmountUSD) > 0 &&
+      p.amount === Math.round(p.displayAmountUSD * p.exchangeRateUSDKES));
+  } else if (r.data.paymentId) {
     const st = await stu.req(`/api/payments/status?id=${r.data.paymentId}`);
-    ok("Failed STK never activates premium", st.data.payment.status === "failed");
+    const p = st.data.payment;
+    ok("Failed STK never activates premium and retains the converted KES quote",
+      p.status === "failed" && p.billingInterval === "annual" && p.intervalDays === 365 &&
+      p.amount === Math.round(p.displayAmountUSD * p.exchangeRateUSDKES));
+  } else {
+    const me = await stu.req("/api/auth/me");
+    ok("Unavailable live rate/M-Pesa configuration never activates premium", me.data.user?.premiumActive === false);
   }
 }
 // 8. Callback idempotency: unknown checkout ignored safely

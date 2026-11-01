@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { api, useApi, kes, fmtDate } from "@/lib/client";
+import { api, useApi, kes, usd, fmtDate } from "@/lib/client";
 import { Loading, PageTitle, StatusChip, Stat } from "@/components/ui";
 
 export default function AdminFinance() {
@@ -68,13 +68,13 @@ export default function AdminFinance() {
       </div>
 
       <h2 className="type-h4 mb-4 mt-10">Payment transactions</h2>
-      <div className="card table-wrap"><table className="edv"><thead><tr><th>Date</th><th>Student</th><th>Phone</th><th data-numeric>Amount</th><th>M-Pesa Receipt</th><th>Status</th><th>Note</th></tr></thead>
-        <tbody>{data.payments.map((p: any) => <tr key={p.id}><td>{fmtDate(p.createdAt)}</td><td className="font-medium">{p.studentName}</td><td className="type-numeric">{p.phone}</td><td data-numeric className="font-medium">{kes(p.amount)}</td><td className="type-technical">{p.mpesaReceipt || "—"}</td><td><StatusChip status={p.status} /></td><td className="type-caption max-w-[220px] truncate text-slate-600">{p.resultDesc || ""}</td></tr>)}</tbody></table></div>
+      <div className="card table-wrap"><table className="edv"><thead><tr><th>Date</th><th>Student</th><th>Phone</th><th>Plan (USD display)</th><th data-numeric>Charged (KES)</th><th>FX Rate</th><th>M-Pesa Receipt</th><th>Status</th><th>Note</th></tr></thead>
+        <tbody>{data.payments.map((p: any) => <tr key={p.id}><td>{fmtDate(p.createdAt)}</td><td className="font-medium">{p.studentName}</td><td className="type-numeric">{p.phone}</td><td><span className="capitalize">{p.billingInterval || "Monthly"}</span>{p.displayAmountUSD ? <span className="type-caption block text-slate-500">{usd(p.displayAmountUSD)}</span> : null}</td><td data-numeric className="font-medium">{kes(p.amount)}</td><td className="type-numeric">{p.exchangeRateUSDKES ? `${Number(p.exchangeRateUSDKES).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} / US$1` : "—"}</td><td className="type-technical">{p.mpesaReceipt || "—"}</td><td><StatusChip status={p.status} /></td><td className="type-caption max-w-[220px] truncate text-slate-600">{p.resultDesc || ""}</td></tr>)}</tbody></table></div>
 
       <h2 className="type-h4 mb-4 mt-10">Subscriptions</h2>
-      <div className="card table-wrap"><table className="edv"><thead><tr><th>Student</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
-        <tbody>{data.subscriptions.map((s: any) => <tr key={s.id}><td className="font-semibold">{s.studentName}</td><td><StatusChip status={new Date(s.expiresAt).getTime() > Date.now() && s.status === "active" ? "active" : "expired"} /></td><td>{fmtDate(s.startedAt)}</td><td>{fmtDate(s.expiresAt)}</td></tr>)}
-          {data.subscriptions.length === 0 && <tr><td colSpan={4} className="text-slate-500">No subscriptions yet.</td></tr>}</tbody></table></div>
+      <div className="card table-wrap"><table className="edv"><thead><tr><th>Student</th><th>Plan</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
+        <tbody>{data.subscriptions.map((s: any) => <tr key={s.id}><td className="font-semibold">{s.studentName}</td><td className="capitalize">{s.billingInterval || "Monthly"}</td><td><StatusChip status={new Date(s.expiresAt).getTime() > Date.now() && s.status === "active" ? "active" : "expired"} /></td><td>{fmtDate(s.startedAt)}</td><td>{fmtDate(s.expiresAt)}</td></tr>)}
+          {data.subscriptions.length === 0 && <tr><td colSpan={5} className="text-slate-500">No subscriptions yet.</td></tr>}</tbody></table></div>
     </div>
   );
 }

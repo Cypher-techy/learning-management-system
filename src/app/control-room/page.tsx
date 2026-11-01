@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Crown, Landmark, ScrollText, ShieldCheck, Users, Wallet, LogOut, Settings2, GraduationCap, BookOpenCheck } from "lucide-react";
-import { api, kes, fmtDate, useApi } from "@/lib/client";
+import { api, kes, usd, fmtDate, useApi } from "@/lib/client";
 import { Stat, Loading, StatusChip, PageTitle } from "@/components/ui";
 import { Emblem } from "@/components/Logo";
 
@@ -178,7 +178,7 @@ function OwnerConsole({ me }: { me: any }) {
             <div className="grid gap-5 sm:grid-cols-3">
               <Stat label="Revenue Collected" value={kes(s.revenueKES)} />
               <Stat label="Tutor Pool Share" value={`${data.settings.tutorPercent}%`} sub="of net distributable revenue" />
-              <Stat label="Premium Price" value={kes(data.settings.premiumPriceKES)} sub="per month" />
+              <Stat label="Premium Display Prices" value={`${usd(data.settings.premiumMonthlyPriceUSD)}/mo`} sub={`${usd(data.settings.premiumAnnualPriceUSD)}/year · charged in KES at the live checkout rate`} />
             </div>
             <div className="card p-6"><h3 className="type-h5">Tutor wallet balances</h3>
               <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Tutor</th><th>Earned</th><th>Withdrawn</th><th>Balance</th><th>Available</th></tr></thead>
@@ -192,7 +192,8 @@ function OwnerConsole({ me }: { me: any }) {
           <div className="card space-y-5 p-6 text-slate-900 lg:p-8">
             <h3 className="type-h5 flex items-center gap-2"><Settings2 className="text-brand-500" /> Global configuration (owner authority)</h3>
             <div className="grid gap-5 sm:grid-cols-2">
-              <div><label className="label">Premium price (KSh/month)</label><input type="number" className="input" value={settings.premiumPriceKES} onChange={e => setSettings({ ...settings, premiumPriceKES: Number(e.target.value) })} /></div>
+              <div><label className="label">Premium monthly display price (USD)</label><input type="number" min={0} step="any" className="input" value={settings.premiumMonthlyPriceUSD} onChange={e => setSettings({ ...settings, premiumMonthlyPriceUSD: Number(e.target.value) })} /></div>
+              <div><label className="label">Premium annual display price (USD)</label><input type="number" min={0} step="any" className="input" value={settings.premiumAnnualPriceUSD} onChange={e => setSettings({ ...settings, premiumAnnualPriceUSD: Number(e.target.value) })} /></div>
               <div><label className="label">Tutor revenue share %</label><input type="number" min={0} max={100} className="input" value={settings.tutorPercent} onChange={e => setSettings({ ...settings, tutorPercent: Number(e.target.value) })} /></div>
               <div><label className="label">Minimum withdrawal (KSh)</label><input type="number" className="input" value={settings.minWithdrawalKES} onChange={e => setSettings({ ...settings, minWithdrawalKES: Number(e.target.value) })} /></div>
               <div><label className="label">Platform name</label><input className="input" value={settings.platformName} onChange={e => setSettings({ ...settings, platformName: e.target.value })} /></div>
