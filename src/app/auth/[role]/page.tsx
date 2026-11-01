@@ -4,19 +4,14 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { api } from "@/lib/client";
 
-const META: Record<string, { title: string; subtitle: string; demo: { email: string; password: string; label: string }[] }> = {
-  student: { title: "Student", subtitle: "Learn, explore courses and develop new skills.", demo: [
-    { email: "faith@example.co.ke", password: "Learn@2026", label: "Free student (Faith)" },
-    { email: "david@example.co.ke", password: "Learn@2026", label: "Premium student (David)" }] },
-  tutor: { title: "Tutor", subtitle: "Share knowledge, teach students and earn.", demo: [
-    { email: "amina@elimubora.ac.ke", password: "Teach@2026", label: "Verified tutor (Dr Amina)" },
-    { email: "kevin.omondi@example.co.ke", password: "Kevin@2026", label: "Pending applicant (Kevin)" }] },
-  administrator: { title: "Administrator", subtitle: "Authorized platform management services.", demo: [
-    { email: "admin@elimubora.ac.ke", password: "Admin@2026", label: "Verified admin (Grace)" }] },
+const META: Record<string, { title: string; subtitle: string }> = {
+  student: { title: "Student", subtitle: "Learn, explore courses and develop new skills." },
+  tutor: { title: "Tutor", subtitle: "Share knowledge, teach students and earn." },
+  administrator: { title: "Administrator", subtitle: "Authorized platform management services." },
 };
 
 export default function AuthPage() {
@@ -38,10 +33,10 @@ export default function AuthPage() {
     else router.replace(`/dashboard/${u.role === "administrator" ? "admin" : u.role}`);
   }
 
-  async function login(e?: any, demo?: { email: string; password: string }) {
+  async function login(e?: any) {
     e?.preventDefault(); setBusy(true); setErr(""); setInfo("");
     try {
-      const r = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email: demo?.email || form.email, password: demo?.password || form.password, expectedRole: role }) });
+      const r = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email: form.email, password: form.password, expectedRole: role }) });
       redirect(r);
     } catch (x) { setErr(x instanceof Error ? x.message : "Sign in failed"); }
     finally { setBusy(false); }
@@ -101,10 +96,6 @@ export default function AuthPage() {
                   <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" aria-label="Toggle password visibility">{showPw ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></div>
               <button disabled={busy} className="btn-primary w-full !py-3.5">{busy ? "Signing in…" : `Sign In as ${meta.title}`}</button>
               <p className="type-caption type-wrap-anywhere text-center text-slate-600">Forgot your password? Contact edvoraplatform@gmail.com for a secure reset.</p>
-              <div className="rounded-2xl border border-dashed border-brand-500/40 bg-brand-500/5 p-4">
-                <p className="type-eyebrow flex items-center gap-2 text-brand-700"><KeyRound size={13} /> Preview accounts</p>
-                <div className="mt-3 flex flex-wrap gap-2">{meta.demo.map(d => <button key={d.email} type="button" disabled={busy} onClick={() => login(null, d)} className="btn-light !px-3.5 !py-2 !text-xs">{d.label}</button>)}</div>
-              </div>
             </form>
           ) : step === 2 ? (
             <form onSubmit={register} className="mt-6 space-y-4">
