@@ -3,15 +3,21 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export function Reveal({ children, delay = 0, y = 44, className = "" }: { children: React.ReactNode; delay?: number; y?: number; className?: string }) {
+export function Reveal({ children, delay = 0, y = 36, className = "" }: { children: React.ReactNode; delay?: number; y?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!ref.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { ref.current.style.opacity = "1"; return; }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      ref.current.style.opacity = "1";
+      ref.current.style.transform = "none";
+      ref.current.style.filter = "none";
+      return;
+    }
     gsap.registerPlugin(ScrollTrigger);
-    const tween = gsap.fromTo(ref.current, { opacity: 0, y }, {
-      opacity: 1, y: 0, duration: 1, delay, ease: "power3.out",
-      scrollTrigger: { trigger: ref.current, start: "top 88%", once: true },
+    const tween = gsap.fromTo(ref.current, { opacity: 0, y, scale: 0.985, filter: "blur(6px)" }, {
+      opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.95, delay, ease: "power3.out",
+      scrollTrigger: { trigger: ref.current, start: "top 90%", once: true },
+      onComplete: () => { if (ref.current) gsap.set(ref.current, { clearProps: "transform,filter" }); },
     });
     return () => { tween.scrollTrigger?.kill(); tween.kill(); };
   }, [delay, y]);
