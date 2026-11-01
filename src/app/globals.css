@@ -22,9 +22,36 @@ body { @apply bg-[#f7f8fc] text-slate-900 antialiased; font-family: var(--font-s
 .landing-wallpaper-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,8,26,.18), rgba(5,8,26,.03) 52%, rgba(255,255,255,.05)), radial-gradient(circle at 72% 42%, transparent 0 32%, rgba(5,8,26,.08) 100%); }
 .landing-hero-shade { background: linear-gradient(180deg, rgba(5,8,26,.9), rgba(5,8,26,.78)); }
 .landing-wallpaper footer { background-color: rgba(5,8,26,.9); }
-@media (min-width: 1024px) { .landing-hero-shade { background: linear-gradient(90deg, rgba(5,8,26,.93) 0%, rgba(5,8,26,.84) 47%, rgba(5,8,26,.5) 100%); } }
-@media (min-width: 1024px) { .landing-wallpaper-media img { object-position: 68% center; } }
+@media (min-width: 1024px) {
+  .landing-hero-shade { background: linear-gradient(90deg, rgba(5,8,26,.96) 0%, rgba(5,8,26,.9) 42%, rgba(5,8,26,.72) 58%, rgba(5,8,26,.42) 100%); }
+  .landing-wallpaper-media img { object-position: center center; transform: scale(1.18) translateX(6%); transform-origin: center; }
+}
 @media (max-width: 640px) { .landing-wallpaper-media img { object-position: center 42%; } }
+
+/* Fluid landing typography: copy stays in the clear zones over the logo
+   wallpaper and scales with the viewport instead of jumping between the
+   old fixed card-layout sizes. */
+.landing-wallpaper { font-kerning: normal; text-rendering: optimizeLegibility; }
+.landing-wallpaper h1, .landing-wallpaper h2, .landing-wallpaper h3 { text-wrap: balance; }
+.landing-wallpaper p { text-wrap: pretty; }
+.landing-hero-copy { text-shadow: 0 2px 28px rgba(5,8,26,.38); }
+.landing-hero-copy .grad-text { text-shadow: none; }
+.landing-display { font-size: clamp(2.55rem, 5vw, 4.5rem); line-height: .98; letter-spacing: -.045em; }
+.landing-section-title { font-size: clamp(2rem, 3.6vw, 3.25rem); line-height: 1.04; letter-spacing: -.035em; }
+.landing-statement { font-size: clamp(2.35rem, 5.4vw, 4.5rem); line-height: .98; letter-spacing: -.04em; }
+.landing-subheading { font-size: clamp(1.45rem, 2.4vw, 2rem); line-height: 1.12; letter-spacing: -.025em; }
+.landing-lead { font-size: clamp(1rem, 1.25vw, 1.13rem); line-height: 1.72; }
+.landing-kicker { font-size: .7rem; line-height: 1.45; letter-spacing: .26em; }
+.landing-stat-value { font-size: clamp(1.55rem, 2.3vw, 2.15rem); line-height: 1; letter-spacing: -.03em; }
+.landing-stat-label { font-size: .64rem; line-height: 1.45; letter-spacing: .17em; }
+.landing-price { font-size: clamp(1.9rem, 3vw, 2.55rem); line-height: 1.05; letter-spacing: -.03em; }
+.landing-card-copy { line-height: 1.65; }
+@media (max-width: 640px) {
+  .landing-display { font-size: clamp(2.35rem, 11.5vw, 3.2rem); line-height: 1.02; }
+  .landing-section-title { font-size: clamp(1.85rem, 8.5vw, 2.45rem); }
+  .landing-statement { font-size: clamp(2.15rem, 10.5vw, 3rem); }
+  .landing-kicker { letter-spacing: .2em; }
+}
 
 .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:hover:translate-y-0; background: linear-gradient(92deg,#0ea5e9,#2563eb 45%,#7c3aed); }
 .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold border transition-all duration-300; }
