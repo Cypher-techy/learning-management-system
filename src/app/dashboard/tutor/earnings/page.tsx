@@ -23,7 +23,7 @@ export default function Earnings() {
   }
   return (
     <div>
-      <PageTitle title="Earnings Wallet" sub="Transparent monthly revenue statements. Tutor pool: 80% of net subscription revenue, allocated by premium engagement." />
+      <PageTitle title="Earnings Wallet" sub={`Your ${data.settings.tutorPercent}% share is credited once for each verified sale of your own premium courses. Legacy subscription allocations, where applicable, appear separately in your wallet statement.`} />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -31,6 +31,10 @@ export default function Earnings() {
         <Stat label="Available Balance" value={kes(w.available)} sub="Ready to withdraw" />
         <Stat label="Pending Withdrawals" value={kes(w.pending)} sub="Held during review" />
         <Stat label="Withdrawn" value={kes(w.withdrawn)} />
+      </div>
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <Stat label="Lifetime Course Sales" value={data.stats.courseSales || 0} sub="Verified individual purchases of your courses" />
+        <Stat label="Course Sales Gross" value={kes(data.stats.courseSalesGrossKES || 0)} sub="Before your configured tutor share is credited" />
       </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-5">
@@ -55,15 +59,16 @@ export default function Earnings() {
             </div>
           </div>
           <div className="card p-6">
-            <h3 className="type-h5">Revenue periods</h3>
-            {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3.5 text-sm"><span><strong>{p.label}</strong><br /><span className="text-xs text-slate-500">Net {kes(p.net)} · Tutor pool {kes(p.tutorPool)} ({p.tutorPercent}%)</span></span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "IN PROGRESS"}</span></div>)}
+            <h3 className="type-h5">Legacy subscription periods</h3>
+            <p className="mt-2 text-xs leading-5 text-slate-500">New course-sale earnings do not wait for these periods; they are credited after each verified payment.</p>
+            {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3.5 text-sm"><span><strong>{p.label}</strong><br /><span className="text-xs text-slate-500">Net {kes(p.net)} · Legacy tutor pool {kes(p.tutorPool)} ({p.tutorPercent}%)</span></span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "IN PROGRESS"}</span></div>)}
           </div>
         </div>
         <div className="card p-6 lg:col-span-7">
           <h3 className="type-h5">Wallet statement</h3>
           <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Date</th><th>Type</th><th>Details</th><th className="text-right">Amount</th></tr></thead>
             <tbody>{data.walletTxs.map((t: any) => <tr key={t.id}><td>{fmtDate(t.createdAt)}</td><td className="capitalize">{t.type}</td><td className="text-slate-500">{t.note}</td><td className={`text-right font-bold ${t.amount >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{t.amount >= 0 ? "+" : ""}{kes(t.amount)}</td></tr>)}
-              {data.walletTxs.length === 0 && <tr><td colSpan={4} className="text-slate-500">Earnings appear here after the first monthly allocation.</td></tr>}</tbody></table></div>
+              {data.walletTxs.length === 0 && <tr><td colSpan={4} className="text-slate-500">Course-sale earnings appear here after your first verified course payment.</td></tr>}</tbody></table></div>
         </div>
       </div>
     </div>

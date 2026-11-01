@@ -12,7 +12,7 @@ function ExploreInner() {
   const params = useSearchParams();
   const [q, setQ] = useState(params.get("q") || "");
   const [category, setCategory] = useState(params.get("category") || "");
-  const [level, setLevel] = useState(""); const [access, setAccess] = useState("");
+  const [level, setLevel] = useState(""); const [access, setAccess] = useState(params.get("access") || "");
   const [sort, setSort] = useState("recent");
   const [data, setData] = useState<any>(null);
   useEffect(() => {
@@ -25,7 +25,7 @@ function ExploreInner() {
       <section className="bg-navy-950 pb-14 pt-32 text-white">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <h1 className="type-h1">Explore <span className="grad-text">Courses</span></h1>
-          <p className="type-lead mt-3 max-w-xl text-slate-300">Free and premium courses from verified tutors. One Premium subscription unlocks them all.</p>
+          <p className="type-lead mt-3 max-w-xl text-slate-300">Free courses and individually priced premium courses from verified tutors. Buy only the premium courses you want — each one is yours for life.</p>
           <div className="mt-8 flex max-w-2xl items-center gap-2 rounded-full bg-white p-1.5 shadow-card">
             <Search size={18} className="ml-3 text-slate-400" />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search courses, skills, topics…" className="type-body-sm w-full bg-transparent py-2 text-slate-800 outline-none" aria-label="Search courses" />

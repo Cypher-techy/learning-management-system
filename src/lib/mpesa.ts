@@ -199,7 +199,7 @@ export async function stkPush(phone: string, amount: number, accountRef: string)
       PhoneNumber: msisdn,
       CallBackURL: env("MPESA_CALLBACK_URL"),
       AccountReference: accountRef.slice(0, 12),
-      TransactionDesc: "Elimu Premium",
+      TransactionDesc: "Course access",
     }),
   });
   const data = await readJson(res);

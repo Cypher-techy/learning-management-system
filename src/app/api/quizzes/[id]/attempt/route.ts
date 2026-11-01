@@ -8,7 +8,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const quiz = db.quizzes.find(q => q.id === id);
     if (!quiz) throw new ApiError(404, "Quiz not found.");
     const course = db.courses.find(c => c.id === quiz.courseId)!;
-    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Premium access required.");
+    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Buy this individual premium course to access this material.");
     const prior = db.quizAttempts.filter(a => a.quizId === id && a.studentId === user.id).length;
     if (prior >= quiz.maxAttempts) throw new ApiError(400, `You have used all ${quiz.maxAttempts} attempts for this quiz.`);
     const { answers } = await req.json();

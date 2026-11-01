@@ -1,11 +1,27 @@
-import { courseLessons, courseDurationMin, canAccessCourse, type Course } from "./db";
+import {
+  courseLessons,
+  courseDurationMin,
+  canAccessCourse,
+  courseAccessSource,
+  coursePriceKES,
+  hasCoursePurchase,
+  isValidCoursePriceKES,
+  type Course,
+} from "./db";
 
 export function serializeCourse(db: any, c: Course, user: any) {
   const tutor = db.users.find((u: any) => u.id === c.tutorId);
   const reviews = db.reviews.filter((r: any) => r.courseId === c.id);
   const unlocked = canAccessCourse(db, user, c);
+  const purchased = !!user && hasCoursePurchase(db, user.id, c.id);
   return {
     ...c,
+    priceKES: coursePriceKES(c),
+    priceConfigured: c.access === "free" || isValidCoursePriceKES(c.priceKES),
+    displayCurrency: "USD" as const,
+    transactionCurrency: "KES" as const,
+    purchased,
+    accessSource: courseAccessSource(db, user, c),
     tutorName: tutor?.fullName || "Elimu Bora Tutor",
     tutorTitle: tutor?.title || "", tutorColor: tutor?.avatarColor || "#2563eb",
     lessonCount: courseLessons(c).length, durationMin: courseDurationMin(c),

@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, fmtDur, initials } from "@/lib/client";
 import { Loading, ProgressBar } from "@/components/ui";
+import { CoursePrice } from "@/components/CoursePrice";
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ export default function CoursePage() {
   if (!data) return <><Navbar /><div className="pt-32"><Loading text="Loading course…" /></div></>;
   const c = data.course; const enr = data.enrollment;
   const progress = enr && c.lessonCount ? Math.round((enr.completedLessons.length / c.lessonCount) * 100) : 0;
+  const purchaseHref = `/dashboard/student/purchases?course=${encodeURIComponent(id)}`;
 
   async function enrol() {
     setErr(""); setMsg("");
@@ -38,7 +40,7 @@ export default function CoursePage() {
         <div className="pointer-events-none absolute right-0 top-0 h-80 w-80 rounded-full bg-brand-600/25 blur-[110px]" />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-12 lg:px-8">
           <div className="lg:col-span-8">
-            <div className="flex flex-wrap gap-2"><span className="chip bg-white/10 text-brand-300">{c.category.toUpperCase()}</span><span className="chip bg-white/10">{c.level}</span>{c.access === "premium" ? <span className="chip grad-bg text-white"><Crown size={12} /> PREMIUM</span> : <span className="chip bg-emerald-500 text-white">FREE COURSE</span>}{c.tutorial && <span className="chip grad-bg text-white">TUTORIAL NOTES + EXAMPLES</span>}</div>
+            <div className="flex flex-wrap gap-2"><span className="chip bg-white/10 text-brand-300">{c.category.toUpperCase()}</span><span className="chip bg-white/10">{c.level}</span>{c.access === "premium" ? <span className="chip grad-bg text-white"><Crown size={12} /> {c.purchased ? "OWNED · LIFETIME" : "PREMIUM COURSE"}</span> : <span className="chip bg-emerald-500 text-white">FREE COURSE</span>}{c.tutorial && <span className="chip grad-bg text-white">TUTORIAL NOTES + EXAMPLES</span>}</div>
             <h1 className="type-h1 mt-5">{c.title}</h1>
             <p className="type-lead mt-4 max-w-2xl text-slate-300">{c.subtitle}</p>
             <div className="type-body-sm type-numeric mt-6 flex flex-wrap items-center gap-5 text-slate-300">
@@ -59,25 +61,50 @@ export default function CoursePage() {
               <div className="p-6">
                 {err && <p className="mb-3 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-600">{err}</p>}
                 {msg && <p className="mb-3 rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-700">{msg}</p>}
-                {enr ? (
+                {enr && c.unlocked ? (
                   <>
+                    {c.purchased && <p className="mb-3 rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-700">You own lifetime access to this course.</p>}
+                    {c.accessSource === "legacy_subscription" && <p className="mb-3 rounded-xl bg-brand-50 p-3 text-sm font-medium text-brand-700">Included through your existing legacy Premium term.</p>}
                     <div className="type-body-sm mb-3 flex justify-between"><span className="font-medium">Your progress</span><span className="type-numeric font-semibold">{progress}%</span></div>
                     <ProgressBar value={progress} />
                     <Link href={`/courses/${id}/learn`} className="btn-primary mt-5 w-full">{progress > 0 ? "Continue Learning" : "Start Learning"}</Link>
                     <button onClick={() => save(!enr.saved)} className="btn-light mt-3 w-full">{enr.saved ? "Remove from Saved" : "Save for Later"}</button>
                   </>
                 ) : c.unlocked ? (
-                  <button onClick={enrol} className="btn-primary w-full">Enrol Now {c.access === "free" ? "— Free" : ""}</button>
+                  <>
+                    {c.accessSource === "legacy_subscription" && <p className="mb-3 rounded-xl bg-brand-50 p-3 text-sm font-medium text-brand-700">This course is included through your existing legacy Premium term — no separate purchase is needed while that term is active.</p>}
+                    {c.access === "premium" && <p className="mb-3 flex items-baseline justify-between gap-3"><span className="type-caption font-semibold uppercase tracking-wide text-slate-500">Course price</span><CoursePrice course={c} className="font-display text-h5 font-bold" /></p>}
+                    {!me || me.role === "student" ? (
+                      <button onClick={enrol} className="btn-primary w-full">Enrol Now {c.access === "free" ? "— Free" : ""}</button>
+                    ) : (
+                      <Link href={`/courses/${id}/learn`} className="btn-primary w-full">Open Classroom</Link>
+                    )}
+                  </>
                 ) : (
                   <>
-                    <p className="flex items-center gap-2 font-bold"><Lock size={17} className="text-brand-600" /> Premium Course</p>
-                    <p className="mt-2 text-sm text-slate-500">This course is included in Elimu Bora Premium — one subscription unlocks every premium course.</p>
-                    <Link href={me ? "/dashboard/student/subscription" : "/plans"} className="btn-primary mt-5 w-full"><Crown size={16} /> Subscribe to Unlock</Link>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="flex items-center gap-2 font-bold"><Lock size={17} className="text-brand-600" /> Premium Course</p>
+                        <p className="type-caption mt-1 font-medium text-slate-500">One-off payment · lifetime access to this course</p>
+                      </div>
+                      <CoursePrice course={c} className="shrink-0 font-display text-h4 font-bold text-slate-900" />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-500">Buy this course independently — there is no subscription or recurring charge. The USD price uses the latest exchange rate; the exact Kenyan-shilling M-Pesa amount is shown before you enter your PIN.</p>
+                    {enr && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-800">Your enrolment and {progress}% progress are preserved. Purchase this course to reopen its locked lessons.</p>}
+                    {!me ? (
+                      <Link href="/roles" className="btn-primary mt-5 w-full"><Crown size={16} /> Sign In to Buy This Course</Link>
+                    ) : me.role === "student" ? (
+                      <Link href={purchaseHref} className="btn-primary mt-5 w-full"><Crown size={16} /> Buy This Course</Link>
+                    ) : (
+                      <p className="mt-5 rounded-xl bg-slate-50 p-3 text-sm font-medium text-slate-600">Course purchases are made from student accounts.</p>
+                    )}
+                    {enr && <button onClick={() => save(!enr.saved)} className="btn-light mt-3 w-full">{enr.saved ? "Remove from Saved" : "Save for Later"}</button>}
                     <p className="type-caption mt-3 text-center text-slate-600">Preview lessons below are free to watch.</p>
                   </>
                 )}
                 <ul className="mt-6 space-y-2.5 border-t border-slate-100 pt-5 text-sm text-slate-600">
                   <li className="flex gap-2"><PlayCircle size={17} className="text-brand-500" />{c.lessonCount} lessons · {fmtDur(c.durationMin)} total</li>
+                  {c.access === "premium" && <li className="flex gap-2"><BadgeCheck size={17} className="text-brand-500" />Lifetime access after this one course purchase</li>}
                   {c.tutorial && <li className="flex gap-2"><BookOpen size={17} className="text-brand-500" />Step-by-step notes, examples & exercises (tutorial format)</li>}
                   <li className="flex gap-2"><ClipboardList size={17} className="text-brand-500" />{data.assignments.length} assignments · {data.quizzes.length} quizzes</li>
                   <li className="flex gap-2"><BookOpen size={17} className="text-brand-500" />Discussions & tutor messages</li>

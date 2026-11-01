@@ -7,7 +7,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const db = await getDB();
     const course = db.courses.find(c => c.id === id);
     if (!course) throw new ApiError(404, "Course not found.");
-    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Premium access required.");
+    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Buy this individual premium course to access this material.");
     const enr = db.enrollments.find(e => e.courseId === id && e.studentId === user.id);
     if (!enr) throw new ApiError(400, "Enrol in this course first.");
     const { lessonId, complete, activeMin } = await req.json();

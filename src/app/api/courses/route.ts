@@ -1,4 +1,5 @@
 import { getDB, persist, uid, now, type Course } from "@/lib/db";
+import { validateCoursePriceKES } from "@/lib/pricing";
 import { serializeCourse } from "@/lib/serialize";
 import { currentUser, jsonError, ApiError, requireRole, requireVerified } from "@/lib/auth";
 
@@ -34,11 +35,25 @@ export async function POST(req: Request) {
     requireVerified(user);
     const b = await req.json();
     if (!b.title?.trim() || !b.category) throw new ApiError(400, "Course title and category are required.");
+    const access = b.access === "premium" ? "premium" : "free";
+    let priceKES = 0;
+    if (access === "premium") {
+      // The creating tutor decides the price before publication. A draft may
+      // be saved before pricing is final, but it cannot enter review until
+      // a valid price in the current KSh 350–500 band has been set.
+      if (b.priceKES !== undefined && b.priceKES !== null && b.priceKES !== "") {
+        const validation = validateCoursePriceKES(b.priceKES);
+        if (!validation.ok) throw new ApiError(400, validation.error || "Enter a whole-shilling course price between KSh 350 and KSh 500.");
+        priceKES = validation.priceKES;
+      } else if (b.submit) {
+        throw new ApiError(400, "Set this premium course's price (KSh 350–500) before submitting it for review.");
+      }
+    }
     const db = await getDB();
     const id = b.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40) + "-" + uid("").slice(0, 4);
     const course: Course = {
       id, slug: id, title: b.title.trim(), subtitle: b.subtitle || "", description: b.description || "",
-      category: b.category, level: b.level || "Beginner", access: b.access === "premium" ? "premium" : "free",
+      category: b.category, level: b.level || "Beginner", access, priceKES,
       tutorId: user.id, status: b.submit ? "in_review" : "draft",
       image: b.image || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=70",
       objectives: (b.objectives || "").split("\n").filter(Boolean),

@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 import CourseCard from "@/components/CourseCard";
 import { Reveal, Counter } from "@/components/Reveal";
 import { Emblem } from "@/components/Logo";
-import { api, usd } from "@/lib/client";
+import { api, kesToUsd, useUsdKesRate, usd, usdPrice } from "@/lib/client";
 
 function ChapterEyebrow({ number, label, dark = false, center = false }: { number: string; label: string; dark?: boolean; center?: boolean }) {
   return (
@@ -25,7 +25,7 @@ function ChapterEyebrow({ number, label, dark = false, center = false }: { numbe
 export default function Home() {
   const [courses, setCourses] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
-  const [pricing, setPricing] = useState<any[]>([]);
+  const { rate, loading: fxLoading, error: fxError } = useUsdKesRate();
   const heroRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const courseStageRef = useRef<HTMLDivElement>(null);
@@ -39,7 +39,6 @@ export default function Home() {
   useEffect(() => {
     api("/api/courses?sort=popular").then(d => setCourses(d.courses)).catch(() => {});
     api("/api/stats").then(setStats).catch(() => {});
-    api("/api/pricing/subscriptions").then(d => setPricing(Array.isArray(d.plans) ? d.plans : [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -249,13 +248,19 @@ export default function Home() {
 
   const featured = courses.filter(c => c.featured).concat(courses.filter(c => !c.featured)).slice(0, 6);
   const tutors = [...new Map(courses.map(c => [c.tutorId, c])).values()];
-  const monthlyPlan = pricing.find(plan => plan.billingInterval === "monthly");
-  const annualPlan = pricing.find(plan => plan.billingInterval === "annual");
+  const premiumPrices = courses.filter(c => c.access === "premium").map(c => Number(c.priceKES)).filter(n => Number.isFinite(n) && n > 0);
+  const premiumRangeLabel = fxLoading
+    ? "Live USD pricing"
+    : fxError || !rate
+      ? "Priced per course"
+      : premiumPrices.length
+        ? `${usdPrice(kesToUsd(Math.min(...premiumPrices), rate))}–${usdPrice(kesToUsd(Math.max(...premiumPrices), rate))}`
+        : "Priced per course";
   const faqs = [
     { q: "Is Elimu Bora really free to start?", a: "Yes. Create a student account and it is verified automatically — no email code or waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
-    { q: "How does Premium work?", a: "Choose a monthly or annual all-access subscription — you never pay per course. Prices are displayed in USD, while M-Pesa charges the converted Kenyan-shilling amount using the latest exchange rate at checkout. Access activates automatically once Safaricom confirms payment." },
+    { q: "How does Premium work?", a: "Each premium course is bought independently — there is no all-access subscription. You see that course's price in USD at the latest exchange rate, M-Pesa charges its exact Kenyan-shilling course price, and lifetime access activates only for that course once Safaricom confirms payment." },
     { q: "Are certificates verifiable?", a: "Yes. Every certificate carries a unique reference code and a public verification page. Certificates are earned — you must complete the lessons and pass the assessments." },
-    { q: "How do tutors earn?", a: "Verified tutors share in subscription revenue. The tutor pool (80% of net subscription revenue by default) is allocated monthly by genuine premium student engagement in their courses, and paid out via M-Pesa or bank after review." },
+    { q: "How do tutors earn?", a: "Verified tutors earn the owner-configured share (80% by default) of each verified sale of their own courses. The earning is credited once to their wallet after payment confirmation, then withdrawals to M-Pesa or bank are reviewed and recorded." },
   ];
   const chapters = [
     { id: "how-it-works", number: "01", label: "The Method" },
@@ -331,7 +336,7 @@ export default function Home() {
                 <span className="landing-hero-badge-icon"><Smartphone size={17} /></span>
                 <span className="min-w-0">
                   <span className="landing-hero-badge-title">Paid with M-Pesa</span>
-                  <span className="landing-hero-badge-copy">Secure STK Push subscription payments</span>
+                  <span className="landing-hero-badge-copy">Secure STK Push course payments</span>
                 </span>
               </div>
             </div>
@@ -348,7 +353,7 @@ export default function Home() {
               <span className="landing-hero-badge-icon"><Smartphone size={17} /></span>
               <span className="min-w-0">
                 <span className="landing-hero-badge-title">Paid with M-Pesa</span>
-                <span className="landing-hero-badge-copy">One subscription, every premium course</span>
+                <span className="landing-hero-badge-copy">Buy a course once, learn for life</span>
               </span>
             </div>
           </div>
@@ -386,7 +391,7 @@ export default function Home() {
           {[
             { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student or Tutor — pick your path. Students are verified automatically at registration." },
             { icon: <BookOpenCheck size={26} />, t: "Learn with structure", d: "Sections, video lessons, notes, assignments and quizzes. Pick up exactly where you left off, on any device." },
-            { icon: <Crown size={26} />, t: "Unlock everything", d: "One M-Pesa subscription opens all premium courses. No per-course payments, no surprises." },
+            { icon: <Crown size={26} />, t: "Own your course", d: "Premium courses are shown individually in USD. One verified M-Pesa payment of that course’s exact KES price unlocks it for life — no subscription." },
             { icon: <Trophy size={26} />, t: "Earn proof", d: "Complete lessons and pass assessments to earn a certificate anyone can verify online." },
           ].map((s, i) => (
             <Reveal key={s.t} delay={i * 0.08}>
@@ -441,7 +446,7 @@ export default function Home() {
           <div className="mb-7 flex justify-center"><ChapterEyebrow number="03" label="Access, Beautifully Simple" center /></div>
           <h2 data-slide-l className="landing-statement landing-ink">Free to start.</h2>
           <h2 data-slide-r data-gradient-scrub className="landing-statement landing-gradient-text-light mt-2">Limitless to <span className="landing-display-accent">grow.</span></h2>
-          <Reveal delay={0.15}><p className="landing-lead landing-copy mx-auto mt-7 max-w-2xl"><span data-manifesto-line>Free students get a complete dashboard, real courses and genuine progress tracking.</span> <span data-manifesto-line>Premium simply removes the ceiling — every premium course, every download, advanced analytics and priority features,</span> <span data-manifesto-line>with monthly or annual Premium.</span></p></Reveal>
+          <Reveal delay={0.15}><p className="landing-lead landing-copy mx-auto mt-7 max-w-2xl"><span data-manifesto-line>Free students get a complete dashboard, real courses and genuine progress tracking.</span> <span data-manifesto-line>When you are ready for more, buy the individual premium course you want — its lessons, downloads, assessments and study tools,</span> <span data-manifesto-line>with one payment and lifetime access.</span></p></Reveal>
           <div className="relative mx-auto mt-12 grid max-w-4xl gap-6 text-left md:grid-cols-2 lg:mt-16">
             <div className="landing-pricing-line" aria-hidden="true"><span data-line-grow-y /></div>
             <Reveal><div className="card h-full p-6 sm:p-8" data-panel-reveal>
@@ -452,11 +457,11 @@ export default function Home() {
             </div></Reveal>
             <Reveal delay={0.1}><div className="landing-premium-panel landing-sheen relative h-full overflow-hidden rounded-2xl p-6 text-white shadow-card sm:p-8" data-panel-reveal data-sheen>
               <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-violet-600/40 blur-[70px]" data-parallax="8" />
-              <p className="landing-stat-label landing-accent-dark relative flex items-center gap-2 font-bold uppercase"><Crown size={14} /> Premium All-Access</p>
-              <p className="landing-price landing-on-dark relative mt-2">{monthlyPlan ? `${usd(monthlyPlan.priceUSD)}/month` : "Monthly or annual"}</p>
-              <p className="type-body-sm landing-on-dark-copy relative mt-2">{annualPlan ? `or ${usd(annualPlan.priceUSD)}/year · charged in KES through M-Pesa at the live checkout rate` : "USD display pricing · charged in KES through M-Pesa"}</p>
-              <ul className="landing-on-dark-copy relative mt-6 space-y-3 text-sm leading-6">{["Every premium course included", "Premium downloads & resources", "Advanced learning analytics", "AI study assistant allowances", "Premium certificates & paths"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={17} className="mt-0.5 shrink-0 text-brand-300" />{x}</li>)}</ul>
-              <Link href="/plans" className="btn-primary relative mt-8 w-full">See Premium <ArrowRight size={16} /></Link>
+              <p className="landing-stat-label landing-accent-dark relative flex items-center gap-2 font-bold uppercase"><Crown size={14} /> Premium Courses</p>
+              <p className="landing-price landing-on-dark relative mt-2">{premiumRangeLabel}<span className="text-base font-medium text-slate-400"> / course</span></p>
+              <p className="type-body-sm landing-on-dark-copy relative mt-2">Current published-course range in USD at the latest rate · exact M-Pesa charge shown in KES at checkout</p>
+              <ul className="landing-on-dark-copy relative mt-6 space-y-3 text-sm leading-6">{["Buy only the course you want", "Lifetime access after one payment", "Premium downloads & resources", "Course study assistant", "Verifiable certificate on completion"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={17} className="mt-0.5 shrink-0 text-brand-300" />{x}</li>)}</ul>
+              <Link href="/pricing" className="btn-primary relative mt-8 w-full">See Course Pricing <ArrowRight size={16} /></Link>
             </div></Reveal>
           </div>
         </div>
@@ -489,12 +494,12 @@ export default function Home() {
               <div className="pointer-events-none absolute -left-10 bottom-0 h-56 w-56 rounded-full bg-brand-500/30 blur-[90px]" data-parallax="9" />
               <div className="relative grid items-center gap-8 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <h3 className="landing-subheading landing-on-dark max-w-2xl">Tutor on Elimu Bora. Earn from every engaged learner.</h3>
-                  <p className="type-body-sm landing-card-copy landing-on-dark-copy mt-3 max-w-xl">Apply once, get verified, publish courses — then share in subscription revenue with transparent monthly statements and M-Pesa payouts.</p>
+                  <h3 className="landing-subheading landing-on-dark max-w-2xl">Tutor on Elimu Bora. Earn from every verified course sale.</h3>
+                  <p className="type-body-sm landing-card-copy landing-on-dark-copy mt-3 max-w-xl">Apply once, get verified and set your premium course price before publication. Your configured share is credited to your wallet after Safaricom confirms each learner’s payment.</p>
                 </div>
                 <div className="landing-on-dark-copy flex flex-col gap-3">
-                  <p className="flex items-center gap-2 text-sm leading-6"><Wallet size={17} className="landing-accent-dark shrink-0" /> 80% tutor revenue pool</p>
-                  <p className="flex items-center gap-2 text-sm leading-6"><ShieldCheck size={17} className="landing-accent-dark shrink-0" /> Usage-based, fraud-resistant allocation</p>
+                  <p className="flex items-center gap-2 text-sm leading-6"><Wallet size={17} className="landing-accent-dark shrink-0" /> 80% default share of your course sales</p>
+                  <p className="flex items-center gap-2 text-sm leading-6"><ShieldCheck size={17} className="landing-accent-dark shrink-0" /> Credited once per verified payment</p>
                   <Link href="/roles" className="btn-primary mt-2">Apply as a Tutor <ArrowRight size={16} /></Link>
                 </div>
               </div>
@@ -530,7 +535,7 @@ export default function Home() {
           <div className="mb-8 flex justify-center"><ChapterEyebrow number="06" label="Begin" dark center /></div>
           <Reveal><div className="landing-cta-emblem" data-cta-emblem><Emblem size={72} /></div>
             <h2 className="landing-section-title landing-on-dark mx-auto mt-8 max-w-2xl">Your future is one <span className="landing-gradient-text landing-display-accent" data-gradient-scrub>lesson</span> away.</h2>
-            <p className="landing-lead landing-on-dark-copy mx-auto mt-5 max-w-xl">Join Elimu Bora today — free forever to start, premium when you want it all.</p>
+            <p className="landing-lead landing-on-dark-copy mx-auto mt-5 max-w-xl">Join Elimu Bora today — free forever to start, then own each premium course you choose for life.</p>
             <Link href="/roles" className="btn-primary mt-8 !px-8 !py-3.5 !text-body-sm sm:!px-9 sm:!py-4 sm:!text-body">Create Your Free Account <ArrowRight size={18} /></Link></Reveal>
         </div>
       </section>

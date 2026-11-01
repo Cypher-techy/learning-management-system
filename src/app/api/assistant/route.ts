@@ -2,7 +2,8 @@ import { getDB, canAccessCourse, courseLessons } from "@/lib/db";
 import { jsonError, ApiError, requireRole } from "@/lib/auth";
 
 /** Study assistant. Answers ONLY from course material the student is entitled
- *  to access (free/preview lessons, or premium while subscribed). Uses an
+ *  to access (free/preview lessons, an individual course purchase, or a
+ *  still-active legacy subscription). Uses an
  *  external model when OPENAI_API_KEY is configured; otherwise falls back to
  *  on-platform retrieval + practice-question generation from the same
  *  authorised material — never inventing access to restricted content. */
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
     if (!course) throw new ApiError(404, "Course not found.");
     const unlocked = canAccessCourse(db, user, course);
     const accessible = courseLessons(course).filter(l => unlocked || l.isPreview);
-    if (!accessible.length) throw new ApiError(403, "Subscribe to Premium to use the study assistant with this course's materials.");
+    if (!accessible.length) throw new ApiError(403, "Buy this course to use the study assistant with its full materials.");
     const corpus = accessible.map(l => `## ${l.title}\n${l.body}`).join("\n\n");
 
     if (mode === "practice") {

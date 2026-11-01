@@ -4,5 +4,5 @@ export async function GET() {
   const u = await currentUser();
   if (!u) return Response.json({ user: null });
   const db = await getDB();
-  return Response.json({ user: { ...publicUser(u), premiumActive: isPremiumActive(db, u) } });
+  return Response.json({ user: { ...publicUser(u), premiumActive: isPremiumActive(db, u), ownedCourseCount: (db.coursePurchases || []).filter(purchase => purchase.studentId === u.id && purchase.status === "active").length } });
 }

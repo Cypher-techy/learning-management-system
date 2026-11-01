@@ -46,6 +46,31 @@ export const usd = (n: number) => new Intl.NumberFormat("en-US", {
   minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
   maximumFractionDigits: 2,
 }).format(n);
+export const usdPrice = (n: number) => new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(n);
+let usdKesRatePromise: Promise<any> | null = null;
+let usdKesRateExpiresAt = 0;
+export function useUsdKesRate() {
+  const [fx, setFx] = useState<any>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let alive = true;
+    if (!usdKesRatePromise || Date.now() >= usdKesRateExpiresAt) {
+      usdKesRateExpiresAt = Date.now() + 5 * 60 * 1000;
+      usdKesRatePromise = api("/api/pricing/fx").catch((e) => { usdKesRatePromise = null; usdKesRateExpiresAt = 0; throw e; });
+    }
+    usdKesRatePromise
+      .then((data) => { if (alive) setFx(data.fx || null); })
+      .catch((e) => { if (alive) setError(e instanceof Error ? e.message : "Live USD conversion unavailable"); });
+    return () => { alive = false; };
+  }, []);
+  return { fx, rate: Number(fx?.rate) || 0, loading: !fx && !error, error };
+}
+export const kesToUsd = (amountKES: number, rate: number) => rate > 0 ? amountKES / rate : 0;
 export const fmtDate = (s?: string) => s ? new Date(s).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
 export const fmtDur = (min: number) => min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`;
 export const initials = (name = "") => name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();

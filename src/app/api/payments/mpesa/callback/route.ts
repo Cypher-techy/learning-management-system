@@ -3,9 +3,9 @@ import { parseStkCallback, callbackValue } from "@/lib/mpesa";
 import { completePayment, failPayment } from "@/lib/payments";
 
 /** Daraja STK callback. Idempotent: a callback for a CheckoutRequestID is
- *  processed at most once. Premium activation is also keyed by payment ID,
+ *  processed at most once. Access activation is also keyed by payment ID,
  *  so a late callback can safely add the receipt to a payment already
- *  confirmed through STK Query without granting a second subscription. */
+ *  confirmed through STK Query without granting a duplicate course purchase (or a second legacy subscription period). */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const cb = parseStkCallback(body);
