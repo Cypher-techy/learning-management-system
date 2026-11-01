@@ -1,5 +1,4 @@
-import type { BillingInterval, Settings } from "./db";
-import { subscriptionPlanOption, type SubscriptionPlanOption } from "./pricing";
+import { isValidCoursePriceKES, type Course } from "./db";
 
 const DEFAULT_FX_URL = "https://api.frankfurter.dev/v2/rate/usd/kes";
 const FX_CACHE_MS = 5 * 60 * 1000;
@@ -13,9 +12,15 @@ export interface UsdKesRate {
   fetchedAt: string;
 }
 
-export interface SubscriptionQuote extends SubscriptionPlanOption {
+export interface CourseQuote {
+  kind: "course_purchase";
+  courseId: string;
+  courseTitle: string;
+  displayCurrency: "USD";
+  displayAmountUSD: number;
   transactionCurrency: "KES";
   amountKES: number;
+  coursePriceKES: number;
   exchangeRateUSDKES: number;
   exchangeRateDate: string;
   exchangeRateSource: string;
@@ -97,17 +102,24 @@ export async function getLatestUsdKesRate(): Promise<UsdKesRate> {
   }
 }
 
-export async function quoteSubscription(
-  settings: Partial<Settings>,
-  interval: BillingInterval,
-): Promise<SubscriptionQuote> {
-  const plan = subscriptionPlanOption(settings, interval);
+export async function quoteCourse(course: Course): Promise<CourseQuote> {
+  const amountKES = course.priceKES;
+  if (course.access !== "premium" || !isValidCoursePriceKES(amountKES)) {
+    throw new Error("This premium course does not have a valid published price.");
+  }
   const fx = await getLatestUsdKesRate();
   return {
-    ...plan,
+    kind: "course_purchase",
+    courseId: course.id,
+    courseTitle: course.title,
+    displayCurrency: "USD",
+    // Keep enough precision for audit; learner-facing UI formats to cents.
+    // The M-Pesa amount itself is the course's canonical whole-KES price,
+    // so it never drifts outside the approved KSh 350–500 band with FX.
+    displayAmountUSD: Math.round((amountKES / fx.rate) * 10000) / 10000,
     transactionCurrency: "KES",
-    // Daraja is charged in whole Kenyan shillings.
-    amountKES: Math.max(1, Math.round(plan.priceUSD * fx.rate)),
+    amountKES,
+    coursePriceKES: amountKES,
     exchangeRateUSDKES: fx.rate,
     exchangeRateDate: fx.rateDate,
     exchangeRateSource: fx.source,

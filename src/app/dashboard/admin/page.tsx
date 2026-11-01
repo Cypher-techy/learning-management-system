@@ -20,7 +20,7 @@ export default function AdminHome() {
         <div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-brand-600/40 blur-[80px]" />
         <p className="type-body-sm relative text-slate-300">Platform operations</p>
         <h1 className="type-h3 relative mt-1">Administration Overview</h1>
-        <p className="type-body-sm relative mt-2 text-slate-300">Verification, moderation, subscriptions and finance — every action is audit-logged.</p>
+        <p className="type-body-sm relative mt-2 text-slate-300">Verification, moderation, course purchases and finance — every action is audit-logged.</p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Students" value={s.students} sub={`${s.verifiedStudents} verified`} icon={<Users size={19} />} />

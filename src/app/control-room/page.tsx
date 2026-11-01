@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Crown, Landmark, ScrollText, ShieldCheck, Users, Wallet, LogOut, Settings2, GraduationCap, BookOpenCheck } from "lucide-react";
-import { api, kes, usd, fmtDate, useApi } from "@/lib/client";
+import { api, kes, fmtDate, useApi } from "@/lib/client";
 import { Stat, Loading, StatusChip, PageTitle } from "@/components/ui";
+import { CoursePricingEditor } from "@/components/CoursePrice";
 import { Emblem } from "@/components/Logo";
 
 /** Private platform control. This route is intentionally not linked from any
@@ -116,7 +117,7 @@ function OwnerConsole({ me }: { me: any }) {
             <div className="grid gap-5 text-slate-900 sm:grid-cols-2 lg:grid-cols-4">
               <Stat label="Students" value={s.students} sub={`${s.verifiedStudents} verified`} icon={<Users size={19} />} />
               <Stat label="Tutors" value={s.tutors} sub={`${s.pendingTutors} pending`} icon={<GraduationCap size={19} />} />
-              <Stat label="Active Subscriptions" value={s.activeSubscriptions} icon={<Crown size={19} />} />
+              <Stat label="Course Purchases" value={s.coursePurchases} sub={`${s.activeSubscriptions} legacy subscriptions still honoured`} icon={<Crown size={19} />} />
               <Stat label="Revenue Collected" value={kes(s.revenueKES)} icon={<Landmark size={19} />} />
             </div>
             <div className="mt-6 grid gap-5 text-slate-900 sm:grid-cols-2 lg:grid-cols-4">
@@ -163,27 +164,27 @@ function OwnerConsole({ me }: { me: any }) {
         )}
 
         {tab === "people" && (
-          <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>User</th><th>Role</th><th>Plan</th><th>Status</th><th>Override</th></tr></thead>
-            <tbody>{data.users.map((u: any) => <tr key={u.id}><td><p className="font-semibold">{u.fullName}</p><p className="type-caption text-slate-600">{u.email}</p></td><td className="capitalize">{u.role}</td><td><StatusChip status={u.plan} /></td><td><StatusChip status={u.status} /></td>
+          <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>User</th><th>Role</th><th>Course access</th><th>Status</th><th>Override</th></tr></thead>
+            <tbody>{data.users.map((u: any) => <tr key={u.id}><td><p className="font-semibold">{u.fullName}</p><p className="type-caption text-slate-600">{u.email}</p></td><td className="capitalize">{u.role}</td><td>{u.role === "student" ? <div className="flex flex-wrap gap-1.5">{u.premiumActive && <span className="chip grad-bg text-white">LEGACY PREMIUM</span>}{u.ownedCourseCount > 0 && <span className="chip bg-emerald-100 text-emerald-700">{u.ownedCourseCount} OWNED</span>}{!u.premiumActive && !u.ownedCourseCount && <StatusChip status="free" />}</div> : <span className="text-slate-400">—</span>}</td><td><StatusChip status={u.status} /></td>
               <td><div className="flex gap-1.5">{["verified", "suspended", "disabled"].filter(x => x !== u.status).map(x => <button key={x} className="btn-light !px-2.5 !py-1.5 !text-xs capitalize" onClick={() => setStatus(u, x)}>{x}</button>)}</div></td></tr>)}</tbody></table></div>
         )}
 
         {tab === "courses" && (
-          <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>Course</th><th>Tutor</th><th>Access</th><th>Status</th><th>Enrolments</th></tr></thead>
-            <tbody>{data.courses.map((c: any) => <tr key={c.id}><td className="font-semibold">{c.title}</td><td>{c.tutorName}</td><td><StatusChip status={c.access} /></td><td><StatusChip status={c.status} /></td><td>{c.enrolledCount}</td></tr>)}</tbody></table></div>
+          <div className="card table-wrap text-slate-900"><table className="edv"><thead><tr><th>Course</th><th>Tutor</th><th>Access</th><th>Pricing (super admin)</th><th>Status</th><th>Enrolments</th><th>Sales</th></tr></thead>
+            <tbody>{data.courses.map((c: any) => <tr key={c.id}><td className="font-semibold">{c.title}</td><td>{c.tutorName}</td><td><StatusChip status={c.access} /></td><td><CoursePricingEditor course={c} onSaved={reload} compact /></td><td><StatusChip status={c.status} /></td><td>{c.enrolledCount}</td><td>{c.salesCount || 0}</td></tr>)}</tbody></table></div>
         )}
 
         {tab === "finance" && (
           <div className="space-y-6 text-slate-900">
             <div className="grid gap-5 sm:grid-cols-3">
               <Stat label="Revenue Collected" value={kes(s.revenueKES)} />
-              <Stat label="Tutor Pool Share" value={`${data.settings.tutorPercent}%`} sub="of net distributable revenue" />
-              <Stat label="Premium Display Prices" value={`${usd(data.settings.premiumMonthlyPriceUSD)}/mo`} sub={`${usd(data.settings.premiumAnnualPriceUSD)}/year · charged in KES at the live checkout rate`} />
+              <Stat label="Tutor Sale Share" value={`${data.settings.tutorPercent}%`} sub="credited once per verified course sale" />
+              <Stat label="Course Sales" value={kes(s.courseSalesKES)} sub={`${s.coursePurchases} lifetime purchases · course prices shown to learners in USD`} />
             </div>
             <div className="card p-6"><h3 className="type-h5">Tutor wallet balances</h3>
               <div className="table-wrap mt-4"><table className="edv"><thead><tr><th>Tutor</th><th>Earned</th><th>Withdrawn</th><th>Balance</th><th>Available</th></tr></thead>
                 <tbody>{data.tutorWallets.map((w: any) => <tr key={w.tutorId}><td className="font-semibold">{w.tutorName}</td><td>{kes(w.earned)}</td><td>{kes(w.withdrawn)}</td><td>{kes(w.balance)}</td><td className="font-bold text-emerald-600">{kes(w.available)}</td></tr>)}</tbody></table></div></div>
-            <div className="card p-6"><h3 className="type-h5">Revenue periods</h3>
+            <div className="card p-6"><h3 className="type-h5">Legacy subscription revenue periods</h3><p className="mt-2 text-sm text-slate-500">Individual course-sale shares are already credited at payment confirmation and are excluded here to prevent double payment.</p>
               {data.revenuePeriods.map((p: any) => <div key={p.id} className="mt-3 flex flex-wrap items-center justify-between rounded-xl bg-slate-50 p-4 text-sm"><span><strong>{p.label}</strong> · Gross {kes(p.gross)} · Net {kes(p.net)} · Pool {kes(p.tutorPool)} · Platform {kes(p.platformShare)}</span><span className={`chip ${p.allocated ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{p.allocated ? "ALLOCATED" : "OPEN"}</span></div>)}</div>
           </div>
         )}
@@ -192,15 +193,16 @@ function OwnerConsole({ me }: { me: any }) {
           <div className="card space-y-5 p-6 text-slate-900 lg:p-8">
             <h3 className="type-h5 flex items-center gap-2"><Settings2 className="text-brand-500" /> Global configuration (owner authority)</h3>
             <div className="grid gap-5 sm:grid-cols-2">
-              <div><label className="label">Premium monthly display price (USD)</label><input type="number" min={0} step="any" className="input" value={settings.premiumMonthlyPriceUSD} onChange={e => setSettings({ ...settings, premiumMonthlyPriceUSD: Number(e.target.value) })} /></div>
-              <div><label className="label">Premium annual display price (USD)</label><input type="number" min={0} step="any" className="input" value={settings.premiumAnnualPriceUSD} onChange={e => setSettings({ ...settings, premiumAnnualPriceUSD: Number(e.target.value) })} /></div>
               <div><label className="label">Tutor revenue share %</label><input type="number" min={0} max={100} className="input" value={settings.tutorPercent} onChange={e => setSettings({ ...settings, tutorPercent: Number(e.target.value) })} /></div>
               <div><label className="label">Minimum withdrawal (KSh)</label><input type="number" className="input" value={settings.minWithdrawalKES} onChange={e => setSettings({ ...settings, minWithdrawalKES: Number(e.target.value) })} /></div>
               <div><label className="label">Platform name</label><input className="input" value={settings.platformName} onChange={e => setSettings({ ...settings, platformName: e.target.value })} /></div>
               <div><label className="label">Tagline</label><input className="input" value={settings.tagline} onChange={e => setSettings({ ...settings, tagline: e.target.value })} /></div>
               <div><label className="label">Support email</label><input className="input" value={settings.supportEmail} onChange={e => setSettings({ ...settings, supportEmail: e.target.value })} /></div>
             </div>
-            <button className="btn-primary" onClick={() => act(api("/api/admin/settings", { method: "PATCH", body: JSON.stringify(settings) }), "Global configuration saved.")}>Save Configuration</button>
+            <div className="rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+              <strong className="text-slate-900">Course pricing is individual, not global.</strong> Use the Courses tab to set a premium course’s KSh 350–500 transaction price before publication; learners see its live USD equivalent. Only the course tutor or you, as super admin, can make that decision. Monthly and annual all-access subscriptions are no longer sold.
+            </div>
+            <button className="btn-primary" onClick={() => act(api("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ platformName: settings.platformName, tagline: settings.tagline, tutorPercent: settings.tutorPercent, minWithdrawalKES: settings.minWithdrawalKES, supportEmail: settings.supportEmail }) }), "Global configuration saved.")}>Save Configuration</button>
             <p className="type-caption text-slate-600">Branding assets live in /public/brand. Integration credentials (Supabase, Daraja, mail, AI) are server environment variables only — never enter secrets into browser forms.</p>
           </div>
         )}

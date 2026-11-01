@@ -6,7 +6,7 @@ import { Logo } from "./Logo";
 
 const LINKS = [
   { href: "/explore", label: "Explore Courses" }, { href: "/tutors", label: "Tutors" },
-  { href: "/plans", label: "Premium" }, { href: "/how-it-works", label: "How It Works" }, { href: "/about", label: "About" },
+  { href: "/pricing", label: "Pricing" }, { href: "/how-it-works", label: "How It Works" }, { href: "/about", label: "About" },
 ];
 export default function Navbar() {
   const [open, setOpen] = useState(false);

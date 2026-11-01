@@ -18,7 +18,7 @@ export default function Footer() {
         </div>
         <div><h4 className="type-eyebrow mb-4 text-white">Learn</h4><ul className="type-body-sm space-y-2.5">
           <li><Link href="/explore" className="hover:text-white">Explore Courses</Link></li>
-          <li><Link href="/plans" className="hover:text-white">Elimu Bora Premium</Link></li>
+          <li><Link href="/pricing" className="hover:text-white">Course Pricing</Link></li>
           <li><Link href="/tutors" className="hover:text-white">Our Tutors</Link></li>
           <li><Link href="/verify" className="hover:text-white">Verify a Certificate</Link></li></ul></div>
         <div><h4 className="type-eyebrow mb-4 text-white">Company</h4><ul className="type-body-sm space-y-2.5">

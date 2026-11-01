@@ -1,74 +1,61 @@
-import type { BillingInterval, Plan, Settings } from "./db";
+import {
+  COURSE_PRICE_MAX_KES,
+  COURSE_PRICE_MIN_KES,
+  coursePriceKES,
+  isValidCoursePriceKES,
+  type Course,
+} from "./db";
 
-export const DEFAULT_MONTHLY_PRICE_USD = 35;
-export const DEFAULT_ANNUAL_PRICE_USD = 240;
-export const MONTHLY_PLAN_ID = "plan_premium_monthly";
-export const ANNUAL_PLAN_ID = "plan_premium_annual";
+export { COURSE_PRICE_MAX_KES, COURSE_PRICE_MIN_KES };
 
-export interface SubscriptionPlanOption {
-  id: string;
-  name: string;
-  billingInterval: BillingInterval;
-  intervalDays: number;
-  displayCurrency: "USD";
-  priceUSD: number;
-  equivalentMonthlyUSD: number;
-  billingLabel: string;
-  termLabel: string;
+export interface CoursePriceValidation {
+  ok: boolean;
+  priceKES: number;
+  error?: string;
 }
 
-function positivePrice(value: unknown, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) / 100 : fallback;
+/**
+ * Course prices are canonical in whole Kenyan shillings because M-Pesa is
+ * the settlement rail. USD is a display conversion only, calculated from
+ * the latest server-fetched USD/KES rate at viewing/checkout time.
+ */
+export function validateCoursePriceKES(value: unknown): CoursePriceValidation {
+  const priceKES = Number(value);
+  if (!Number.isInteger(priceKES)) {
+    return { ok: false, priceKES: 0, error: "Enter the course price as a whole number of Kenyan shillings." };
+  }
+  if (!isValidCoursePriceKES(priceKES)) {
+    return {
+      ok: false,
+      priceKES,
+      error: `Premium course prices must currently be between KSh ${COURSE_PRICE_MIN_KES} and KSh ${COURSE_PRICE_MAX_KES}.`,
+    };
+  }
+  return { ok: true, priceKES };
 }
 
-export function isBillingInterval(value: unknown): value is BillingInterval {
-  return value === "monthly" || value === "annual";
+export function coursePricing(course: Course) {
+  return {
+    access: course.access,
+    priceKES: coursePriceKES(course),
+    transactionCurrency: "KES" as const,
+    displayCurrency: "USD" as const,
+    priceBandKES: { min: COURSE_PRICE_MIN_KES, max: COURSE_PRICE_MAX_KES },
+  };
 }
 
-export function subscriptionPlanOptions(settings: Partial<Settings>): SubscriptionPlanOption[] {
-  const monthlyPriceUSD = positivePrice(settings.premiumMonthlyPriceUSD, DEFAULT_MONTHLY_PRICE_USD);
-  const annualPriceUSD = positivePrice(settings.premiumAnnualPriceUSD, DEFAULT_ANNUAL_PRICE_USD);
-
-  return [
-    {
-      id: MONTHLY_PLAN_ID,
-      name: "Elimu Bora Premium — Monthly",
-      billingInterval: "monthly",
-      intervalDays: 30,
-      displayCurrency: "USD",
-      priceUSD: monthlyPriceUSD,
-      equivalentMonthlyUSD: monthlyPriceUSD,
-      billingLabel: "Billed for 30 days via M-Pesa",
-      termLabel: "30 days of all-access Premium",
-    },
-    {
-      id: ANNUAL_PLAN_ID,
-      name: "Elimu Bora Premium — Annual",
-      billingInterval: "annual",
-      intervalDays: 365,
-      displayCurrency: "USD",
-      priceUSD: annualPriceUSD,
-      equivalentMonthlyUSD: Math.round((annualPriceUSD / 12) * 100) / 100,
-      billingLabel: "Billed once for 365 days via M-Pesa",
-      termLabel: "365 days of all-access Premium",
-    },
-  ];
-}
-
-export function subscriptionPlanOption(
-  settings: Partial<Settings>,
-  interval: BillingInterval,
-): SubscriptionPlanOption {
-  return subscriptionPlanOptions(settings).find((plan) => plan.billingInterval === interval)!;
-}
-
-export function subscriptionPlanRecords(settings: Partial<Settings>): Plan[] {
-  return subscriptionPlanOptions(settings).map((plan) => ({
-    id: plan.id,
-    name: plan.name,
-    priceUSD: plan.priceUSD,
-    billingInterval: plan.billingInterval,
-    intervalDays: plan.intervalDays,
-  }));
+export function canSetCoursePrice(args: {
+  actorId: string;
+  actorRole: string;
+  course: Pick<Course, "tutorId" | "status">;
+}): { ok: boolean; error?: string } {
+  const isOwningTutor = args.actorRole === "tutor" && args.course.tutorId === args.actorId;
+  const isSuperAdmin = args.actorRole === "owner";
+  if (!isOwningTutor && !isSuperAdmin) {
+    return { ok: false, error: "Only the course tutor or the super admin can decide this course's price." };
+  }
+  if (args.course.status === "published") {
+    return { ok: false, error: "Course pricing is locked while the course is published. Unpublish it before changing the price for a future publication." };
+  }
+  return { ok: true };
 }

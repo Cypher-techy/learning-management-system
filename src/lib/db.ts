@@ -45,6 +45,9 @@ export interface Course {
   id: string; slug: string; title: string; subtitle: string; description: string;
   category: string; level: "Beginner" | "Intermediate" | "Advanced" | "All levels";
   access: "free" | "premium"; tutorId: string;
+  /** Canonical one-off course price in whole KES. Learner-facing screens
+   *  derive the USD display price from the latest FX rate. */
+  priceKES?: number;
   status: "draft" | "in_review" | "approved" | "rejected" | "published" | "unpublished";
   image: string; objectives: string[]; requirements: string[];
   sections: Section[]; createdAt: string; publishedAt?: string; featured: boolean;
@@ -66,9 +69,15 @@ export interface Plan {
   /** Retained only so pre-USD plan records remain readable after migration. */
   priceKES?: number;
 }
+export interface CoursePurchase {
+  id: string; studentId: string; courseId: string; paymentId: string;
+  priceKES: number; purchasedAt: string; access: "lifetime"; status: "active";
+}
 export interface Payment {
   id: string; studentId: string; amount: number; currency: "KES"; provider: "mpesa";
   status: "pending" | "completed" | "failed"; phone: string;
+  kind?: "subscription" | "course_purchase";
+  courseId?: string; courseTitle?: string; coursePriceKES?: number;
   planId?: string; billingInterval?: BillingInterval; intervalDays?: number;
   displayCurrency?: "USD"; displayAmountUSD?: number;
   exchangeRateUSDKES?: number; exchangeRateDate?: string; exchangeRateSource?: string; quotedAt?: string;
@@ -78,7 +87,7 @@ export interface Payment {
   resultDesc?: string; createdAt: string; completedAt?: string; callbackProcessed?: boolean;
 }
 export interface RevenuePeriod { id: string; label: string; startsAt: string; endsAt: string; gross: number; refunds: number; fees: number; taxes: number; net: number; tutorPool: number; platformShare: number; tutorPercent: number; allocated: boolean; allocatedAt?: string }
-export interface WalletTx { id: string; tutorId: string; type: "earning" | "withdrawal" | "adjustment"; amount: number; note: string; createdAt: string; periodId?: string }
+export interface WalletTx { id: string; tutorId: string; type: "earning" | "withdrawal" | "adjustment"; amount: number; note: string; createdAt: string; periodId?: string; paymentId?: string; courseId?: string }
 export interface Withdrawal { id: string; tutorId: string; amount: number; method: "mpesa" | "bank"; account: string; status: "pending" | "approved" | "rejected" | "paid"; createdAt: string; decidedBy?: string; payoutRef?: string; note?: string; idempotencyKey: string }
 export interface Notification { id: string; userId: string; title: string; body: string; createdAt: string; read: boolean; href?: string }
 export interface Discussion { id: string; courseId: string; authorId: string; title: string; body: string; createdAt: string; pinned?: boolean }
@@ -91,7 +100,8 @@ export interface Announcement { id: string; authorId: string; audience: string; 
 export interface Goal { id: string; studentId: string; title: string; targetHoursPerWeek: number; createdAt: string; done: boolean }
 export interface Settings {
   platformName: string; tagline: string;
-  premiumMonthlyPriceUSD: number; premiumAnnualPriceUSD: number;
+  /** Deprecated all-access plan prices retained only for historical state. */
+  premiumMonthlyPriceUSD?: number; premiumAnnualPriceUSD?: number;
   /** Deprecated pre-USD display price; retained for stored legacy state. */
   premiumPriceKES?: number;
   tutorPercent: number;
@@ -103,7 +113,7 @@ export interface DB {
   users: User[]; courses: Course[]; quizzes: Quiz[]; assignments: Assignment[];
   enrollments: Enrollment[]; quizAttempts: QuizAttempt[]; submissions: Submission[];
   reviews: Review[]; certificates: Certificate[]; subscriptions: Subscription[];
-  plans: Plan[]; payments: Payment[]; revenuePeriods: RevenuePeriod[];
+  plans: Plan[]; payments: Payment[]; coursePurchases: CoursePurchase[]; revenuePeriods: RevenuePeriod[];
   walletTxs: WalletTx[]; withdrawals: Withdrawal[]; notifications: Notification[];
   discussions: Discussion[]; replies: Reply[]; messages: Message[]; reports: Report[];
   verifications: VerificationRecord[]; auditLogs: AuditLog[]; announcements: Announcement[];
@@ -291,7 +301,7 @@ export async function getDB(): Promise<DB> {
  *  Returns true when the state changed and should be persisted. */
 function applyContentMigrations(db: DB): boolean {
   const version = db.meta.contentVersion ?? 1;
-  if (version >= 5) return false;
+  if (version >= 6) return false;
   const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
     for (const item of items) {
       const i = list.findIndex((x) => x.id === item.id);
@@ -357,7 +367,22 @@ function applyContentMigrations(db: DB): boolean {
       subscription.intervalDays = annual ? 365 : 30;
     }
   }
-  db.meta.contentVersion = 5;
+  if (version < 6) {
+    // Premium access is now bought course by course. Existing all-access
+    // subscriptions, payments, progress and expiry dates are deliberately
+    // preserved: those learners keep the access they already paid for.
+    // Every premium course already in the catalogue receives a canonical
+    // KES transaction price inside the approved KSh 350–500 band; USD is
+    // only the learner-facing display currency derived from the live rate.
+    if (!Array.isArray(db.coursePurchases)) db.coursePurchases = [];
+    for (const course of db.courses) {
+      course.priceKES = course.access === "premium" ? coursePriceKES(course) : 0;
+    }
+    for (const payment of db.payments) {
+      if (!payment.kind) payment.kind = payment.courseId ? "course_purchase" : "subscription";
+    }
+  }
+  db.meta.contentVersion = 6;
   return true;
 }
 /** Persist the current state. Never throws: a storage failure is logged
@@ -397,6 +422,43 @@ export function publicUser(u: User) {
 }
 export function courseLessons(c: Course) { return c.sections.flatMap((s) => s.lessons); }
 export function courseDurationMin(c: Course) { return courseLessons(c).reduce((a, l) => a + l.durationMin, 0); }
+export const COURSE_PRICE_MIN_KES = 350;
+export const COURSE_PRICE_MAX_KES = 500;
+export const DEFAULT_COURSE_PRICE_KES = 450;
+export const CURRENT_COURSE_PRICES_KES: Record<string, number> = {
+  "python-data": 499,
+  "business-finance": 450,
+  "ml-intro": 500,
+  "ui-design": 399,
+};
+export function isValidCoursePriceKES(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= COURSE_PRICE_MIN_KES && value <= COURSE_PRICE_MAX_KES;
+}
+export function defaultCoursePriceKES(c: Pick<Course, "id" | "level">): number {
+  if (CURRENT_COURSE_PRICES_KES[c.id]) return CURRENT_COURSE_PRICES_KES[c.id];
+  if (c.level === "Advanced") return 500;
+  if (c.level === "Intermediate") return 475;
+  if (c.level === "All levels") return 450;
+  return 400;
+}
+export function coursePriceKES(c: Course): number {
+  if (c.access === "free") return 0;
+  return isValidCoursePriceKES(c.priceKES) ? c.priceKES : defaultCoursePriceKES(c);
+}
+export function hasCoursePurchase(db: DB, studentId: string, courseId: string): boolean {
+  return (db.coursePurchases || []).some((p) => p.studentId === studentId && p.courseId === courseId && p.status === "active");
+}
+export type CourseAccessSource = "free" | "course_purchase" | "legacy_subscription" | "tutor" | "administrator" | "owner" | null;
+export function courseAccessSource(db: DB, u: User | null, c: Course): CourseAccessSource {
+  if (c.access === "free") return "free";
+  if (!u) return null;
+  if (u.role === "owner") return "owner";
+  if (u.role === "administrator") return "administrator";
+  if (u.role === "tutor" && c.tutorId === u.id) return "tutor";
+  if (hasCoursePurchase(db, u.id, c.id)) return "course_purchase";
+  if (isPremiumActive(db, u)) return "legacy_subscription";
+  return null;
+}
 export function isPremiumActive(db: DB, u: User) {
   if (u.plan !== "premium") return false;
   const sub = db.subscriptions.find((s) => s.id === u.subscriptionId);
@@ -404,11 +466,7 @@ export function isPremiumActive(db: DB, u: User) {
   return sub.status === "active" && new Date(sub.expiresAt).getTime() > Date.now();
 }
 export function canAccessCourse(db: DB, u: User | null, c: Course) {
-  if (c.access === "free") return true;
-  if (!u) return false;
-  if (u.role === "owner" || u.role === "administrator") return true;
-  if (u.role === "tutor" && c.tutorId === u.id) return true;
-  return isPremiumActive(db, u);
+  return courseAccessSource(db, u, c) !== null;
 }
 
 /* ---------------- Seed ---------------- */
@@ -425,6 +483,7 @@ function mkCourse(o: Partial<Course> & { outline: [string, [string, number, stri
   return {
     id: o.id!, slug: o.id!, title: o.title!, subtitle: o.subtitle || "", description: o.description || "",
     category: o.category!, level: o.level || "Beginner", access: o.access || "free",
+    priceKES: (o.access || "free") === "premium" ? (isValidCoursePriceKES(o.priceKES) ? o.priceKES : defaultCoursePriceKES({ id: o.id!, level: o.level || "Beginner" })) : 0,
     tutorId: o.tutorId!, status: o.status || "published", image: o.image!,
     objectives: o.objectives || [], requirements: o.requirements || [], sections,
     createdAt: o.createdAt || now(), publishedAt: o.publishedAt || now(), featured: !!o.featured,
@@ -472,7 +531,7 @@ function seed(): DB {
     mkCourse({
       id: "python-data", title: "Python for Data Analysis", subtitle: "Pandas, visualisation and real Kenyan datasets",
       description: "Learn Python by analysing real data: clean messy spreadsheets with pandas, visualise trends, and present insights the way employers expect. Includes downloadable datasets and graded projects.",
-      category: "Data Science", level: "Intermediate", access: "premium", tutorId: "u_tutor2", featured: true,
+      category: "Data Science", level: "Intermediate", access: "premium", priceKES: 499, tutorId: "u_tutor2", featured: true,
       image: IMG("photo-1551288049-bebda4e38f71"),
       objectives: ["Clean and reshape data with pandas", "Create publication-quality charts", "Answer business questions with data", "Build a portfolio-ready analysis project"],
       requirements: ["Basic computer skills", "No Python experience required — we start gently"],
@@ -632,9 +691,9 @@ function seed(): DB {
     { id: "sub_demo2", studentId: "u_student3", plan: "premium", status: "active", startedAt: "2026-10-04T10:00:00.000Z", expiresAt: "2026-11-20T10:00:00.000Z", paymentId: "pay_demo2", planId: "plan_premium_monthly", billingInterval: "monthly", intervalDays: 30 },
   ];
   const payments: Payment[] = [
-    { id: "pay_demo1", studentId: "u_student_pro", amount: 499, currency: "KES", provider: "mpesa", status: "completed", phone: "+254700000031", mpesaReceipt: "QK7X2M9P4R", createdAt: "2026-10-05T09:58:00.000Z", completedAt: "2026-10-05T10:00:00.000Z", callbackProcessed: true },
-    { id: "pay_demo2", studentId: "u_student3", amount: 499, currency: "KES", provider: "mpesa", status: "completed", phone: "+254700000032", mpesaReceipt: "QK7X2M9P5S", createdAt: "2026-10-04T09:58:00.000Z", completedAt: "2026-10-04T10:00:00.000Z", callbackProcessed: true },
-    { id: "pay_demo3", studentId: "u_student_free", amount: 499, currency: "KES", provider: "mpesa", status: "failed", phone: "+254700000030", resultDesc: "Request cancelled by user", createdAt: "2026-10-15T09:58:00.000Z", callbackProcessed: true },
+    { id: "pay_demo1", kind: "subscription", studentId: "u_student_pro", amount: 499, currency: "KES", provider: "mpesa", status: "completed", phone: "+254700000031", mpesaReceipt: "QK7X2M9P4R", createdAt: "2026-10-05T09:58:00.000Z", completedAt: "2026-10-05T10:00:00.000Z", callbackProcessed: true },
+    { id: "pay_demo2", kind: "subscription", studentId: "u_student3", amount: 499, currency: "KES", provider: "mpesa", status: "completed", phone: "+254700000032", mpesaReceipt: "QK7X2M9P5S", createdAt: "2026-10-04T09:58:00.000Z", completedAt: "2026-10-04T10:00:00.000Z", callbackProcessed: true },
+    { id: "pay_demo3", kind: "subscription", studentId: "u_student_free", amount: 499, currency: "KES", provider: "mpesa", status: "failed", phone: "+254700000030", resultDesc: "Request cancelled by user", createdAt: "2026-10-15T09:58:00.000Z", callbackProcessed: true },
   ];
   const revenuePeriods: RevenuePeriod[] = [
     { id: "rp_sep2026", label: "September 2026", startsAt: "2026-09-01", endsAt: "2026-09-30", gross: 99750, refunds: 499, fees: 1496, taxes: 0, net: 97755, tutorPool: 78204, platformShare: 19551, tutorPercent: 80, allocated: true, allocatedAt: "2026-10-03T10:00:00.000Z" },
@@ -699,7 +758,7 @@ function seed(): DB {
       { id: "plan_premium_monthly", name: "Elimu Bora Premium — Monthly", priceUSD: 35, billingInterval: "monthly", intervalDays: 30 },
       { id: "plan_premium_annual", name: "Elimu Bora Premium — Annual", priceUSD: 240, billingInterval: "annual", intervalDays: 365 },
     ],
-    payments, revenuePeriods, walletTxs, withdrawals, notifications, discussions, replies,
+    payments, coursePurchases: [], revenuePeriods, walletTxs, withdrawals, notifications, discussions, replies,
     messages, reports, verifications, auditLogs, announcements, goals,
     settings: {
       platformName: "Elimu Bora", tagline: "LEARN BEYOND LIMITS.", premiumMonthlyPriceUSD: 35, premiumAnnualPriceUSD: 240,
@@ -707,6 +766,6 @@ function seed(): DB {
       supportEmail: "edvoraplatform@gmail.com", supportPhone: "+254 110 966 455",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },
-    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 5 },
+    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 6 },
   };
 }

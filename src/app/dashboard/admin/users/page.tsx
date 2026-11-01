@@ -27,11 +27,11 @@ export default function AdminUsers() {
         ))}
       </div>
       <div className="card table-wrap">
-        <table className="edv"><thead><tr><th>User</th><th>Role</th><th>Plan</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+        <table className="edv"><thead><tr><th>User</th><th>Role</th><th>Course access</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>{users.map((u: any) => (
             <tr key={u.id}>
               <td><p className="font-semibold">{u.fullName}</p><p className="type-caption text-slate-600">{u.email} · {u.phone}</p></td>
-              <td className="capitalize">{u.role}</td><td><StatusChip status={u.plan} /></td><td>{fmtDate(u.createdAt)}</td><td><StatusChip status={u.status} /></td>
+              <td className="capitalize">{u.role}</td><td>{u.role === "student" ? <div className="flex flex-wrap gap-1.5">{u.premiumActive && <span className="chip grad-bg text-white">LEGACY PREMIUM</span>}{u.ownedCourseCount > 0 && <span className="chip bg-emerald-100 text-emerald-700">{u.ownedCourseCount} OWNED</span>}{!u.premiumActive && !u.ownedCourseCount && <StatusChip status="free" />}</div> : <span className="text-slate-400">—</span>}</td><td>{fmtDate(u.createdAt)}</td><td><StatusChip status={u.status} /></td>
               <td><div className="flex flex-wrap gap-1.5">
                 {u.role !== "administrator" ? <>
                   {u.status !== "verified" && <button className="btn-dark !px-3 !py-1.5 !text-xs" onClick={() => setStatus(u.id, "verified", u.fullName)}>Verify</button>}

@@ -1,10 +1,11 @@
-import { getDB, persist, uid, now, audit, notify, courseLessons } from "@/lib/db";
+import { getDB, persist, uid, now, audit, notify, courseLessons, isPremiumActive } from "@/lib/db";
 import { jsonError, ApiError, requireRole, requireVerified } from "@/lib/auth";
 
-/** Usage-based revenue allocation. Tutor pool = net distributable revenue x
- *  configured tutor %. Individual shares are weighted by verified premium
- *  engagement (completed premium lessons x weight + active learning minutes),
- *  never raw page views. A period can only be allocated once. */
+/** Legacy subscription revenue allocation. New individual course-sale
+ *  tutor shares are credited once at verified payment completion and are
+ *  excluded here so revenue is never paid twice. For subscriptions sold
+ *  under the former all-access model, the tutor pool remains weighted by
+ *  verified premium engagement. A period can only be allocated once. */
 export async function POST(req: Request) {
   try {
     const actor = await requireRole("administrator", "owner");
@@ -14,7 +15,7 @@ export async function POST(req: Request) {
     const period = db.revenuePeriods.find(p => p.id === periodId);
     if (!period) throw new ApiError(404, "Revenue period not found.");
     if (period.allocated) throw new ApiError(400, "This period has already been allocated — revenue is never distributed twice.");
-    const gross = db.payments.filter(p => p.status === "completed" && p.completedAt && p.completedAt >= period.startsAt && p.completedAt <= period.endsAt + "T23:59:59")
+    const gross = db.payments.filter(p => p.kind !== "course_purchase" && !p.courseId && p.status === "completed" && p.completedAt && p.completedAt >= period.startsAt && p.completedAt <= period.endsAt + "T23:59:59")
       .reduce((a, p) => a + p.amount, 0);
     const net = Math.max(gross - refunds - fees - taxes, 0);
     const tutorPercent = db.settings.tutorPercent;
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
       const course = db.courses.find(c => c.id === enr.courseId);
       if (!course || course.access !== "premium") continue;
       const student = db.users.find(u => u.id === enr.studentId);
-      if (!student || student.plan !== "premium") continue;
+      if (!student || !isPremiumActive(db, student)) continue;
       const w = enr.completedLessons.length * 10 + Math.min(enr.activeMin, 600);
       weights.set(course.tutorId, (weights.get(course.tutorId) || 0) + w);
     }

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { api, useApi, kes, usd, fmtDate } from "@/lib/client";
+import { api, useApi, kes, usdPrice, fmtDate } from "@/lib/client";
 import { Loading, PageTitle, StatusChip, Stat } from "@/components/ui";
 
 export default function AdminFinance() {
@@ -18,7 +18,7 @@ export default function AdminFinance() {
     catch (e) { setErr(e instanceof Error ? e.message : "Failed"); }
   }
   async function allocate(periodId: string) {
-    if (!window.confirm("Allocate this period now? Gross is computed from completed payments in the period. This cannot be undone and revenue is never distributed twice.")) return;
+    if (!window.confirm("Allocate this legacy subscription period now? Gross excludes individual course purchases because their tutor shares were already credited at payment confirmation. This cannot be undone and revenue is never distributed twice.")) return;
     setMsg(""); setErr("");
     try {
       const r = await api("/api/admin/revenue/allocate", { method: "POST", body: JSON.stringify({ periodId, ...adj }) });
@@ -29,12 +29,13 @@ export default function AdminFinance() {
 
   return (
     <div>
-      <PageTitle title="Finance & Payouts" sub="Subscription revenue, M-Pesa transactions, tutor allocations and withdrawal approvals." />
+      <PageTitle title="Finance & Payouts" sub="Individual course sales, legacy subscription history, M-Pesa transactions, tutor earnings and withdrawal approvals." />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Collected (all time)" value={kes(data.stats.revenueKES)} />
-        <Stat label="Active Subscriptions" value={data.stats.activeSubscriptions} />
+        <Stat label="Course Sales" value={kes(data.stats.courseSalesKES)} sub={`${data.stats.coursePurchases} lifetime purchases`} />
+        <Stat label="Legacy Subscriptions Active" value={data.stats.activeSubscriptions} sub="Honoured until original expiry" />
         <Stat label="Failed Payments" value={data.stats.failedPayments} sub="Review & support these students" />
       </div>
 
@@ -48,9 +49,9 @@ export default function AdminFinance() {
             </div></td></tr>))}
           {data.withdrawals.length === 0 && <tr><td colSpan={7} className="text-slate-500">No withdrawal requests.</td></tr>}</tbody></table></div>
 
-      <h2 className="type-h4 mb-4 mt-10">Revenue allocation periods</h2>
+      <h2 className="type-h4 mb-4 mt-10">Legacy subscription revenue periods</h2>
       <div className="card mb-4 flex flex-wrap items-end gap-3 p-5">
-        <p className="w-full text-sm text-slate-500">Net distributable = gross confirmed payments − refunds − processing fees − taxes. Tutor pool = {data.settings.tutorPercent}% of net (owner-configurable). Enter period adjustments:</p>
+        <p className="w-full text-sm leading-6 text-slate-500">These periods contain only subscriptions sold under the former all-access model. Individual course-sale tutor shares are credited once when Safaricom confirms each payment and are excluded here. Net = gross legacy payments − refunds − fees − taxes; tutor pool = {data.settings.tutorPercent}% of net. Enter period adjustments:</p>
         {(["refunds", "fees", "taxes"] as const).map(k => <div key={k}><label className="label">{k} (KSh)</label><input type="number" className="input sm:!w-36" value={adj[k]} onChange={e => setAdj({ ...adj, [k]: Number(e.target.value) })} /></div>)}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -68,13 +69,19 @@ export default function AdminFinance() {
       </div>
 
       <h2 className="type-h4 mb-4 mt-10">Payment transactions</h2>
-      <div className="card table-wrap"><table className="edv"><thead><tr><th>Date</th><th>Student</th><th>Phone</th><th>Plan (USD display)</th><th data-numeric>Charged (KES)</th><th>FX Rate</th><th>M-Pesa Receipt</th><th>Status</th><th>Note</th></tr></thead>
-        <tbody>{data.payments.map((p: any) => <tr key={p.id}><td>{fmtDate(p.createdAt)}</td><td className="font-medium">{p.studentName}</td><td className="type-numeric">{p.phone}</td><td><span className="capitalize">{p.billingInterval || "Monthly"}</span>{p.displayAmountUSD ? <span className="type-caption block text-slate-500">{usd(p.displayAmountUSD)}</span> : null}</td><td data-numeric className="font-medium">{kes(p.amount)}</td><td className="type-numeric">{p.exchangeRateUSDKES ? `${Number(p.exchangeRateUSDKES).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} / US$1` : "—"}</td><td className="type-technical">{p.mpesaReceipt || "—"}</td><td><StatusChip status={p.status} /></td><td className="type-caption max-w-[220px] truncate text-slate-600">{p.resultDesc || ""}</td></tr>)}</tbody></table></div>
+      <div className="card table-wrap"><table className="edv"><thead><tr><th>Date</th><th>Student</th><th>Phone</th><th>Item (USD displayed)</th><th data-numeric>Charged (KES)</th><th>FX Rate</th><th>M-Pesa Receipt</th><th>Status</th><th>Note</th></tr></thead>
+        <tbody>{data.payments.map((p: any) => <tr key={p.id}><td>{fmtDate(p.createdAt)}</td><td className="font-medium">{p.studentName}</td><td className="type-numeric">{p.phone}</td><td><span className="font-medium">{p.kind === "course_purchase" || p.courseId ? (p.courseTitle || "Course purchase") : `Legacy Premium${p.billingInterval ? ` — ${p.billingInterval}` : ""}`}</span>{p.displayAmountUSD ? <span className="type-caption block text-slate-500">{usdPrice(p.displayAmountUSD)} displayed</span> : null}</td><td data-numeric className="font-medium">{kes(p.amount)}</td><td className="type-numeric">{p.exchangeRateUSDKES ? `${Number(p.exchangeRateUSDKES).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} / US$1` : "—"}</td><td className="type-technical">{p.mpesaReceipt || "—"}</td><td><StatusChip status={p.status} /></td><td className="type-caption max-w-[220px] truncate text-slate-600">{p.resultDesc || ""}</td></tr>)}</tbody></table></div>
 
-      <h2 className="type-h4 mb-4 mt-10">Subscriptions</h2>
-      <div className="card table-wrap"><table className="edv"><thead><tr><th>Student</th><th>Plan</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
+      <h2 className="type-h4 mb-4 mt-10">Lifetime course purchases</h2>
+      <div className="card table-wrap"><table className="edv"><thead><tr><th>Student</th><th>Course</th><th data-numeric>Paid (KES)</th><th>Purchased</th><th>Access</th></tr></thead>
+        <tbody>{(data.coursePurchases || []).map((p: any) => <tr key={p.id}><td className="font-semibold">{p.studentName}</td><td>{p.courseTitle || p.courseId}</td><td data-numeric>{kes(p.priceKES)}</td><td>{fmtDate(p.purchasedAt)}</td><td><span className="chip bg-emerald-100 text-emerald-700">LIFETIME</span></td></tr>)}
+          {(data.coursePurchases || []).length === 0 && <tr><td colSpan={5} className="text-slate-500">No individual course purchases yet.</td></tr>}</tbody></table></div>
+
+      <h2 className="type-h4 mb-4 mt-10">Legacy all-access subscriptions</h2>
+      <p className="mb-4 text-sm text-slate-500">These were sold under the former model and remain valid until their original expiry dates. New learners buy premium courses individually.</p>
+      <div className="card table-wrap"><table className="edv"><thead><tr><th>Student</th><th>Legacy term</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
         <tbody>{data.subscriptions.map((s: any) => <tr key={s.id}><td className="font-semibold">{s.studentName}</td><td className="capitalize">{s.billingInterval || "Monthly"}</td><td><StatusChip status={new Date(s.expiresAt).getTime() > Date.now() && s.status === "active" ? "active" : "expired"} /></td><td>{fmtDate(s.startedAt)}</td><td>{fmtDate(s.expiresAt)}</td></tr>)}
-          {data.subscriptions.length === 0 && <tr><td colSpan={5} className="text-slate-500">No subscriptions yet.</td></tr>}</tbody></table></div>
+          {data.subscriptions.length === 0 && <tr><td colSpan={5} className="text-slate-500">No legacy subscriptions recorded.</td></tr>}</tbody></table></div>
     </div>
   );
 }

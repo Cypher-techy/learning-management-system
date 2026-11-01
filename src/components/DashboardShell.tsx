@@ -50,7 +50,7 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
         <div className="flex items-center justify-between"><Logo href={nav[0]?.href || "/"} /><button className="p-1 text-slate-400 lg:hidden" onClick={() => setMobile(false)}><X /></button></div>
         <div className="mt-8 flex items-center gap-3 rounded-2xl bg-white/5 p-3.5">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-display text-body-sm font-semibold text-white" style={{ background: user.avatarColor || "#2563eb" }}>{initials(user.fullName)}</span>
-          <span className="min-w-0"><span className="block truncate font-display text-body-sm font-semibold leading-snug text-white">{user.fullName}</span><span className="type-eyebrow block text-brand-300">{roleLabel}{user.role === "student" ? (user.premiumActive ? " · Premium" : " · Free") : ""}</span></span>
+          <span className="min-w-0"><span className="block truncate font-display text-body-sm font-semibold leading-snug text-white">{user.fullName}</span><span className="type-eyebrow block text-brand-300">{roleLabel}{user.role === "student" ? (user.premiumActive ? " · Legacy Premium" : user.ownedCourseCount > 0 ? ` · ${user.ownedCourseCount} owned` : " · Free account") : ""}</span></span>
         </div>
         <nav className="mt-6 flex-1 space-y-1 overflow-y-auto" aria-label="Dashboard">
           {nav.map(item => (

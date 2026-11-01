@@ -8,7 +8,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const assignment = db.assignments.find(a => a.id === id);
     if (!assignment) throw new ApiError(404, "Assignment not found.");
     const course = db.courses.find(c => c.id === assignment.courseId)!;
-    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Premium access required.");
+    if (!canAccessCourse(db, user, course)) throw new ApiError(403, "Buy this individual premium course to access this material.");
     const { content, fileName } = await req.json();
     if (!content?.trim() && !fileName) throw new ApiError(400, "Write your submission or attach a file name/reference.");
     let sub = db.submissions.find(s => s.assignmentId === id && s.studentId === user.id);

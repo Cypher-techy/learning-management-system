@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useApi, api } from "@/lib/client";
+import { useApi, api, kes } from "@/lib/client";
 import { Loading, Empty, PageTitle, StatusChip } from "@/components/ui";
+import { CoursePricingEditor } from "@/components/CoursePrice";
 
 export default function TutorCourses() {
   const { data, loading, reload } = useApi("/api/overview/tutor");
@@ -15,7 +16,7 @@ export default function TutorCourses() {
   }
   return (
     <div>
-      <PageTitle title="My Courses" sub="Drafts, moderation status and publishing controls. Courses go live after administrator review." right={<Link href="/dashboard/tutor/courses/new" className="btn-primary">+ New Course</Link>} />
+      <PageTitle title="My Courses" sub="Drafts, moderation status, pricing and publishing controls. You set each premium course's price before publication; administrators review the course but cannot change that price." right={<Link href="/dashboard/tutor/courses/new" className="btn-primary">+ New Course</Link>} />
       {msg && <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       {data.courses.length === 0 ? <Empty title="No courses yet" body="Build your first course with sections, lessons, quizzes and assignments." action={<Link href="/dashboard/tutor/courses/new" className="btn-primary">Create Course</Link>} /> : (
@@ -27,8 +28,9 @@ export default function TutorCourses() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2"><StatusChip status={c.status} /><StatusChip status={c.access} /><span className="type-caption text-slate-600">{c.category} · {c.level}</span></div>
                 <h3 className="type-card-title mt-2">{c.title}</h3>
-                <p className="text-xs text-slate-500">{c.totalLessons} lessons · {c.enrolledCount} enrolments</p>
+                <p className="text-xs text-slate-500">{c.totalLessons} lessons · {c.enrolledCount} enrolments{c.access === "premium" ? ` · ${c.salesCount || 0} lifetime sales (${kes(c.salesGrossKES || 0)} gross)` : ""}</p>
                 {c.moderationNote && <p className="mt-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600"><strong>Moderation:</strong> {c.moderationNote}</p>}
+                <CoursePricingEditor course={c} onSaved={reload} />
               </div>
               <div className="flex shrink-0 flex-wrap gap-2">
                 <Link href={`/courses/${c.id}`} className="btn-light !py-2 !text-xs">Preview</Link>

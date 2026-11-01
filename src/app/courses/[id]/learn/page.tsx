@@ -8,6 +8,7 @@ import { Loading, ProgressBar } from "@/components/ui";
 import { Logo } from "@/components/Logo";
 import TutorialArticle from "@/components/TutorialArticle";
 import { Technical } from "@/components/Typography";
+import { CoursePrice } from "@/components/CoursePrice";
 
 type Tab = "learn" | "quizzes" | "assignments" | "community" | "assistant";
 
@@ -63,6 +64,7 @@ function LearnInner() {
     if (target) { setLessonId(target.id); window.scrollTo({ top: 0, behavior: "smooth" }); }
   };
   const hasBlocks = !!lesson?.blocks?.length;
+  const purchaseHref = `/dashboard/student/purchases?course=${encodeURIComponent(id)}`;
 
   if (!me) return (
     <div className="flex min-h-screen items-center justify-center bg-navy-950 p-6"><div className="card max-w-md p-10 text-center">
@@ -72,8 +74,8 @@ function LearnInner() {
   if (!enr && me.role === "student") return (
     <div className="flex min-h-screen items-center justify-center bg-navy-950 p-6"><div className="card max-w-md p-10 text-center">
       <h1 className="type-h3">Enrol to enter the classroom</h1>
-      <p className="type-body-sm mt-3 text-slate-600">{c.unlocked ? "Enrol from the course page to start tracking your progress." : "This is a Premium course. Subscribe once to unlock every premium course."}</p>
-      <div className="mt-6 flex gap-3"><Link href={`/courses/${id}`} className="btn-light flex-1">Course Page</Link>{!c.unlocked && <Link href="/dashboard/student/subscription" className="btn-primary flex-1"><Crown size={16} /> Go Premium</Link>}</div></div></div>
+      <p className="type-body-sm mt-3 text-slate-600">{c.unlocked ? "Enrol from the course page to start tracking your progress." : <>This premium course is bought independently for <CoursePrice course={c} className="font-bold text-slate-900" />. One verified M-Pesa payment gives you lifetime access to this course only.</>}</p>
+      <div className="mt-6 flex gap-3"><Link href={`/courses/${id}`} className="btn-light flex-1">Course Page</Link>{!c.unlocked && <Link href={purchaseHref} className="btn-primary flex-1"><Crown size={16} /> Buy This Course</Link>}</div></div></div>
   );
 
   async function completeLesson() {
@@ -177,8 +179,8 @@ function LearnInner() {
                 ) : lessonLocked ? (
                   <div className="flex aspect-video flex-col items-center justify-center bg-navy-950 p-8 text-center text-white">
                     <Lock size={40} className="text-brand-300" /><h3 className="type-h4 mt-4">Premium lesson</h3>
-                    <p className="mt-2 max-w-sm text-sm text-slate-300">Subscribe to Elimu Bora Premium to unlock this and every other premium lesson.</p>
-                    <Link href="/dashboard/student/subscription" className="btn-primary mt-6"><Crown size={16} /> Subscribe to Unlock</Link>
+                    <p className="mt-2 max-w-sm text-sm text-slate-300">Buy this individual course for <CoursePrice course={c} className="font-bold text-white" /> to unlock all of its lessons for life. Your saved progress will be preserved.</p>
+                    <Link href={purchaseHref} className="btn-primary mt-6"><Crown size={16} /> Buy This Course</Link>
                   </div>
                 ) : lesson?.videoUrl ? (
                   <div className="aspect-video bg-black"><iframe src={lesson.videoUrl} title={lesson.title} className="h-full w-full" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div>
@@ -298,7 +300,7 @@ function LearnInner() {
         {tab === "assistant" && (
           <div className="card mx-auto mt-5 max-w-3xl p-6 lg:p-8">
             <h3 className="type-h5 flex items-center gap-2"><Sparkles className="text-brand-500" /> Elimu Bora Study Assistant</h3>
-            <p className="type-body-sm mt-2 text-slate-600">Ask about this course. The assistant only uses lesson material you are entitled to access{c.access === "premium" && !c.unlocked ? " (free previews only on your current plan)" : ""}.</p>
+            <p className="type-body-sm mt-2 text-slate-600">Ask about this course. The assistant only uses lesson material you are entitled to access{c.access === "premium" && !c.unlocked ? " (free previews only with your current access)" : ""}.</p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <input className="input" placeholder="e.g. Explain how Flexbox centring works" value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} />
               <button className="btn-primary shrink-0" disabled={aiBusy} onClick={() => askAI()}>{aiBusy ? "Thinking…" : "Ask"}</button>

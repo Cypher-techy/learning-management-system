@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/client";
 import { PageTitle } from "@/components/ui";
+import { CoursePrice } from "@/components/CoursePrice";
 
 interface L { title: string; kind: string; durationMin: number; isPreview: boolean; videoUrl: string; body: string; resourceUrl: string; resourceName: string }
 interface S { title: string; lessons: L[] }
@@ -14,19 +15,24 @@ export default function NewCourse() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [form, setForm] = useState({ title: "", subtitle: "", description: "", category: "Technology", level: "Beginner", access: "free", image: "", objectives: "", requirements: "" });
+  const [priceKES, setPriceKES] = useState(450);
   const [sections, setSections] = useState<S[]>([{ title: "Getting Started", lessons: [{ ...newLesson(), isPreview: true }] }]);
   const set = (k: string) => (e: any) => setForm({ ...form, [k]: e.target.value });
 
   async function save(submit: boolean) {
+    if (form.access === "premium" && (!Number.isInteger(Number(priceKES)) || Number(priceKES) < 350 || Number(priceKES) > 500)) {
+      setErr("Set this premium course's whole-shilling price between KSh 350 and KSh 500.");
+      return;
+    }
     setBusy(true); setErr("");
     try {
-      await api("/api/courses", { method: "POST", body: JSON.stringify({ ...form, sections, submit }) });
+      await api("/api/courses", { method: "POST", body: JSON.stringify({ ...form, priceKES: form.access === "premium" ? Number(priceKES) : 0, sections, submit }) });
       router.push("/dashboard/tutor/courses");
     } catch (e) { setErr(e instanceof Error ? e.message : "Could not save course"); setBusy(false); }
   }
   return (
     <div>
-      <PageTitle title="Create Course" sub="Build your curriculum, then save as a draft or submit for administrator review. Choose Free or Premium — premium courses earn from the subscription pool." />
+      <PageTitle title="Create Course" sub="Build your curriculum, then save as a draft or submit for review. Premium courses are sold independently: you set the one-off price before publication and learners keep lifetime access." />
       {err && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-600">{err}</p>}
       <div className="card space-y-5 p-6 lg:p-8">
         <div className="grid gap-5 lg:grid-cols-2">
@@ -37,8 +43,22 @@ export default function NewCourse() {
         <div className="grid gap-5 sm:grid-cols-3">
           <div><label className="label">Category</label><select className="input" value={form.category} onChange={set("category")}>{["Technology", "Computer Skills", "Data Science", "Business", "Design", "Academic", "Languages", "Health", "Creative Arts"].map(c => <option key={c}>{c}</option>)}</select></div>
           <div><label className="label">Difficulty</label><select className="input" value={form.level} onChange={set("level")}>{["Beginner", "Intermediate", "Advanced", "All levels"].map(l => <option key={l}>{l}</option>)}</select></div>
-          <div><label className="label">Access (monetisation)</label><select className="input" value={form.access} onChange={set("access")}><option value="free">Free course</option><option value="premium">Premium (subscription)</option></select></div>
+          <div><label className="label">Access (monetisation)</label><select className="input" value={form.access} onChange={set("access")}><option value="free">Free course</option><option value="premium">Premium — paid per course</option></select></div>
         </div>
+        {form.access === "premium" && (
+          <div className="rounded-2xl border border-brand-100 bg-brand-50/70 p-5">
+            <div className="grid gap-5 sm:grid-cols-[220px_1fr] sm:items-end">
+              <div>
+                <label className="label" htmlFor="course-price-kes">Course price (KSh) *</label>
+                <input id="course-price-kes" type="number" min={350} max={500} step={1} required className="input" value={priceKES} onChange={e => setPriceKES(Number(e.target.value))} />
+              </div>
+              <div className="text-sm leading-6 text-slate-600">
+                <p>Learners will see <CoursePrice priceKES={Number(priceKES) || 0} access="premium" className="font-bold text-slate-900" /> at the latest USD/KES rate. M-Pesa charges the exact KSh amount you set.</p>
+                <p className="type-caption mt-1 leading-5 text-slate-500">Approved launch band: KSh 350–500. Only you or the super admin can set this price before publication; regular administrators can review it but cannot change it, and it locks while the course is published.</p>
+              </div>
+            </div>
+          </div>
+        )}
         <div><label className="label">Thumbnail image URL (optional)</label><input className="input" value={form.image} onChange={set("image")} placeholder="https://… (leave blank for a default cover)" /></div>
         <div className="grid gap-5 lg:grid-cols-2">
           <div><label className="label">Learning objectives (one per line)</label><textarea rows={4} className="input" value={form.objectives} onChange={set("objectives")} placeholder={"Build a budget spreadsheet\nCreate pivot tables"} /></div>
