@@ -11,11 +11,11 @@ export default function SmoothScroll() {
     if (window.location.pathname.startsWith("/dashboard") || window.location.pathname.startsWith("/control-room")) return;
     gsap.registerPlugin(ScrollTrigger);
     const lenis = new Lenis({
-      duration: 1.22,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      duration: 1.34,
+      easing: (t: number) => 1 - Math.pow(1 - t, 5),
       smoothWheel: true,
-      wheelMultiplier: 0.94,
-      touchMultiplier: 1.12,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1.05,
     });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);

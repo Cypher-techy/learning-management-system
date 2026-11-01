@@ -21,7 +21,7 @@ export default function Navbar() {
   const dash = user?.role === "owner" ? "/control-room" : user ? `/dashboard/${user.role === "administrator" ? "admin" : user.role}` : "/roles";
   async function logout() { await fetch("/api/auth/logout", { method: "POST" }); window.location.href = "/"; }
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${scrolled ? "bg-navy-950/85 shadow-card backdrop-blur-xl" : "bg-transparent"}`}>
+    <header data-scrolled={scrolled} className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${scrolled ? "bg-navy-950/85 shadow-card backdrop-blur-xl" : "bg-transparent"}`}>
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8">
         <Logo />
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
