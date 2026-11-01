@@ -83,6 +83,8 @@ export default function Home() {
       })
         .to("[data-hero-copy]", { yPercent: -9, scale: 0.975, opacity: 0.16 }, 0)
         .to("[data-hero-stage]", { yPercent: 9, opacity: 0.3 }, 0)
+        .to("[data-hero-stage] [data-hero-badge='tutors']", { xPercent: -8, yPercent: 22, rotate: -1.2 }, 0)
+        .to("[data-hero-stage] [data-hero-badge='mpesa']", { xPercent: 8, yPercent: -16, rotate: 1.1 }, 0)
         .to("[data-hero-veil]", { opacity: 0.72 }, 0)
         .to("[data-orb='1']", { yPercent: 32 }, 0)
         .to("[data-orb='2']", { yPercent: -27 }, 0)
@@ -313,15 +315,37 @@ export default function Home() {
                 <div><p className="landing-stat-value landing-on-dark"><Counter value={stats.tutors} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Verified Tutors</p></div>
               </div>
             )}
-          </div>
-          <div className="pointer-events-none absolute inset-0 z-0 hidden xl:block" data-hero data-hero-stage aria-hidden="true">
-            <div className="floaty landing-glass-badge absolute bottom-16 left-0 max-w-[15rem] rounded-2xl px-4 py-3.5" style={{ animationDelay: "0.6s" }}>
-              <p className="landing-on-dark flex items-center gap-2 text-xs font-bold"><BadgeCheck size={15} className="text-emerald-300" /> Verified Tutors</p>
-              <p className="landing-on-dark-muted type-caption mt-1">Every tutor is reviewed & approved</p>
+            <div data-hero className="mx-auto mt-6 grid w-full max-w-xl grid-cols-1 gap-3 min-[560px]:grid-cols-2 lg:hidden" aria-label="Platform highlights">
+              <div className="landing-hero-badge landing-hero-badge--tutors landing-glass-badge rounded-2xl px-4 py-3.5 text-left">
+                <span className="landing-hero-badge-icon"><BadgeCheck size={17} /></span>
+                <span className="min-w-0">
+                  <span className="landing-hero-badge-title">Verified Tutors</span>
+                  <span className="landing-hero-badge-copy">Reviewed &amp; approved before publishing</span>
+                </span>
+              </div>
+              <div className="landing-hero-badge landing-hero-badge--mpesa landing-glass-badge rounded-2xl px-4 py-3.5 text-left">
+                <span className="landing-hero-badge-icon"><Smartphone size={17} /></span>
+                <span className="min-w-0">
+                  <span className="landing-hero-badge-title">Paid with M-Pesa</span>
+                  <span className="landing-hero-badge-copy">Secure STK Push subscription payments</span>
+                </span>
+              </div>
             </div>
-            <div className="floaty landing-glass-badge absolute bottom-16 right-0 max-w-[15rem] rounded-2xl px-4 py-3.5">
-              <p className="landing-on-dark flex items-center gap-2 text-xs font-bold"><Smartphone size={15} className="text-brand-300" /> Pay with M-Pesa</p>
-              <p className="landing-on-dark-muted type-caption mt-1">One subscription, every premium course</p>
+          </div>
+          <div className="landing-hero-badges pointer-events-none absolute inset-0 z-0 hidden lg:block" data-hero data-hero-stage aria-hidden="true">
+            <div className="landing-hero-badge landing-hero-badge--tutors landing-glass-badge absolute bottom-24 left-0 w-56 rounded-2xl px-4 py-3.5 xl:bottom-20 xl:w-60" data-hero-badge="tutors">
+              <span className="landing-hero-badge-icon"><BadgeCheck size={17} /></span>
+              <span className="min-w-0">
+                <span className="landing-hero-badge-title">Verified Tutors</span>
+                <span className="landing-hero-badge-copy">Every tutor is reviewed &amp; approved</span>
+              </span>
+            </div>
+            <div className="landing-hero-badge landing-hero-badge--mpesa landing-glass-badge absolute bottom-6 right-0 w-56 rounded-2xl px-4 py-3.5 xl:bottom-10 xl:w-60" data-hero-badge="mpesa">
+              <span className="landing-hero-badge-icon"><Smartphone size={17} /></span>
+              <span className="min-w-0">
+                <span className="landing-hero-badge-title">Paid with M-Pesa</span>
+                <span className="landing-hero-badge-copy">One subscription, every premium course</span>
+              </span>
             </div>
           </div>
         </div>
