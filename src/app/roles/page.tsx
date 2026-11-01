@@ -2,13 +2,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { GraduationCap, Presentation, ShieldCheck, ArrowRight } from "lucide-react";
+import { GraduationCap, Presentation, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 const ROLES = [
   { id: "student", title: "Student", icon: <GraduationCap size={30} />, desc: "Learn, explore courses and develop new skills.", points: ["Instant verification", "Free & premium courses", "Certificates"] },
   { id: "tutor", title: "Tutor", icon: <Presentation size={30} />, desc: "Share knowledge, teach students and earn through educational content.", points: ["Verified application", "Course studio", "Monthly earnings"] },
-  { id: "administrator", title: "Administrator", icon: <ShieldCheck size={30} />, desc: "Access authorized platform management services.", points: ["Controlled access", "Verification queues", "Platform operations"] },
 ];
 
 export default function Roles() {

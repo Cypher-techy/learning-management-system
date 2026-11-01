@@ -141,5 +141,24 @@ const stu = new Jar();
   const again = await login(relogin, email, "Learn@2026", "student");
   ok("New student can sign in again after registration", again.res.status === 200);
 }
+// 11. Administrator accounts are internal-only and cannot self-register
+{
+  const email = `blocked-admin-${Date.now()}@example.com`;
+  const attempt = await new Jar().req("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({
+      fullName: "Blocked Admin",
+      email,
+      phone: "0110966455",
+      password: "Admin@2026",
+      confirmPassword: "Admin@2026",
+      role: "administrator",
+    }),
+  });
+  ok("Public administrator registration is disabled", attempt.res.status === 400 && !attempt.data.ok, `(${attempt.res.status})`);
+
+  const signIn = await login(new Jar(), email, "Admin@2026", "administrator");
+  ok("Rejected administrator registration creates no sign-in account", signIn.res.status === 401, `(${signIn.res.status})`);
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -11,8 +11,12 @@ export async function POST(req: Request) {
     if (user.status === "suspended") throw new ApiError(403, "This account has been suspended. Contact support.");
     if (user.status === "disabled" || user.status === "rejected") throw new ApiError(403, "This account is not active. Contact support.");
     // The database role is authoritative — a portal selection can never upgrade access.
-    if (expectedRole && user.role !== expectedRole)
-      throw new ApiError(403, `This is a ${user.role} account. Please use the ${user.role} sign-in.`);
+    if (expectedRole && user.role !== expectedRole) {
+      const message = user.role === "administrator" || user.role === "owner"
+        ? "Please use your authorized sign-in."
+        : `This is a ${user.role} account. Please use the ${user.role} sign-in.`;
+      throw new ApiError(403, message);
+    }
     user.lastLoginAt = now(); await persist();
     await setSession(user);
     return Response.json({ ok: true, role: user.role, status: user.status });
