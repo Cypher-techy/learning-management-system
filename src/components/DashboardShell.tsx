@@ -21,13 +21,14 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
   void dataPath;
 
   useEffect(() => {
+    const signInPath = expected === "admin" ? "/auth/administrator" : "/roles";
     fetch("/api/auth/me").then(r => r.json()).then(d => {
-      if (!d.user) { router.replace("/roles"); return; }
+      if (!d.user) { router.replace(signInPath); return; }
       const role = d.user.role === "administrator" ? "admin" : d.user.role;
       if (expected !== "owner" && role !== expected && d.user.role !== "owner") { router.replace(role === "owner" ? "/control-room" : `/dashboard/${role}`); return; }
       if (expected === "owner" && d.user.role !== "owner") { router.replace("/roles"); return; }
       setUser(d.user); setChecking(false);
-    }).catch(() => router.replace("/roles"));
+    }).catch(() => router.replace(signInPath));
     fetch("/api/notifications").then(r => r.json()).then(d => setNotifs(d.notifications || [])).catch(() => {});
   }, [expected, router]);
 

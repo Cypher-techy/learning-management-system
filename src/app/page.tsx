@@ -380,7 +380,7 @@ export default function Home() {
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:mt-12 lg:grid-cols-4 lg:gap-6">
           {[
-            { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student, Tutor or Administrator — pick your path. Students are verified automatically at registration." },
+            { icon: <GraduationCap size={26} />, t: "Choose your account", d: "Student or Tutor — pick your path. Students are verified automatically at registration." },
             { icon: <BookOpenCheck size={26} />, t: "Learn with structure", d: "Sections, video lessons, notes, assignments and quizzes. Pick up exactly where you left off, on any device." },
             { icon: <Crown size={26} />, t: "Unlock everything", d: "One M-Pesa subscription opens all premium courses. No per-course payments, no surprises." },
             { icon: <Trophy size={26} />, t: "Earn proof", d: "Complete lessons and pass assessments to earn a certificate anyone can verify online." },

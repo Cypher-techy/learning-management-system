@@ -1,15 +1,16 @@
-import { getDB, persist, uid, now, hashPassword, audit, type DB, type Role } from "@/lib/db";
+import { getDB, persist, uid, now, hashPassword, audit, type DB } from "@/lib/db";
 import { jsonError, ApiError, setSession } from "@/lib/auth";
 import crypto from "crypto";
 
-const PUBLIC_ROLES: Role[] = ["student", "tutor", "administrator"];
+const PUBLIC_ROLES = ["student", "tutor"] as const;
+type PublicRole = (typeof PUBLIC_ROLES)[number];
 
 type RegistrationPayload = {
   fullName: string;
   email: string;
   phone: string;
   password: string;
-  role: Role;
+  role: PublicRole;
   avatarColor: string;
   title?: string;
   expertise?: string;
@@ -86,11 +87,16 @@ export async function POST(req: Request) {
       if (Date.now() > p.expires) throw new ApiError(400, "Verification code expired. Please register again.");
       const payload = p.payload as RegistrationPayload;
       delete meta.pending[b.email.toLowerCase()];
+      if (!PUBLIC_ROLES.includes(payload.role)) {
+        await persist();
+        throw new ApiError(400, "Invalid account type.");
+      }
       return createAccount(db, payload, "Automatic verification after contact confirmation.");
     }
 
     // Step 1 — validate registration details. Students finish here;
-    // tutor/administrator applicants continue to contact verification.
+    // tutor applicants continue to contact verification. Privileged
+    // account types are never accepted through public registration.
     if (!PUBLIC_ROLES.includes(b.role)) throw new ApiError(400, "Invalid account type.");
     if (!b.fullName?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email || "")) throw new ApiError(400, "Please provide your full name and a valid email address.");
     if (!b.phone?.trim()) throw new ApiError(400, "Please provide a phone number.");
@@ -109,8 +115,8 @@ export async function POST(req: Request) {
     };
 
     // Students are auto-verified in one step: no email code, email-provider
-    // dependency or approval wait. Tutor and administrator registrations
-    // continue through contact verification and their review workflows.
+    // dependency or approval wait. Tutor registrations continue through
+    // contact verification and the tutor review workflow.
     if (payload.role === "student") {
       delete meta.pending[payload.email];
       return createAccount(db, payload, "Automatic student verification at registration.");
