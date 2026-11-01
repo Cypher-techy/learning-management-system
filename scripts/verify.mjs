@@ -126,6 +126,7 @@ const stu = new Jar();
   await login(t, "amina@elimubora.ac.ke", "Teach@2026", "tutor");
   const ov = await t.req("/api/overview/tutor");
   ok("Tutor wallet reflects seeded allocation", ov.data.wallet.earned === 31280, `(${ov.data.wallet.earned})`);
+  ok("Revenue split is 70% tutor / 30% platform", ov.data.settings.tutorPercent === 70, `(${ov.data.settings.tutorPercent})`);
   const peterJar = new Jar();
   await login(peterJar, "peter@elimubora.ac.ke", "Teach@2026", "tutor");
   const peterOv = await peterJar.req("/api/overview/tutor");

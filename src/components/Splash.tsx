@@ -2,17 +2,18 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-const BOOT_KEY = "elimu_bora_booted_v2";
-const LOGO_FILL_MS = 3400;
-const LOGO_COMPLETE_MS = 580;
-const LOGO_HOLD_MS = 900;
+const BOOT_KEY = "elimu_bora_booted_v3";
+const LOGO_FILL_MS = 5200;
+const LOGO_COMPLETE_MS = 800;
+const LOGO_HOLD_MS = 1400;
 const LOGO_EXIT_MS = 750;
-const LOGO_FAILSAFE_MS = 6800;
+const LOGO_FAILSAFE_MS = 9800;
 
 /** Branded startup experience — initial load only (once per browser session).
  *  The Elimu Bora logo starts in black & white and fills with colour
- *  left-to-right over a deliberately prolonged intro. Progress eases to 90%
- *  while the app loads and only reaches 100% when it is actually ready. */
+ *  left-to-right over a deliberately prolonged intro (about 8.2 seconds when
+ *  the app is ready on time). Progress eases to 90% while the app loads and
+ *  only reaches 100% when it is actually ready. */
 export default function Splash() {
   const [show, setShow] = useState(false);
   const [leaving, setLeaving] = useState(false);
