@@ -87,7 +87,7 @@ export default function Splash() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#02030a] transition-all duration-700 ${leaving ? "pointer-events-none -translate-y-6 opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#030304] transition-all duration-700 ${leaving ? "pointer-events-none -translate-y-6 opacity-0" : "opacity-100"}`}
       role="status"
       aria-label="Loading Elimu Bora"
     >

@@ -43,7 +43,7 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
   const pendingBlocked = (user.role === "tutor" || user.role === "administrator") && user.status !== "verified";
 
   return (
-    <div className="min-h-screen bg-[#f7f8fc] lg:flex">
+    <div className="min-h-screen bg-[#f4f4f1] lg:flex">
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-navy-950 px-5 py-6 transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${mobile ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between"><Logo href={nav[0]?.href || "/"} /><button className="p-1 text-slate-400 lg:hidden" onClick={() => setMobile(false)}><X /></button></div>
@@ -61,12 +61,12 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
       {mobile && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setMobile(false)} />}
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-slate-200/70 bg-white/85 px-5 backdrop-blur-xl lg:px-8">
-          <button className="p-1 lg:hidden" onClick={() => setMobile(true)} aria-label="Open menu"><Menu /></button>
-          <Link href="/explore" className="hidden items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-500 transition hover:bg-slate-200 sm:flex"><Search size={15} /> Search courses…</Link>
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-white/10 bg-[#050507]/95 px-5 text-white shadow-card backdrop-blur-xl lg:px-8">
+          <button className="p-1 text-white lg:hidden" onClick={() => setMobile(true)} aria-label="Open menu"><Menu /></button>
+          <Link href="/explore" className="hidden items-center gap-2 rounded-full bg-white/[0.07] px-4 py-2 text-sm text-slate-300 ring-1 ring-white/10 transition hover:bg-white/[0.12] hover:text-white sm:flex"><Search size={15} /> Search courses…</Link>
           <div className="ml-auto flex items-center gap-3">
             <div className="relative">
-              <button onClick={markRead} className="relative rounded-full border border-slate-200 p-2.5 transition hover:shadow-soft" aria-label="Notifications">
+              <button onClick={markRead} className="relative rounded-full border border-white/15 bg-white/[0.06] p-2.5 text-white transition hover:bg-white/[0.12] hover:shadow-soft" aria-label="Notifications">
                 <Bell size={17} />{unread > 0 && <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full grad-bg text-[10px] font-bold text-white">{unread}</span>}
               </button>
               {showN && (
@@ -77,7 +77,7 @@ export default function DashboardShell({ nav, roleLabel, expected, children, dat
                 </div>
               )}
             </div>
-            <Link href="/" className="hidden text-sm font-semibold text-slate-600 hover:text-brand-600 sm:block">Visit Website</Link>
+            <Link href="/" className="hidden text-sm font-semibold text-slate-300 transition hover:text-white sm:block">Visit Website</Link>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-5 py-8 lg:px-8">

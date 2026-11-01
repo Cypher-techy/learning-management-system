@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Splash from "@/components/Splash";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -10,6 +10,11 @@ const siteUrl =
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : "http://localhost:3000");
+
+export const viewport: Viewport = {
+  themeColor: "#050507",
+  colorScheme: "dark light",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

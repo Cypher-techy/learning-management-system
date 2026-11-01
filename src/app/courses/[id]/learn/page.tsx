@@ -122,7 +122,7 @@ function LearnInner() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f7f8fc]">
+    <div className="min-h-screen bg-[#f4f4f1]">
       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 bg-navy-950 px-5 text-white">
         <button onClick={() => router.push(me.role === "student" ? "/dashboard/student/learning" : `/courses/${id}`)} className="flex items-center gap-2 text-sm text-slate-300 hover:text-white"><ArrowLeft size={17} /> Exit</button>
         <span className="hidden sm:block"><Logo href="/" /></span>

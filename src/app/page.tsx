@@ -27,6 +27,8 @@ export default function Home() {
   const [stats, setStats] = useState<any>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
+  const courseStageRef = useRef<HTMLDivElement>(null);
+  const courseViewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const courseProgressRef = useRef<HTMLSpanElement>(null);
   const courseIndexRef = useRef<HTMLSpanElement>(null);
@@ -52,6 +54,8 @@ export default function Home() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     gsap.registerPlugin(ScrollTrigger);
+    const courseViewport = courseViewportRef.current;
+    let courseMM: ReturnType<typeof gsap.matchMedia> | undefined;
     const ctx = gsap.context(() => {
       // A hairline progress bar quietly mirrors the reader's journey.
       gsap.fromTo("[data-scroll-progress]", { scaleX: 0 }, {
@@ -145,28 +149,48 @@ export default function Home() {
         });
       });
 
-      // Pinned horizontal course gallery (desktop), now paced more slowly
-      // and accompanied by a moving backdrop word and image drift.
-      const track = trackRef.current, pin = pinRef.current;
-      if (track && pin && window.innerWidth >= 1024) {
+      // Downward-scroll course gallery on every screen: ordinary vertical
+      // scrolling glides the course track sideways. Desktop pins the whole
+      // chapter; phones/tablets pin only the gallery stage below the navbar
+      // so the cards always fit the screen. Reduced motion keeps the native
+      // sideways-swipe fallback.
+      const track = trackRef.current, pin = pinRef.current, stage = courseStageRef.current;
+      if (track && pin && courseViewport) {
         const dist = () => Math.max(track.scrollWidth - pin.clientWidth + 80, 0);
-        gsap.to(track, {
-          x: () => -dist(), ease: "none",
-          scrollTrigger: {
-            trigger: pin, start: "top top", end: () => "+=" + Math.round(dist() * 1.12), pin: true, scrub: 1,
-            invalidateOnRefresh: true, anticipatePin: 1,
-            onUpdate: (self) => {
-              if (courseProgressRef.current) gsap.set(courseProgressRef.current, { scaleX: self.progress });
-              if (courseIndexRef.current) {
-                const total = Math.max(1, Math.min(courses.length, 6));
-                const current = Math.min(total, Math.floor(self.progress * total) + 1);
-                courseIndexRef.current.textContent = String(current).padStart(2, "0");
-              }
-              gsap.set("[data-course-giant]", { xPercent: -12 * self.progress, opacity: 0.72 + self.progress * 0.28 });
-              gsap.set(track.querySelectorAll("img"), { objectPosition: `${50 + (self.progress - 0.5) * 14}% center` });
+        const createCourseGallery = (trigger: HTMLElement, start: string) => {
+          if (dist() <= 0) return undefined;
+          courseViewport.style.overflow = "hidden";
+          const scrollDistance = () => {
+            const width = window.innerWidth;
+            const pace = width < 640 ? 0.82 : width < 1024 ? 0.94 : 1.08;
+            return Math.max(320, Math.round(dist() * pace));
+          };
+          const tween = gsap.to(track, {
+            x: () => -dist(), ease: "none",
+            scrollTrigger: {
+              trigger, start, end: () => "+=" + scrollDistance(), pin: true, scrub: 0.9,
+              invalidateOnRefresh: true, anticipatePin: 1,
+              onUpdate: (self) => {
+                if (courseProgressRef.current) gsap.set(courseProgressRef.current, { scaleX: self.progress });
+                if (courseIndexRef.current) {
+                  const total = Math.max(1, Math.min(courses.length, 6));
+                  const current = Math.min(total, Math.floor(self.progress * total) + 1);
+                  courseIndexRef.current.textContent = String(current).padStart(2, "0");
+                }
+                gsap.set("[data-course-giant]", { xPercent: -12 * self.progress, opacity: 0.72 + self.progress * 0.28 });
+                gsap.set(track.querySelectorAll("img"), { objectPosition: `${50 + (self.progress - 0.5) * 14}% center` });
+              },
             },
-          },
-        });
+          });
+          return () => {
+            courseViewport.style.overflow = "";
+            tween.scrollTrigger?.kill();
+            tween.kill();
+          };
+        };
+        courseMM = gsap.matchMedia();
+        courseMM.add("(max-width: 1023px)", () => stage ? createCourseGallery(stage, "top top+=84") : undefined);
+        courseMM.add("(min-width: 1024px)", () => createCourseGallery(pin, "top top"));
       }
 
       // Statement lines converge slowly and sharpen under the reader's eye.
@@ -205,7 +229,11 @@ export default function Home() {
         scrollTrigger: { trigger: "#begin", start: "top bottom", end: "bottom top", scrub: 1.2 },
       });
     });
-    return () => ctx.revert();
+    return () => {
+      courseMM?.revert();
+      ctx.revert();
+      if (courseViewport) courseViewport.style.overflow = "";
+    };
   }, [courses.length]);
 
   const scrollToSection = (id: string) => {
@@ -266,33 +294,33 @@ export default function Home() {
         <div data-orb="2" className="pointer-events-none absolute -right-24 top-1/3 h-[520px] w-[520px] rounded-full bg-violet-600/20 blur-[140px]" />
         <svg className="pointer-events-none absolute inset-x-0 bottom-0 h-64 w-full opacity-40" viewBox="0 0 1440 320" preserveAspectRatio="none"><path d="M-20 240 C 240 140, 520 300, 820 210 S 1300 80, 1480 170" stroke="url(#hg)" strokeWidth="2" fill="none" /><defs><linearGradient id="hg" x1="0" x2="1"><stop stopColor="#38bdf8" /><stop offset="1" stopColor="#a855f7" /></linearGradient></defs></svg>
         <div className="landing-hero-veil" data-hero-veil aria-hidden="true" />
-        <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 px-5 lg:grid-cols-12 lg:gap-12 lg:px-8 xl:gap-16">
-          <div className="landing-hero-copy max-w-[44rem] lg:col-span-7" data-hero-copy>
+        <div className="relative mx-auto w-full max-w-7xl px-5 lg:px-8">
+          <div className="landing-hero-copy relative z-[1] mx-auto max-w-[56rem] text-center" data-hero-copy>
             <span data-hero className="landing-kicker landing-accent-dark landing-hero-chip glass chip max-w-full !px-4 !py-2 font-bold uppercase"><Sparkles size={13} /> Kenya's Premium Learning Platform</span>
             <h1 className="landing-display landing-on-dark mt-7 font-black">
               <span className="block" data-hero-line>Discover Knowledge.</span>
               <span className="landing-gradient-text block" data-hero-line data-gradient-scrub>Develop <span className="landing-serif">Skills.</span></span>
               <span className="block" data-hero-line>Shape Your Future.</span>
             </h1>
-            <p data-hero className="landing-lead landing-on-dark-copy mt-6 max-w-[38rem]">Learn from verified tutors with structured courses, real assessments and certificates employers can verify. Start free — go Premium when you are ready. <strong className="landing-on-dark whitespace-nowrap">LEARN BEYOND LIMITS.</strong></p>
-            <div data-hero className="mt-8 flex flex-col gap-3 min-[480px]:flex-row min-[480px]:flex-wrap">
+            <p data-hero className="landing-lead landing-on-dark-copy mx-auto mt-6 max-w-[42rem]">Learn from verified tutors with structured courses, real assessments and certificates employers can verify. Start free — go Premium when you are ready. <strong className="landing-on-dark whitespace-nowrap">LEARN BEYOND LIMITS.</strong></p>
+            <div data-hero className="mt-8 flex flex-col items-stretch justify-center gap-3 min-[480px]:flex-row min-[480px]:flex-wrap min-[480px]:items-center">
               <Link href="/roles" className="btn-primary w-full !px-7 !py-3.5 !text-[0.95rem] min-[480px]:w-auto">Start Learning Free <ArrowRight size={18} /></Link>
               <Link href="/explore" className="btn-ghost w-full border-white/25 !px-7 !py-3.5 !text-[0.95rem] text-white hover:bg-white/10 min-[480px]:w-auto"><PlayCircle size={18} /> Explore Courses</Link>
             </div>
             {stats && (
-              <div data-hero className="mt-10 grid max-w-[36rem] grid-cols-3 gap-4 border-t border-white/10 pt-7 sm:gap-6">
+              <div data-hero className="mx-auto mt-10 grid max-w-[38rem] grid-cols-3 gap-4 border-t border-white/10 pt-7 text-center sm:gap-6">
                 <div><p className="landing-stat-value landing-on-dark font-extrabold"><Counter value={stats.courses} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Live Courses</p></div>
                 <div><p className="landing-stat-value landing-on-dark font-extrabold"><Counter value={stats.lessons} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Lessons</p></div>
                 <div><p className="landing-stat-value landing-on-dark font-extrabold"><Counter value={stats.tutors} /></p><p className="landing-stat-label landing-on-dark-muted mt-1.5 uppercase">Verified Tutors</p></div>
               </div>
             )}
           </div>
-          <div className="pointer-events-none relative hidden min-h-[36rem] lg:col-span-5 lg:block" data-hero data-hero-stage aria-hidden="true">
-            <div className="floaty landing-glass-badge absolute bottom-24 left-4 max-w-[15rem] rounded-2xl px-4 py-3.5" style={{ animationDelay: "0.6s" }}>
+          <div className="pointer-events-none absolute inset-0 z-0 hidden xl:block" data-hero data-hero-stage aria-hidden="true">
+            <div className="floaty landing-glass-badge absolute bottom-16 left-0 max-w-[15rem] rounded-2xl px-4 py-3.5" style={{ animationDelay: "0.6s" }}>
               <p className="landing-on-dark flex items-center gap-2 text-xs font-bold"><BadgeCheck size={15} className="text-emerald-300" /> Verified Tutors</p>
               <p className="landing-on-dark-muted mt-1 text-[11px] leading-relaxed">Every tutor is reviewed & approved</p>
             </div>
-            <div className="floaty landing-glass-badge absolute right-4 top-20 max-w-[15rem] rounded-2xl px-4 py-3.5">
+            <div className="floaty landing-glass-badge absolute bottom-16 right-0 max-w-[15rem] rounded-2xl px-4 py-3.5">
               <p className="landing-on-dark flex items-center gap-2 text-xs font-bold"><Smartphone size={15} className="text-brand-300" /> Pay with M-Pesa</p>
               <p className="landing-on-dark-muted mt-1 text-[11px] leading-relaxed">One subscription, every premium course</p>
             </div>
@@ -352,13 +380,17 @@ export default function Home() {
         <div className="landing-giant-word" data-course-giant aria-hidden="true">discover</div>
         <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-violet-600/20 blur-[120px]" data-parallax="10" />
         <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div className="min-w-0"><ChapterEyebrow number="02" label="Featured Courses" dark />
-              <h2 className="landing-section-title landing-on-dark mt-4 font-extrabold">Keep scrolling.<br />Keep <span className="landing-gradient-text landing-serif" data-gradient-scrub>discovering.</span></h2></div>
-            <Link href="/explore" className="btn-ghost shrink-0 border-white/25 text-white hover:bg-white/10">View all courses <ArrowRight size={16} /></Link>
+          <div className="grid items-end gap-6 text-center lg:grid-cols-[1fr_minmax(0,44rem)_1fr]">
+            <div className="min-w-0 lg:col-start-2">
+              <div className="flex justify-center"><ChapterEyebrow number="02" label="Featured Courses" dark center /></div>
+              <h2 className="landing-section-title landing-on-dark mx-auto mt-4 text-center font-extrabold">Keep scrolling.<br />Keep <span className="landing-gradient-text landing-serif" data-gradient-scrub>discovering.</span></h2>
+              <p className="landing-card-copy landing-on-dark-muted mx-auto mt-4 max-w-xl text-center text-sm">Just scroll down — the featured collection glides sideways for you.</p>
+            </div>
+            <Link href="/explore" className="btn-ghost shrink-0 justify-self-center border-white/25 text-white hover:bg-white/10 lg:col-start-3 lg:justify-self-end">View all courses <ArrowRight size={16} /></Link>
           </div>
         </div>
-        <div className="landing-course-viewport relative mt-12 overflow-x-auto pb-4 lg:mt-14 lg:overflow-visible lg:pb-0" onScroll={handleCourseScroll}>
+        <div ref={courseStageRef} className="landing-course-stage mt-12 lg:mt-14">
+        <div ref={courseViewportRef} className="landing-course-viewport relative overflow-x-auto pb-4 lg:overflow-visible lg:pb-0" onScroll={handleCourseScroll}>
           <div ref={trackRef} className="landing-course-track flex w-max gap-6 px-5 pt-9 lg:px-[max(2rem,calc((100vw-80rem)/2+2rem))]">
             {featured.map((c, i) => <div key={c.id} className="relative w-[320px] shrink-0 sm:w-[360px]"><span className="landing-course-index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><CourseCard course={c} /></div>)}
             <Link href="/explore" className="grad-ring flex w-[260px] shrink-0 flex-col items-center justify-center gap-3 rounded-2xl text-center">
@@ -368,10 +400,11 @@ export default function Home() {
         </div>
         <div className="landing-course-progress-wrap relative mx-auto mt-10 max-w-xl px-5">
           <div className="flex items-end justify-between gap-6">
-            <p className="landing-kicker landing-on-dark-faint font-semibold uppercase">Scroll to explore</p>
+            <p className="landing-kicker landing-on-dark-faint font-semibold uppercase">Scroll down to explore</p>
             <p className="landing-course-count" aria-hidden="true"><span ref={courseIndexRef}>01</span><i>/</i><span>{String(Math.max(featured.length, 1)).padStart(2, "0")}</span></p>
           </div>
           <div className="landing-course-progress mt-3" aria-hidden="true"><span ref={courseProgressRef} /></div>
+        </div>
         </div>
       </section>
 
