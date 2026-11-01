@@ -79,7 +79,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="relative flex flex-col bg-[#f7f8fc] px-5 py-8 lg:px-14">
+      <div className="relative flex flex-col bg-[#f4f4f1] px-5 py-8 lg:px-14">
         <div className="flex items-center justify-between"><Logo dark={false} /><Link href="/roles" className="text-sm font-semibold text-slate-500 hover:text-brand-600">Change account type</Link></div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="mx-auto my-auto w-full max-w-md py-10">
           <span className="chip grad-bg text-white">{meta.title.toUpperCase()} ACCOUNT</span>

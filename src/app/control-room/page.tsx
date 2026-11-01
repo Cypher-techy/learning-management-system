@@ -91,8 +91,8 @@ function OwnerConsole({ me }: { me: any }) {
   const tabs = [["overview", "Overview"], ["administrators", "Administrators"], ["people", "Tutors & Students"], ["courses", "Courses"], ["finance", "Finance & Wallets"], ["config", "Configuration"], ["audit", "Security Audit"]];
 
   return (
-    <div className="min-h-screen bg-[#070a1c] text-slate-200">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#070a1c]/90 backdrop-blur-xl">
+    <div className="min-h-screen bg-[#050507] text-slate-200">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050507]/92 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 lg:px-8">
           <Emblem size={34} />
           <div><p className="text-sm font-extrabold tracking-widest text-white">ELIMU Bora CONTROL</p><p className="text-[10px] uppercase tracking-widest text-slate-500">Highest platform authority · {me.fullName}</p></div>

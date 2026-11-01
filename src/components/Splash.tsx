@@ -2,17 +2,23 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-const BOOT_KEY = "elimu_bora_booted_v1";
+const BOOT_KEY = "elimu_bora_booted_v2";
+const LOGO_FILL_MS = 3400;
+const LOGO_COMPLETE_MS = 580;
+const LOGO_HOLD_MS = 900;
+const LOGO_EXIT_MS = 750;
+const LOGO_FAILSAFE_MS = 6800;
 
 /** Branded startup experience — initial load only (once per browser session).
  *  The Elimu Bora logo starts in black & white and fills with colour
- *  left-to-right, in sync with the loading progress. Progress eases to 90%
+ *  left-to-right over a deliberately prolonged intro. Progress eases to 90%
  *  while the app loads and only reaches 100% when it is actually ready. */
 export default function Splash() {
   const [show, setShow] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);
+  const finishRef = useRef<((quick?: boolean) => void) | null>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem(BOOT_KEY)) return;
@@ -25,58 +31,64 @@ export default function Splash() {
     let raf = 0;
     let finished = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
-    const DURATION = 1500;
 
     const setP = (v: number) => {
       progressRef.current = v;
       setProgress(v);
     };
 
-    // Phase 1 — ease towards 90% while the app is still loading.
+    // Phase 1 — ease towards 90% while the app is still loading. A
+    // smootherstep curve keeps the colour filling through the full intro
+    // instead of rushing most of the logo in during the first second.
     const start = performance.now();
     const tick = (now: number) => {
       if (finished) return;
-      const t = Math.min((now - start) / DURATION, 1);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const t = Math.min((now - start) / LOGO_FILL_MS, 1);
+      const eased = t * t * t * (t * (t * 6 - 15) + 10); // smootherstep
       setP(Math.round(eased * 90));
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
-    const finish = () => {
+    const finish = (quick = false) => {
       if (finished) return;
       finished = true;
       cancelAnimationFrame(raf);
       // Phase 2 — app is ready: sweep the colour to a full 100%.
       const from = progressRef.current;
       const completeStart = performance.now();
+      const completeDuration = quick ? 180 : LOGO_COMPLETE_MS;
+      const holdDuration = quick ? 100 : LOGO_HOLD_MS;
       const complete = (now: number) => {
-        const t = Math.min((now - completeStart) / 380, 1);
-        setP(Math.round(from + (100 - from) * t));
+        const t = Math.min((now - completeStart) / completeDuration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setP(Math.round(from + (100 - from) * eased));
         if (t < 1) {
           raf = requestAnimationFrame(complete);
         } else {
-          // Hold the fully-coloured logo for a beat, then open the site.
+          // Let the finished logo breathe for a moment, then open the site.
           timers.push(setTimeout(() => {
             setLeaving(true);
             sessionStorage.setItem(BOOT_KEY, "1");
-            timers.push(setTimeout(() => setShow(false), 650));
-          }, 240));
+            timers.push(setTimeout(() => setShow(false), LOGO_EXIT_MS));
+          }, holdDuration));
         }
       };
       raf = requestAnimationFrame(complete);
     };
+    finishRef.current = finish;
 
-    const minWait = new Promise((r) => setTimeout(r, DURATION));
+    const minWait = new Promise((r) => setTimeout(r, LOGO_FILL_MS));
     const loaded = document.readyState === "complete"
       ? Promise.resolve()
       : new Promise((r) => window.addEventListener("load", r, { once: true }));
-    Promise.all([minWait, loaded]).then(finish);
-    const failsafe = setTimeout(finish, 4000); // never trap the user
+    Promise.all([minWait, loaded]).then(() => finish(false));
+    const failsafe = setTimeout(() => finish(true), LOGO_FAILSAFE_MS); // never trap the user
     timers.push(failsafe);
 
     return () => {
       finished = true;
+      finishRef.current = null;
       cancelAnimationFrame(raf);
       timers.forEach(clearTimeout);
     };
@@ -87,7 +99,7 @@ export default function Splash() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#02030a] transition-all duration-700 ${leaving ? "pointer-events-none -translate-y-6 opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#030304] transition-all duration-[750ms] ${leaving ? "pointer-events-none -translate-y-6 opacity-0" : "opacity-100"}`}
       role="status"
       aria-label="Loading Elimu Bora"
     >
@@ -156,6 +168,15 @@ export default function Splash() {
           <span className="ml-2 font-bold tabular-nums text-slate-200">{progress}%</span>
         </p>
       </div>
+      {!leaving && (
+        <button
+          type="button"
+          onClick={() => finishRef.current?.(true)}
+          className="absolute bottom-6 right-6 rounded-full border border-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 transition hover:border-white/35 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+        >
+          Skip intro
+        </button>
+      )}
     </div>
   );
 }
