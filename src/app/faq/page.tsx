@@ -2,7 +2,7 @@ import StaticPage, { H, P } from "@/components/StaticPage";
 export const metadata = { title: "FAQs" };
 const QA = [
   ["Is Elimu Bora free?", "Yes — free accounts include free courses, quizzes, assignments, progress tracking, discussions and more. Premium is optional and unlocks every premium course."],
-  ["How do I pay for Premium?", "With M-Pesa. You receive an STK Push on your phone, enter your PIN, and access activates automatically once Safaricom confirms payment."],
+  ["How do I pay for Premium?", "Choose the monthly or annual plan, then pay with M-Pesa. Plan prices are displayed in USD; the STK Push charges the equivalent in Kenyan shillings using the latest USD/KES reference rate at checkout. Access activates automatically once Safaricom confirms payment."],
   ["Does Premium auto-renew?", "No. M-Pesa does not silently rebill you. We remind you before expiry and you renew with one tap. Your account and progress are never deleted when a subscription expires."],
   ["Are certificates genuine?", "Certificates require full lesson completion and passing assessments. Each carries a unique code verifiable on our public verification page."],
   ["How do tutors get paid?", "Monthly. 80% of net subscription revenue forms the tutor pool (configurable by Elimu Bora), allocated by verified premium student engagement. Tutors request withdrawals to M-Pesa or bank; payouts are reviewed and recorded with transaction references."],

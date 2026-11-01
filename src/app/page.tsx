@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 import CourseCard from "@/components/CourseCard";
 import { Reveal, Counter } from "@/components/Reveal";
 import { Emblem } from "@/components/Logo";
-import { api } from "@/lib/client";
+import { api, usd } from "@/lib/client";
 
 function ChapterEyebrow({ number, label, dark = false, center = false }: { number: string; label: string; dark?: boolean; center?: boolean }) {
   return (
@@ -25,6 +25,7 @@ function ChapterEyebrow({ number, label, dark = false, center = false }: { numbe
 export default function Home() {
   const [courses, setCourses] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [pricing, setPricing] = useState<any[]>([]);
   const heroRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const courseStageRef = useRef<HTMLDivElement>(null);
@@ -38,6 +39,7 @@ export default function Home() {
   useEffect(() => {
     api("/api/courses?sort=popular").then(d => setCourses(d.courses)).catch(() => {});
     api("/api/stats").then(setStats).catch(() => {});
+    api("/api/pricing/subscriptions").then(d => setPricing(Array.isArray(d.plans) ? d.plans : [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -247,9 +249,11 @@ export default function Home() {
 
   const featured = courses.filter(c => c.featured).concat(courses.filter(c => !c.featured)).slice(0, 6);
   const tutors = [...new Map(courses.map(c => [c.tutorId, c])).values()];
+  const monthlyPlan = pricing.find(plan => plan.billingInterval === "monthly");
+  const annualPlan = pricing.find(plan => plan.billingInterval === "annual");
   const faqs = [
     { q: "Is Elimu Bora really free to start?", a: "Yes. Create a student account and it is verified automatically — no email code or waiting for approval. Free courses, quizzes, progress tracking and community access are included from day one." },
-    { q: "How does Premium work?", a: "One monthly subscription unlocks every eligible premium course on the platform — you never pay per course. Pay securely with M-Pesa and your access activates automatically once Safaricom confirms payment." },
+    { q: "How does Premium work?", a: "Choose a monthly or annual all-access subscription — you never pay per course. Prices are displayed in USD, while M-Pesa charges the converted Kenyan-shilling amount using the latest exchange rate at checkout. Access activates automatically once Safaricom confirms payment." },
     { q: "Are certificates verifiable?", a: "Yes. Every certificate carries a unique reference code and a public verification page. Certificates are earned — you must complete the lessons and pass the assessments." },
     { q: "How do tutors earn?", a: "Verified tutors share in subscription revenue. The tutor pool (80% of net subscription revenue by default) is allocated monthly by genuine premium student engagement in their courses, and paid out via M-Pesa or bank after review." },
   ];
@@ -437,19 +441,20 @@ export default function Home() {
           <div className="mb-7 flex justify-center"><ChapterEyebrow number="03" label="Access, Beautifully Simple" center /></div>
           <h2 data-slide-l className="landing-statement landing-ink">Free to start.</h2>
           <h2 data-slide-r data-gradient-scrub className="landing-statement landing-gradient-text-light mt-2">Limitless to <span className="landing-display-accent">grow.</span></h2>
-          <Reveal delay={0.15}><p className="landing-lead landing-copy mx-auto mt-7 max-w-2xl"><span data-manifesto-line>Free students get a complete dashboard, real courses and genuine progress tracking.</span> <span data-manifesto-line>Premium simply removes the ceiling — every premium course, every download, advanced analytics and priority features,</span> <span data-manifesto-line>for one monthly price.</span></p></Reveal>
+          <Reveal delay={0.15}><p className="landing-lead landing-copy mx-auto mt-7 max-w-2xl"><span data-manifesto-line>Free students get a complete dashboard, real courses and genuine progress tracking.</span> <span data-manifesto-line>Premium simply removes the ceiling — every premium course, every download, advanced analytics and priority features,</span> <span data-manifesto-line>with monthly or annual Premium.</span></p></Reveal>
           <div className="relative mx-auto mt-12 grid max-w-4xl gap-6 text-left md:grid-cols-2 lg:mt-16">
             <div className="landing-pricing-line" aria-hidden="true"><span data-line-grow-y /></div>
             <Reveal><div className="card h-full p-6 sm:p-8" data-panel-reveal>
               <p className="landing-stat-label landing-muted font-bold uppercase">Free</p>
-              <p className="landing-price landing-ink mt-2">KSh 0</p>
+              <p className="landing-price landing-ink mt-2">{usd(0)}</p>
               <ul className="landing-copy mt-6 space-y-3 text-sm leading-6">{["All designated free courses", "Video lessons & study materials", "Quizzes, assignments & progress", "Community discussions", "Bookmarks & learning history"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={17} className="mt-0.5 shrink-0 text-emerald-500" />{x}</li>)}</ul>
               <Link href="/roles" className="btn-dark mt-8 w-full">Create Free Account</Link>
             </div></Reveal>
             <Reveal delay={0.1}><div className="landing-premium-panel landing-sheen relative h-full overflow-hidden rounded-2xl p-6 text-white shadow-card sm:p-8" data-panel-reveal data-sheen>
               <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-violet-600/40 blur-[70px]" data-parallax="8" />
               <p className="landing-stat-label landing-accent-dark relative flex items-center gap-2 font-bold uppercase"><Crown size={14} /> Premium All-Access</p>
-              <p className="landing-price landing-on-dark relative mt-2">One monthly price</p>
+              <p className="landing-price landing-on-dark relative mt-2">{monthlyPlan ? `${usd(monthlyPlan.priceUSD)}/month` : "Monthly or annual"}</p>
+              <p className="type-body-sm landing-on-dark-copy relative mt-2">{annualPlan ? `or ${usd(annualPlan.priceUSD)}/year · charged in KES through M-Pesa at the live checkout rate` : "USD display pricing · charged in KES through M-Pesa"}</p>
               <ul className="landing-on-dark-copy relative mt-6 space-y-3 text-sm leading-6">{["Every premium course included", "Premium downloads & resources", "Advanced learning analytics", "AI study assistant allowances", "Premium certificates & paths"].map(x => <li key={x} className="flex gap-2"><BadgeCheck size={17} className="mt-0.5 shrink-0 text-brand-300" />{x}</li>)}</ul>
               <Link href="/plans" className="btn-primary relative mt-8 w-full">See Premium <ArrowRight size={16} /></Link>
             </div></Reveal>

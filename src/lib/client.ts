@@ -40,6 +40,12 @@ export function useApi<T = any>(url: string | null) {
   return { data, error, loading, reload };
 }
 export const kes = (n: number) => "KSh " + Math.round(n).toLocaleString("en-KE");
+export const usd = (n: number) => new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
+  maximumFractionDigits: 2,
+}).format(n);
 export const fmtDate = (s?: string) => s ? new Date(s).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
 export const fmtDur = (min: number) => min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`;
 export const initials = (name = "") => name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();

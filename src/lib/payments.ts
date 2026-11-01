@@ -13,12 +13,16 @@ function activatePremiumForPayment(db: DB, payment: Payment, receipt?: string) {
     return;
   }
 
-  const plan = db.plans[0];
+  const billingInterval = payment.billingInterval || "monthly";
+  const purchasedPlan = payment.planId
+    ? db.plans.find((plan) => plan.id === payment.planId)
+    : db.plans.find((plan) => plan.billingInterval === billingInterval);
+  const intervalDays = payment.intervalDays || purchasedPlan?.intervalDays || (billingInterval === "annual" ? 365 : 30);
   const active = db.subscriptions
     .filter((s) => s.studentId === student.id && s.status === "active" && new Date(s.expiresAt).getTime() > Date.now())
     .sort((a, b) => b.expiresAt.localeCompare(a.expiresAt))[0];
   const start = active ? new Date(active.expiresAt) : new Date();
-  const expires = new Date(start.getTime() + (plan?.intervalDays || 30) * 86400000);
+  const expires = new Date(start.getTime() + intervalDays * 86400000);
   const subscription = {
     id: uid("sub_"),
     studentId: student.id,
@@ -27,6 +31,9 @@ function activatePremiumForPayment(db: DB, payment: Payment, receipt?: string) {
     startedAt: now(),
     expiresAt: expires.toISOString(),
     paymentId: payment.id,
+    planId: payment.planId || purchasedPlan?.id,
+    billingInterval,
+    intervalDays,
   };
   db.subscriptions.unshift(subscription);
   student.plan = "premium";

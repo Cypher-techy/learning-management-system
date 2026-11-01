@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { BookOpen, CheckCircle2, Clock3, Crown, Flame, Trophy } from "lucide-react";
-import { useApi, kes, fmtDate } from "@/lib/client";
+import { useApi, usd, fmtDate } from "@/lib/client";
 import { Stat, Loading, ProgressBar } from "@/components/ui";
 import CourseCard from "@/components/CourseCard";
 
@@ -10,6 +10,8 @@ export default function StudentHome() {
   if (loading) return <Loading text="Loading your dashboard…" />;
   if (error || !data) return <p className="text-rose-600">{error}</p>;
   const u = data.user; const s = data.stats;
+  const monthlyPlan = data.subscriptionPlans?.find((plan: any) => plan.billingInterval === "monthly");
+  const annualPlan = data.subscriptionPlans?.find((plan: any) => plan.billingInterval === "annual");
   return (
     <div>
       <div className="relative mb-8 overflow-hidden rounded-3xl bg-navy-900 p-7 text-white lg:p-9">
@@ -21,7 +23,7 @@ export default function StudentHome() {
           <span className="chip bg-white/15 text-white"><Flame size={12} /> {s.lessonsDone} LESSONS COMPLETED</span>
           {data.subscription && <span className="chip bg-white/15 text-white">RENEWS BY {fmtDate(data.subscription.expiresAt).toUpperCase()}</span>}
         </div>
-        {!u.premiumActive && <Link href="/dashboard/student/subscription" className="btn-primary relative mt-6"><Crown size={16} /> Unlock All Premium Courses — {kes(data.settings.premiumPriceKES)}/month</Link>}
+        {!u.premiumActive && <Link href="/dashboard/student/subscription" className="btn-primary relative mt-6"><Crown size={16} /> Unlock All Premium Courses{monthlyPlan && annualPlan ? ` — ${usd(monthlyPlan.priceUSD)}/month or ${usd(annualPlan.priceUSD)}/year` : ""}</Link>}
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

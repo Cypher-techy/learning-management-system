@@ -55,11 +55,23 @@ export interface QuizAttempt { id: string; quizId: string; courseId: string; stu
 export interface Submission { id: string; assignmentId: string; courseId: string; studentId: string; content: string; fileName?: string; submittedAt: string; grade?: number; feedback?: string; status: "submitted" | "graded" }
 export interface Review { id: string; courseId: string; studentId: string; rating: number; comment: string; createdAt: string }
 export interface Certificate { id: string; code: string; studentId: string; courseId: string; issuedAt: string; revoked?: boolean; revokeReason?: string }
-export interface Subscription { id: string; studentId: string; plan: "premium"; status: "active" | "expired" | "failed" | "cancelled"; startedAt: string; expiresAt: string; paymentId?: string }
-export interface Plan { id: string; name: string; priceKES: number; intervalDays: number }
+export type BillingInterval = "monthly" | "annual";
+export interface Subscription {
+  id: string; studentId: string; plan: "premium"; status: "active" | "expired" | "failed" | "cancelled";
+  startedAt: string; expiresAt: string; paymentId?: string;
+  planId?: string; billingInterval?: BillingInterval; intervalDays?: number;
+}
+export interface Plan {
+  id: string; name: string; priceUSD: number; billingInterval: BillingInterval; intervalDays: number;
+  /** Retained only so pre-USD plan records remain readable after migration. */
+  priceKES?: number;
+}
 export interface Payment {
   id: string; studentId: string; amount: number; currency: "KES"; provider: "mpesa";
   status: "pending" | "completed" | "failed"; phone: string;
+  planId?: string; billingInterval?: BillingInterval; intervalDays?: number;
+  displayCurrency?: "USD"; displayAmountUSD?: number;
+  exchangeRateUSDKES?: number; exchangeRateDate?: string; exchangeRateSource?: string; quotedAt?: string;
   checkoutRequestId?: string; merchantRequestId?: string; mpesaReceipt?: string;
   businessShortCode?: string; partyB?: string; resultCode?: string;
   confirmationSource?: "callback" | "stk-query"; lastStatusCheckAt?: string;
@@ -78,7 +90,11 @@ export interface AuditLog { id: string; actorId: string; action: string; target:
 export interface Announcement { id: string; authorId: string; audience: string; title: string; body: string; createdAt: string }
 export interface Goal { id: string; studentId: string; title: string; targetHoursPerWeek: number; createdAt: string; done: boolean }
 export interface Settings {
-  platformName: string; tagline: string; premiumPriceKES: number; tutorPercent: number;
+  platformName: string; tagline: string;
+  premiumMonthlyPriceUSD: number; premiumAnnualPriceUSD: number;
+  /** Deprecated pre-USD display price; retained for stored legacy state. */
+  premiumPriceKES?: number;
+  tutorPercent: number;
   minWithdrawalKES: number; certificateMinProgress: number; certificateMinQuiz: number;
   supportEmail: string; supportPhone: string; paymentMethods: string[];
   renewReminderDays: number;
@@ -275,7 +291,7 @@ export async function getDB(): Promise<DB> {
  *  Returns true when the state changed and should be persisted. */
 function applyContentMigrations(db: DB): boolean {
   const version = db.meta.contentVersion ?? 1;
-  if (version >= 4) return false;
+  if (version >= 5) return false;
   const upsert = <T extends { id: string }>(list: T[], items: T[]) => {
     for (const item of items) {
       const i = list.findIndex((x) => x.id === item.id);
@@ -319,7 +335,29 @@ function applyContentMigrations(db: DB): boolean {
       demoCertificate.code = "EB-2026-WF8K2D";
     }
   }
-  db.meta.contentVersion = 4;
+  if (version < 5) {
+    // Udemy-style Personal Plan structure: prices are displayed and
+    // configured in USD, while M-Pesa continues to transact in KES.
+    // Existing subscribers and their expiry dates are untouched.
+    const storedSettings = db.settings as Partial<Settings>;
+    const monthlyPriceUSD = Number(storedSettings.premiumMonthlyPriceUSD);
+    const annualPriceUSD = Number(storedSettings.premiumAnnualPriceUSD);
+    db.settings.premiumMonthlyPriceUSD = Number.isFinite(monthlyPriceUSD) && monthlyPriceUSD > 0 ? monthlyPriceUSD : 35;
+    db.settings.premiumAnnualPriceUSD = Number.isFinite(annualPriceUSD) && annualPriceUSD > 0 ? annualPriceUSD : 240;
+    db.plans = [
+      { id: "plan_premium_monthly", name: "Elimu Bora Premium — Monthly", priceUSD: db.settings.premiumMonthlyPriceUSD, billingInterval: "monthly", intervalDays: 30 },
+      { id: "plan_premium_annual", name: "Elimu Bora Premium — Annual", priceUSD: db.settings.premiumAnnualPriceUSD, billingInterval: "annual", intervalDays: 365 },
+    ];
+    for (const subscription of db.subscriptions) {
+      if (subscription.billingInterval && subscription.planId && subscription.intervalDays) continue;
+      const durationDays = Math.round((new Date(subscription.expiresAt).getTime() - new Date(subscription.startedAt).getTime()) / 86400000);
+      const annual = subscription.billingInterval === "annual" || durationDays >= 300;
+      subscription.billingInterval = annual ? "annual" : "monthly";
+      subscription.planId = annual ? "plan_premium_annual" : "plan_premium_monthly";
+      subscription.intervalDays = annual ? 365 : 30;
+    }
+  }
+  db.meta.contentVersion = 5;
   return true;
 }
 /** Persist the current state. Never throws: a storage failure is logged
@@ -590,8 +628,8 @@ function seed(): DB {
     { id: "c1", code: "EB-2026-WF8K2D", studentId: "u_student_pro", courseId: "web-foundations", issuedAt: "2026-10-01T10:05:00.000Z" },
   ];
   const subscriptions: Subscription[] = [
-    { id: "sub_demo1", studentId: "u_student_pro", plan: "premium", status: "active", startedAt: "2026-10-05T10:00:00.000Z", expiresAt: "2026-11-25T10:00:00.000Z", paymentId: "pay_demo1" },
-    { id: "sub_demo2", studentId: "u_student3", plan: "premium", status: "active", startedAt: "2026-10-04T10:00:00.000Z", expiresAt: "2026-11-20T10:00:00.000Z", paymentId: "pay_demo2" },
+    { id: "sub_demo1", studentId: "u_student_pro", plan: "premium", status: "active", startedAt: "2026-10-05T10:00:00.000Z", expiresAt: "2026-11-25T10:00:00.000Z", paymentId: "pay_demo1", planId: "plan_premium_monthly", billingInterval: "monthly", intervalDays: 30 },
+    { id: "sub_demo2", studentId: "u_student3", plan: "premium", status: "active", startedAt: "2026-10-04T10:00:00.000Z", expiresAt: "2026-11-20T10:00:00.000Z", paymentId: "pay_demo2", planId: "plan_premium_monthly", billingInterval: "monthly", intervalDays: 30 },
   ];
   const payments: Payment[] = [
     { id: "pay_demo1", studentId: "u_student_pro", amount: 499, currency: "KES", provider: "mpesa", status: "completed", phone: "+254700000031", mpesaReceipt: "QK7X2M9P4R", createdAt: "2026-10-05T09:58:00.000Z", completedAt: "2026-10-05T10:00:00.000Z", callbackProcessed: true },
@@ -657,15 +695,18 @@ function seed(): DB {
     quizzes: [...quizzes, ...TUTORIAL_QUIZZES],
     assignments: [...assignments, ...TUTORIAL_ASSIGNMENTS],
     enrollments, quizAttempts, submissions, reviews,
-    certificates, subscriptions, plans: [{ id: "plan_premium", name: "Elimu Bora Premium — Monthly All-Access", priceKES: 499, intervalDays: 30 }],
+    certificates, subscriptions, plans: [
+      { id: "plan_premium_monthly", name: "Elimu Bora Premium — Monthly", priceUSD: 35, billingInterval: "monthly", intervalDays: 30 },
+      { id: "plan_premium_annual", name: "Elimu Bora Premium — Annual", priceUSD: 240, billingInterval: "annual", intervalDays: 365 },
+    ],
     payments, revenuePeriods, walletTxs, withdrawals, notifications, discussions, replies,
     messages, reports, verifications, auditLogs, announcements, goals,
     settings: {
-      platformName: "Elimu Bora", tagline: "LEARN BEYOND LIMITS.", premiumPriceKES: 499,
+      platformName: "Elimu Bora", tagline: "LEARN BEYOND LIMITS.", premiumMonthlyPriceUSD: 35, premiumAnnualPriceUSD: 240,
       tutorPercent: 80, minWithdrawalKES: 1000, certificateMinProgress: 100, certificateMinQuiz: 60,
       supportEmail: "edvoraplatform@gmail.com", supportPhone: "+254 110 966 455",
       paymentMethods: ["M-Pesa (Daraja STK Push)"], renewReminderDays: 5,
     },
-    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 4 },
+    meta: { ownerInitialised: false, setupSecretUsed: false, sessionSeed: crypto.randomBytes(32).toString("hex"), seededAt: now(), contentVersion: 5 },
   };
 }
